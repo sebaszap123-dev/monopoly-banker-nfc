@@ -46,6 +46,7 @@ dependencies:
   get_it: ^7.6.7
   loading_animation_widget: ^1.2.0+4
   art_sweetalert: ^0.0.5
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:
