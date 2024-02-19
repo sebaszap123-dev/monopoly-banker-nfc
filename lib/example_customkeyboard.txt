@@ -1,0 +1,187 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
+import 'package:monopoly_banker/config/utils/extensions.dart';
+import 'package:monopoly_banker/data/model/ndfe_record_info.dart';
+import 'package:monopoly_banker/data/model/record.dart';
+import 'package:monopoly_banker/interface/widgets/monopoly_keyboard.dart';
+import 'package:nfc_manager/nfc_manager.dart';
+import 'package:nfc_manager/platform_tags.dart';
+
+void main() => runApp(const MonopolyBanker());
+
+class MonopolyBanker extends StatefulWidget {
+  const MonopolyBanker({Key? key}) : super(key: key);
+
+  @override
+  MonopolyBankerState createState() => MonopolyBankerState();
+}
+
+class MonopolyBankerState extends State<MonopolyBanker> {
+  bool checkNfc = false;
+
+  void toggleNfc() async {
+    // Check availability
+    if (checkNfc) {
+      NfcManager.instance.stopSession();
+    }
+    bool isAvailable = await NfcManager.instance.isAvailable();
+    if (isAvailable) {
+      NfcManager.instance.startSession(
+        onDiscovered: (NfcTag tag) async {
+          readNfcTag(tag);
+        },
+        onError: (error) async {
+          print('error:');
+          print(error.message);
+        },
+      );
+    }
+    setState(() {
+      checkNfc = !checkNfc;
+    });
+  }
+
+  String? message;
+  String? tech;
+  String? identificador;
+
+  Future<String?> handleTag(NfcTag tag) async {
+    final tech = Ndef.from(tag);
+
+    if (tech == null) throw ('Tag is not ndef.');
+
+    if (!tech.isWritable) throw ('Tag is not ndef writable.');
+    final test = WellknownTextRecord(languageCode: 'es', text: 'M1900');
+    try {
+      final message = NdefMessage([test.toNdef()]);
+      await tech.write(message);
+    } on PlatformException catch (e) {
+      throw (e.message ?? 'Some error has occurred.');
+    }
+
+    return '[Ndef - Write] is completed.';
+  }
+
+  void readNfcTag(NfcTag tag) {
+    if (tag.data.containsKey('nfca')) {
+      tech = 'Tipo de tecnología NFC: NfcA';
+      identificador =
+          'Identificador: ${NfcA.from(tag)!.identifier.toHexString()}';
+      // Agrega más información específica de NfcA si es necesario
+    } else if (tag.data.containsKey('nfcb')) {
+      tech = ('Tipo de tecnología NFC: NfcB');
+      identificador =
+          ('Identificador: ${NfcB.from(tag)!.identifier.toHexString()}');
+      // Agrega más información específica de NfcB si es necesario
+    } else if (tag.data.containsKey('nfcf')) {
+      tech = ('Tipo de tecnología NFC: NfcF');
+      // Agrega más información específica de NfcF si es necesario
+    } else if (tag.data.containsKey('nfcv')) {
+      tech = ('Tipo de tecnología NFC: NfcV');
+      // Agrega más información específica de NfcV si es necesario
+    } else if (tag.data.containsKey('isodep')) {
+      tech = ('Tipo de tecnología NFC: IsoDep');
+      // Agrega más información específica de IsoDep si es necesario
+    } else if (tag.data.containsKey('mifareclassic')) {
+      tech = ('Tipo de tecnología NFC: MifareClassic');
+      // Agrega más información específica de MifareClassic si es necesario
+    } else if (tag.data.containsKey('mifareultralight')) {
+      tech = ('Tipo de tecnología NFC: MifareUltralight');
+      // Agrega más información específica de MifareUltralight si es necesario
+    } else if (tag.data.containsKey('ndef')) {
+      tech = ('Tipo de tecnología NFC: Ndef');
+      // Agrega más información específica de Ndef si es necesario
+    } else if (tag.data.containsKey('ndefformatable')) {
+      tech = ('Tipo de tecnología NFC: NdefFormatable');
+      // Agrega más información específica de NdefFormatable si es necesario
+    }
+
+    // Si hay registros NDEF, imprime su contenido
+    if (tag.data.containsKey('ndef')) {
+      // Identificar el tipo de tecnología NFC
+      final ndef = Ndef.from(tag);
+      if (ndef != null) {
+        final cachedMessage = ndef.cachedMessage;
+        String test = '';
+        if (cachedMessage != null) {
+          for (var i in Iterable.generate(cachedMessage.records.length)) {
+            final record = cachedMessage.records[i];
+            final info = NdefRecordInfo.fromNdef(record);
+            test += info.subtitle;
+          }
+          message = test;
+        }
+      }
+    }
+    setState(() {});
+  }
+
+  final FocusNode _testFocus = FocusNode();
+  final ValueNotifier<String> notifier = ValueNotifier<String>('');
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Material App',
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Material App Bar'),
+        ),
+        body: KeyboardActions(
+          config: KeyboardActionsConfig(
+            keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
+            keyboardBarColor: Colors.grey[200],
+            nextFocus: true,
+            actions: [
+              KeyboardActionsItem(
+                focusNode: _testFocus,
+                displayActionBar: true,
+                displayArrows: false,
+                footerBuilder: (context) =>
+                    NumericKeyboard(notifier: notifier, focusNode: _testFocus),
+              )
+            ],
+          ),
+          child: Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                MaterialButton(
+                    color: Colors.amber,
+                    onPressed: () => _testFocus.unfocus(),
+                    child: Text('salir')),
+                Text('NFC: $checkNfc'),
+                Text('message: $message'),
+                Text('TECH: $tech'),
+                Text('ID: $identificador'),
+                KeyboardCustomInput<String>(
+                  focusNode: _testFocus,
+                  // ! REQUIRED HEIGHT
+                  height: 65,
+                  notifier: notifier,
+                  builder: (context, val, hasFocus) {
+                    return Container(
+                      // ! REQUIRED HEIGHT
+                      height: 65,
+                      alignment: Alignment.center,
+                      child: Text(
+                        val.isEmpty ? "Tap Here" : val,
+                        style: const TextStyle(
+                            fontSize: 25, fontWeight: FontWeight.w500),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: toggleNfc,
+          child: const Icon(Icons.nfc),
+        ),
+      ),
+    );
+  }
+}
