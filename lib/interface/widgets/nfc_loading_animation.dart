@@ -4,8 +4,9 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 class NfcLoadingAnimation extends StatelessWidget {
   const NfcLoadingAnimation({
     super.key,
+    this.color,
   });
-
+  final Color? color;
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -13,7 +14,7 @@ class NfcLoadingAnimation extends StatelessWidget {
         Align(
           alignment: Alignment.center,
           child: LoadingAnimationWidget.beat(
-            color: Colors.blue.shade300,
+            color: color ?? Colors.blue.shade300,
             size: 80,
           ),
         ),

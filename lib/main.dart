@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
+import 'package:monopoly_banker/data/service/monopoly_electronic_service.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 
-void main() {
-  servicelocator();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await servicelocator();
   runApp(const BankerAppNfc());
 }
 

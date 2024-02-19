@@ -6,17 +6,27 @@ abstract class MonopolyDatabase {
   static const int versionClassic = 1;
   static const int versionElectronic = 1;
   static const String _dbEletronic = 'monopoly_elect_1.db';
-  static const String _dbClassic = 'monopoly_elect_1.db';
+  static const String _dbClassic = 'monopoly_classic.db';
 
   // ELECTRONIC
-  static const cardPlayerTb = 'card_players_electronic';
-  static const String sqlCreatePlayers = '''
+  static const cardPlayerTb = 'MonopolyCards';
+  static const playersXTb = 'MonopolyPlayerX';
+  static const String sqlCreateCardPlayers = '''
 CREATE TABLE $cardPlayerTb(
-CREATE TABLE MonopolyCards (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   number TEXT NOT NULL,
-  color INTEGER NOT NULL,
+  color TEXT NOT NULL,
   colorName TEXT NOT NULL
+)
+''';
+  static const String sqlCreatePlayers = '''
+CREATE TABLE $playersXTb (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  number TEXT NOT NULL,
+  color TEXT NOT NULL,
+  infoNfc TEXT NOT NULL,
+  namePlayer TEXT NOT NULL,
+  money INTEGER NOT NULL
 )
 ''';
 
@@ -37,4 +47,13 @@ CREATE TABLE MonopolyCards (
 
   static String get dbEletronic => _dbEletronic;
   static String get dbClassic => _dbClassic;
+
+  static Future<Database> initDatabase() async {
+    final electronicPath = await getPathElectronic();
+    return await openDatabase(electronicPath, version: versionElectronic,
+        onCreate: (db, version) async {
+      await db.execute(sqlCreateCardPlayers);
+      await db.execute(sqlCreatePlayers);
+    });
+  }
 }

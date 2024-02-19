@@ -1,65 +1,61 @@
 import 'dart:ui';
 
 import 'package:monopoly_banker/config/utils/extensions.dart';
-import 'package:monopoly_banker/data/model/ndfe_record_info.dart';
-import 'package:nfc_manager/nfc_manager.dart';
+import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 
-class MonopolyPlayer {
+class MonopolyPlayerX {
   final int id;
   final String number;
   final Color color;
-  final String infoNfc;
   final String? namePlayer;
-  MonopolyPlayer._(
-      {this.id = 0,
-      this.namePlayer,
-      required this.number,
-      required this.color,
-      required this.infoNfc});
+  final double money;
+  MonopolyPlayerX._({
+    this.id = 0,
+    this.namePlayer,
+    required this.number,
+    required this.color,
+    this.money = 2.5,
+  });
 
-  static MonopolyPlayer fromNdefMessage(NdefMessage message) {
-    final record0 = message.records[0];
-    final record1 = message.records[1];
-    final number = _getNumber(record0);
-    final color = _getColor(record1);
-    final nfcInfo = _getInfo(record0);
-    return MonopolyPlayer._(color: color, infoNfc: nfcInfo, number: number);
+  factory MonopolyPlayerX.fromCard(MonopolyCard card, String player) {
+    return MonopolyPlayerX._(
+      number: card.number,
+      color: card.color,
+      namePlayer: player,
+    );
   }
 
-  // HANDLE ERROS WITH ART SWEET ALERT AND GET_IT CONTEXT ROUTER
-  static String _getNumber(NdefRecord record) {
-    final numberCard = NdefRecordInfo.fromNdef(record).text;
-    if (!numberCard.isValidCreditCardNumber()) {
-      print(numberCard);
-      // throw ("It's not a valid credit card number.");
-    }
-    return numberCard;
+  // Método para crear un objeto MonopolyPlayerX desde un mapa
+  factory MonopolyPlayerX.fromMap(Map<String, dynamic> map) {
+    return MonopolyPlayerX._(
+      id: map['id'],
+      number: map['number'],
+      color: (map['color'] as String).toColor(),
+      money: map['money'],
+      namePlayer: map['namePlayer'],
+    );
   }
 
-  static String _getInfo(NdefRecord record) {
-    return NdefRecordInfo.fromNdef(record).nfcInfo;
+  // Método para convertir un objeto MonopolyPlayerX a un mapa
+  Map<String, dynamic> toSql() {
+    return {
+      'number': number,
+      'color': color.value,
+      'namePlayer': namePlayer,
+    };
   }
 
-  static Color _getColor(NdefRecord record) {
-    final colorText = NdefRecordInfo.fromNdef(record).text;
-    print(colorText);
-    if (!colorText.isValidColor()) print(colorText);
-
-    return colorText.toColor();
-  }
-
-  MonopolyPlayer copyWith({
+  MonopolyPlayerX copyWith({
     int? id,
     String? number,
     Color? color,
     String? infoNfc,
     String? namePlayer,
   }) {
-    return MonopolyPlayer._(
+    return MonopolyPlayerX._(
       id: id ?? this.id,
       number: number ?? this.number,
       color: color ?? this.color,
-      infoNfc: infoNfc ?? this.infoNfc,
       namePlayer: namePlayer ?? this.namePlayer,
     );
   }
