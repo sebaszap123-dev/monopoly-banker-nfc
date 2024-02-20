@@ -35,7 +35,6 @@ class _EletronicGameSetupState extends State<EletronicGameSetup> {
   bool isLoading = true;
   _initCards() async {
     final resp = await getIt<MonopolyElectronicService>().getAllMonopolyCards();
-    // getIt<MonopolyElectronicService>().deleteMonopolyCard(resp[1]);
     if (resp.isNotEmpty) {
       for (var card in resp) {
         cards[card] = false;
@@ -137,8 +136,23 @@ class _EletronicGameSetupState extends State<EletronicGameSetup> {
         return Scaffold(
             backgroundColor: Colors.grey.shade100,
             appBar: AppBar(
-              title: const Text('Choose cards for each player'),
+              title: const Text('Choose players'),
               backgroundColor: Colors.grey.shade100,
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 15),
+                  child: IconButton(
+                    icon: Icon(
+                      // Icons.restore,
+                      Icons.cleaning_services_rounded,
+                      color: Colors.blue.shade200,
+                      size: 30,
+                    ),
+                    onPressed:
+                        getIt<MonopolyElectronicService>().deleteAllPlayers,
+                  ),
+                )
+              ],
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: !_maxPlayers ? addNewCard : startGame,

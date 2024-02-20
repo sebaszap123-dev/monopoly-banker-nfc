@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/database/monopoly_database.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
@@ -68,13 +69,22 @@ class MonopolyElectronicService {
     return resp;
   }
 
-  /// Create a monopoly card and return the ID: [int] (0 if conflic occurs)
+  /// Delete a monopoly card and return the ID: [int] (0 if conflic occurs)
   Future<int> deleteMonopolyCard(MonopolyCard card) async {
     final db = _dbX;
     final resp = await db.delete(MonopolyDatabase.cardPlayerTb,
         where: 'id = ?', whereArgs: [card.id]);
 
     return resp;
+  }
+
+  /// Create a monopoly player [MonopolyPlayerX] and return the COUNT: [int] (0 if conflic occurs)
+  Future<void> deleteAllPlayers() async {
+    final db = _dbX;
+    final resp = await db.delete(
+      MonopolyDatabase.playersXTb,
+    );
+    BankerAlerts.showSuccessDeletedPlayers(resp);
   }
 
   /// Setup players reponse: count of deleted players [int]

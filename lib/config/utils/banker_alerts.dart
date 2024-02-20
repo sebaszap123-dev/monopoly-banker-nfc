@@ -24,6 +24,23 @@ abstract class BankerAlerts {
     );
   }
 
+  static void showSuccessDeletedPlayers(int deletedUsersCount) {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.success,
+        title: 'Success!',
+        confirmButtonText: 'Okay',
+        text: 'Deleted $deletedUsersCount users.',
+        onConfirm: () {
+          // Perform any action upon confirmation (if needed)
+          // For example, close the alert or navigate to another screen.
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+
   static void alreadyRegisteredCard() {
     ArtSweetAlert.show(
       context: context,
