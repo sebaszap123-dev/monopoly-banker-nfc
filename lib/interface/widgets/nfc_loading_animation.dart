@@ -9,7 +9,7 @@ class NfcLoadingAnimation extends StatelessWidget {
   final Color? color;
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
       children: [
         Align(
           alignment: Alignment.center,
@@ -19,7 +19,7 @@ class NfcLoadingAnimation extends StatelessWidget {
           ),
         ),
         const Padding(
-          padding: EdgeInsets.only(bottom: 8.0),
+          padding: EdgeInsets.only(bottom: 8.0, top: 15),
           child: Align(
             alignment: Alignment.bottomCenter,
             child: Text('Hold your phone near the NFC tag',

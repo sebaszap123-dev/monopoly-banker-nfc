@@ -11,6 +11,9 @@ void main() async {
     BlocProvider(
       create: (context) => getIt<MonopolyElectronicoBloc>(),
     ),
+    BlocProvider(
+      create: (context) => getIt<RouterCubit>(),
+    ),
   ], child: const BankerAppNfc()));
 }
 
@@ -19,9 +22,13 @@ class BankerAppNfc extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Banker app',
-      routerConfig: getIt<RouterCubit>().state.config(),
+    return BlocBuilder<RouterCubit, MonopolyRouter>(
+      builder: (context, state) {
+        return MaterialApp.router(
+          title: 'Banker app',
+          routerConfig: state.config(),
+        );
+      },
     );
   }
 }

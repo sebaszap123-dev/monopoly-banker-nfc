@@ -4,7 +4,7 @@ import 'package:monopoly_banker/config/utils/banker_images.dart';
 class MonopolyCreditCard extends StatelessWidget {
   const MonopolyCreditCard({
     super.key,
-    required this.cardHeight,
+    this.cardHeight = 250,
     this.isSelected = false,
     required this.color,
     required this.onTap,

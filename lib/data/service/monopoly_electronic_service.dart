@@ -44,6 +44,19 @@ class MonopolyElectronicService {
     return resp;
   }
 
+  /// Create a monopoly [MonopolyPlayerX] and return the ID: [int] (0 if conflic occurs)
+  Future<int> addPlayerX(MonopolyPlayerX player) async {
+    final db = _dbX;
+
+    final resp = await db.insert(
+      MonopolyDatabase.playersXTb,
+      player.toSql(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    return resp;
+  }
+
   /// Update a monopoly card and return the COUNT OF ITEMS updated: [int] (0 if conflic occurs)
   Future<int> updateMonopolyCard(MonopolyCard card) async {
     final db = _dbX;

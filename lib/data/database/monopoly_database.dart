@@ -26,7 +26,8 @@ CREATE TABLE $playersXTb (
   color TEXT NOT NULL,
   infoNfc TEXT NOT NULL,
   namePlayer TEXT NOT NULL,
-  money INTEGER NOT NULL
+  gameSesion TEXT NOT NULL,
+  money REAL NOT NULL
 )
 ''';
 

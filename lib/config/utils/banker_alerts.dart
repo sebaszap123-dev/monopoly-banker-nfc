@@ -1,13 +1,16 @@
 import 'package:art_sweetalert/art_sweetalert.dart';
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
+import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
+import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';
+import 'package:nfc_manager/nfc_manager.dart';
 
 abstract class BankerAlerts {
   static BuildContext context = getIt<RouterCubit>().context;
-  static unhandleErros({String? error}) {
+  static unhandleErros({String? error, BuildContext? myContext}) {
     ArtSweetAlert.show(
-      context: context,
+      context: myContext ?? context,
       artDialogArgs: ArtDialogArgs(
         type: ArtSweetAlertType.info,
         title: 'Oops... An Error Occurred',
@@ -21,7 +24,7 @@ abstract class BankerAlerts {
     );
   }
 
-  static void alreadyRegisteredCard(BuildContext context) {
+  static void alreadyRegisteredCard() {
     ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
@@ -72,5 +75,70 @@ abstract class BankerAlerts {
       // El usuario confirma la acción
       return playerNameController.text;
     }
+  }
+
+  static Future<MonopolyCard?> readNfcDataCard() async {
+    return await showDialog<MonopolyCard?>(
+        context: context,
+        builder: (context) {
+          return const Dialog(
+            backgroundColor: Colors.white,
+            child: SizedBox(height: 300, child: ReadCardNfc()),
+          );
+        });
+  }
+}
+
+class ReadCardNfc extends StatefulWidget {
+  const ReadCardNfc({super.key});
+
+  @override
+  State<ReadCardNfc> createState() => _ReadCardNfcState();
+}
+
+class _ReadCardNfcState extends State<ReadCardNfc> {
+  @override
+  void initState() {
+    super.initState();
+    readDataCard();
+  }
+
+  @override
+  void dispose() async {
+    super.dispose();
+    await NfcManager.instance.stopSession();
+  }
+
+  MonopolyCard? cardPlayer;
+  String? errorScanning;
+
+  void readDataCard() {
+    NfcManager.instance.startSession(onDiscovered: (tag) async {
+      if (tag.data.containsKey('ndef')) {
+        // Identificar el tipo de tecnología NFC
+        final ndef = Ndef.from(tag);
+        if (ndef != null) {
+          final cachedMessage = ndef.cachedMessage;
+          if (cachedMessage != null) {
+            final resp = MonopolyCard.fromNdefMessage(cachedMessage);
+            Navigator.of(context).pop(resp);
+          }
+        } else {
+          errorScanning = 'Try again please';
+          setState(() {});
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (errorScanning != null) Text(errorScanning!),
+        const NfcLoadingAnimation(),
+      ],
+    );
   }
 }

@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
@@ -17,6 +18,7 @@ import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
 import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';
 import 'package:nfc_manager/nfc_manager.dart';
+import 'package:nfc_manager/platform_tags.dart';
 
 class EletronicGameSetup extends StatefulWidget {
   const EletronicGameSetup({
@@ -97,8 +99,9 @@ class _EletronicGameSetupState extends State<EletronicGameSetup> {
   void addNewCard() async {
     final resp = await showDialog<MonopolyCard>(
         context: context,
-        builder: (_) {
+        builder: (context) {
           return _NfcAddCards(
+            context: context,
             currentCards: cards.keys.map((key) => key).toList(),
           );
         });
@@ -175,8 +178,10 @@ class _EletronicGameSetupState extends State<EletronicGameSetup> {
 class _NfcAddCards extends StatefulWidget {
   const _NfcAddCards({
     required this.currentCards,
+    required this.context,
   });
   final List<MonopolyCard> currentCards;
+  final BuildContext context;
   @override
   State<_NfcAddCards> createState() => _NfcAddCardsState();
 }
@@ -185,75 +190,82 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
   bool isNfc = false;
   MonopolyCard? card;
 
-  List<MonopolyCard> players = [];
+  List<MonopolyCard> cards = [];
 
   @override
   void initState() {
     super.initState();
     // Copiar la lista de currentCards para evitar modificar la lista original
-    players = MonopolyCard.playerCards;
+    cards = MonopolyCard.playerCards;
 
     // Eliminar las cartas existentes de la lista original
-    players.removeWhere((player) => widget.currentCards
+    cards.removeWhere((player) => widget.currentCards
         .any((existingPlayer) => player.number == existingPlayer.number));
   }
 
-  bool comprobateData(NfcTag tag) {
+  Future<bool> canBeWrited(NfcTag tag) async {
     if (tag.data.containsKey('ndef')) {
       // Identificar el tipo de tecnología NFC
       final ndef = Ndef.from(tag);
       if (ndef != null) {
         final cachedMessage = ndef.cachedMessage;
-        if (cachedMessage != null) {
-          final resp = MonopolyCard.fromNdefMessage(cachedMessage);
-          final hasData = widget.currentCards
-              .where(
-                (element) =>
-                    element.number == resp.number &&
-                    element.color == resp.color,
-              )
-              .toList();
-          return hasData.isNotEmpty;
+
+        final status =
+            MonopolyCard.isRawCard(cachedMessage, widget.currentCards);
+        if (status == NdefStatus.format) {
+          final ndefFormat = NdefFormatable.from(tag);
+          if (ndefFormat != null) {
+            final test = WellknownTextRecord(languageCode: 'es', text: 'Empty');
+            await ndefFormat.format(NdefMessage([test.toNdef()]));
+          }
+          return true;
         }
+        if (status == NdefStatus.card) {
+          BankerAlerts.alreadyRegisteredCard();
+          return false;
+        }
+        return NdefStatus.empty == status;
       }
     }
-    return false;
+    return true;
   }
 
   Future<void> writeToTag(NfcTag tag) async {
-    final hasData = comprobateData(tag);
+    final hasData = await canBeWrited(tag);
     if (!Platform.isAndroid) {
       return;
     }
-
-    if (hasData) {
-      BankerAlerts.alreadyRegisteredCard(context);
-      return;
-    }
-    if (card == null) return;
+    if (card == null && !hasData) return;
 
     final tech = Ndef.from(tag);
-    // final awa = MifareUltralight.from(tag);
+    // * final awa = MifareUltralight.from(tag);
     if (tech is Ndef) {
-      if (!tech.isWritable) throw ('Tag is not ndef writable.');
+      if (!tech.isWritable) {
+        BankerAlerts.unhandleErros(error: 'Tag is not ndef writable.');
+      }
       final test = WellknownTextRecord(languageCode: 'es', text: card!.number);
       final color =
           WellknownTextRecord(languageCode: 'es', text: card!.color.toHex());
       try {
         final message = NdefMessage([test.toNdef(), color.toNdef()]);
         await tech.write(message);
-      } catch (e) {
-        throw ('$e');
+      } on PlatformException catch (_) {
+        // ignore: use_build_context_synchronously
+        BankerAlerts.unhandleErros(
+            error: 'Please format your nfc tag with and app',
+            myContext: widget.context);
       }
       await NfcManager.instance.stopSession();
       setState(() {
         isNfc = false;
       });
+
+      /// Return Card data
       // ignore: use_build_context_synchronously
       Navigator.of(context).pop(card);
-      // return '[Ndef - Write] is completed.';
+      return;
     }
-    print('no ndef??');
+    BankerAlerts.unhandleErros(error: "It's a NDEF card valid");
   }
 
   onNfc() async {
@@ -261,8 +273,13 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
     setState(() {
       isNfc = true;
     });
-    NfcManager.instance
-        .startSession(onDiscovered: (NfcTag tag) async => writeToTag(tag));
+    final resp = await NfcManager.instance.isAvailable();
+    if (resp) {
+      NfcManager.instance
+          .startSession(onDiscovered: (NfcTag tag) async => writeToTag(tag));
+      return;
+    }
+    BankerAlerts.unhandleErros(error: 'NFC disabled');
   }
 
   @override
@@ -278,8 +295,13 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
         child: SizedBox(
             height: 300,
             child: isNfc
-                ? NfcLoadingAnimation(
-                    color: card?.color,
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      NfcLoadingAnimation(
+                        color: card?.color,
+                      ),
+                    ],
                   )
                 : Center(
                     child: Column(
@@ -289,7 +311,7 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
                         DropdownButton<Color>(
                           value: card?.color,
                           items: [
-                            ...players.map(
+                            ...cards.map(
                               (e) => DropdownMenuItem<Color>(
                                 value: e.color,
                                 child: Text(

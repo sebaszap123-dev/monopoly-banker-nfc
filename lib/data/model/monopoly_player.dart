@@ -2,18 +2,23 @@ import 'dart:ui';
 
 import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
+import 'package:uuid/uuid.dart';
 
 class MonopolyPlayerX {
   final int id;
   final String number;
   final Color color;
-  final String? namePlayer;
   final double money;
+  final String infoNfc;
+  final String? gameSesion;
+  final String? namePlayer;
   MonopolyPlayerX._({
     this.id = 0,
-    this.namePlayer,
     required this.number,
     required this.color,
+    required this.infoNfc,
+    this.namePlayer,
+    this.gameSesion,
     this.money = 2.5,
   });
 
@@ -22,6 +27,7 @@ class MonopolyPlayerX {
       number: card.number,
       color: card.color,
       namePlayer: player,
+      infoNfc: const Uuid().v6(),
     );
   }
 
@@ -33,6 +39,8 @@ class MonopolyPlayerX {
       color: (map['color'] as String).toColor(),
       money: map['money'],
       namePlayer: map['namePlayer'],
+      gameSesion: map['gameSesion'],
+      infoNfc: const Uuid().v6(),
     );
   }
 
@@ -40,8 +48,11 @@ class MonopolyPlayerX {
   Map<String, dynamic> toSql() {
     return {
       'number': number,
-      'color': color.value,
+      'color': color.toHex(),
       'namePlayer': namePlayer,
+      'gameSesion': gameSesion,
+      'money': money,
+      'infoNfc': infoNfc
     };
   }
 
@@ -51,12 +62,15 @@ class MonopolyPlayerX {
     Color? color,
     String? infoNfc,
     String? namePlayer,
+    String? gameSesion,
   }) {
     return MonopolyPlayerX._(
       id: id ?? this.id,
       number: number ?? this.number,
       color: color ?? this.color,
       namePlayer: namePlayer ?? this.namePlayer,
+      gameSesion: gameSesion,
+      infoNfc: const Uuid().v6(),
     );
   }
 }

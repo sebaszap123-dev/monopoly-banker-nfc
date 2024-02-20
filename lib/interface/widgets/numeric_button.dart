@@ -13,13 +13,15 @@ class BaseButton extends StatelessWidget {
   const BaseButton({
     super.key,
     required this.onTap,
-    required this.text,
+    this.text = '',
     this.color,
+    this.icon,
   });
 
   final VoidCallback onTap;
   final String text;
   final Color? color;
+  final Widget? icon;
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -33,13 +35,14 @@ class BaseButton extends StatelessWidget {
           onTap();
         },
         child: FittedBox(
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w300,
-            ),
-          ),
+          child: icon ??
+              Text(
+                text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
         ),
       ),
     );

@@ -5,6 +5,8 @@ import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/data/model/ndfe_record_info.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 
+enum NdefStatus { empty, format, card }
+
 final Map<String, Map<String, Color>> defaultCards = {
   'Rojo': {
     '0001 1935 2011 7070': Colors.red.shade800,
@@ -155,6 +157,31 @@ class MonopolyCard {
       number: number,
       colorName: colorName,
     );
+  }
+
+  static NdefStatus isRawCard(NdefMessage? message, List<MonopolyCard> cards) {
+    if (message == null) {
+      return NdefStatus.empty;
+    }
+    NdefStatus status = NdefStatus.format;
+    for (var record in message.records) {
+      final recordInfo = NdefRecordInfo.fromNdef(record);
+      final isValid = recordInfo.text.isValidCreditCardNumber();
+
+      if (recordInfo.text == 'Empty') {
+        return NdefStatus.empty;
+      }
+
+      if (isValid) {
+        final index =
+            cards.indexWhere((card) => card.number == recordInfo.text);
+        if (index != -1) {
+          status = NdefStatus.card;
+        }
+      }
+    }
+
+    return status;
   }
 
   // HANDLE ERROS WITH ART SWEET ALERT AND GET_IT CONTEXT ROUTER
