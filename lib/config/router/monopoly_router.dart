@@ -8,10 +8,11 @@ import 'monopoly_router.gr.dart';
 @AutoRouterConfig()
 class MonopolyRouter extends $MonopolyRouter {
   @override
-  // TODO: implement routes
   List<AutoRoute> get routes => [
         AutoRoute(page: HomeRoute.page, initial: true),
-        AutoRoute(page: SetupGameRoute.page),
+        AutoRoute(page: GameRoute.page),
+        AutoRoute(page: GameRoute.page),
+        AutoRoute(page: ElectronicGameRoute.page),
         AutoRoute(page: AddCardsRoute.page),
         AutoRoute(page: GameRoute.page),
       ];
@@ -29,6 +30,7 @@ class RouterCubit extends Cubit<MonopolyRouter> {
       try {
         Navigator.of(context).pop();
       } catch (e) {
+        // ignore: avoid_print
         print(e);
       }
     }

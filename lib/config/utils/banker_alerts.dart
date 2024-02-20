@@ -36,14 +36,15 @@ abstract class BankerAlerts {
     );
   }
 
-  static Future<String?> showAddPlayerAlert() async {
-    final TextEditingController playerNameController = TextEditingController();
+  static Future<String?> showAddPlayerAlert({String? oldName}) async {
+    final TextEditingController playerNameController =
+        TextEditingController(text: oldName);
 
     final ArtDialogResponse? resp = await ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
         type: ArtSweetAlertType.question,
-        title: 'Add Player',
+        title: oldName != null ? 'Edit Player' : 'Add Player',
         confirmButtonText: 'Accept',
         customColumns: [
           Padding(
@@ -58,6 +59,7 @@ abstract class BankerAlerts {
               ),
             ),
           ),
+          const SizedBox(height: 40)
         ],
         showCancelBtn: true,
       ),

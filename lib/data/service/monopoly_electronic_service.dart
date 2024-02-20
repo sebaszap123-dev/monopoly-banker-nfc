@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:monopoly_banker/data/database/monopoly_database.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
@@ -22,7 +24,6 @@ class MonopolyElectronicService {
     try {
       final db = _dbX;
       final results = await db.query(MonopolyDatabase.cardPlayerTb);
-      final parsed = results.map((map) => MonopolyCard.fromMap(map)).toList();
       return results.map((map) => MonopolyCard.fromMap(map)).toList();
     } catch (e) {
       // Manejo de errores

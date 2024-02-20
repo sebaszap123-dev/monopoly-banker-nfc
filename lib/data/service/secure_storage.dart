@@ -7,7 +7,7 @@ class MonopolyGamesStorage {
   static const String _classicGames = 'saved_games_c';
 
   /// Has games saved [bool]
-  Future<bool> get hasPlayedGames async {
+  Future<bool> get hasCurrentGames async {
     final futures = [
       storage.read(key: _eletronicGames),
       storage.read(key: _classicGames),
@@ -18,7 +18,7 @@ class MonopolyGamesStorage {
     return responses.contains('1');
   }
 
-  Future<void> saveGameX() async {
+  Future<void> startGameX() async {
     await storage.write(key: _eletronicGames, value: '1');
   }
 

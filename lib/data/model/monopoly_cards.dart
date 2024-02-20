@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/data/model/ndfe_record_info.dart';
@@ -29,12 +31,13 @@ class MonopolyCard {
   final String number;
   final Color color;
   final String colorName;
-
+  String? displayName;
   MonopolyCard._({
     this.id = 0,
     required this.color,
     required this.number,
     required this.colorName,
+    this.displayName,
   });
 
   // Método para crear un objeto MonopolyCard desde un mapa
@@ -113,6 +116,7 @@ class MonopolyCard {
     int? id,
     String? number,
     Color? color,
+    String? displayName,
   }) {
     // Buscar el nombre del color correspondiente al color recibido
     String? colorName;
@@ -131,6 +135,7 @@ class MonopolyCard {
       color: color ?? this.color,
       number: number ?? this.number,
       colorName: colorName!,
+      displayName: displayName ?? this.displayName,
     );
   }
 

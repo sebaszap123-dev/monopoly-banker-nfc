@@ -18,7 +18,7 @@ class MonopolyElectronicoBloc
   _handleCardsEvent(
       HandleCardsEvent event, Emitter<MonopolyElectronicoState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
-    final hasSavedGames = await getIt<MonopolyGamesStorage>().hasPlayedGames;
+    final hasSavedGames = await getIt<MonopolyGamesStorage>().hasCurrentGames;
     final cards =
         await getIt<MonopolyElectronicService>().getAllMonopolyCards();
     emit(state.copyWith(
@@ -30,6 +30,9 @@ class MonopolyElectronicoBloc
 
   _startGameEvent(
       StartGameEvent event, Emitter<MonopolyElectronicoState> emit) async {
+    emit(state.copyWith(status: GameStatus.loading));
+    await Future.delayed(const Duration(milliseconds: 900));
+    await getIt<MonopolyGamesStorage>().startGameX();
     emit(state.copyWith(players: event.players, status: GameStatus.playing));
   }
 }

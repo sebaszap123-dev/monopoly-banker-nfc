@@ -9,11 +9,13 @@ class MonopolyCreditCard extends StatelessWidget {
     required this.color,
     required this.onTap,
     required this.cardNumber,
+    this.displayName,
   });
 
   final double cardHeight;
   final bool isSelected;
   final String cardNumber;
+  final String? displayName;
   final Color color;
   final VoidCallback onTap;
   @override
@@ -47,13 +49,25 @@ class MonopolyCreditCard extends StatelessWidget {
                 ),
               ),
               Positioned(
-                bottom: 50,
+                bottom: 80,
                 left: 20,
                 child: Text(
                   cardNumber.toString(),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 45,
+                left: 20,
+                child: Text(
+                  displayName?.toString() ?? 'Player',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
                   ),
                 ),
               ),

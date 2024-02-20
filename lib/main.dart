@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
-import 'package:monopoly_banker/data/service/monopoly_electronic_service.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await servicelocator();
-  runApp(const BankerAppNfc());
+  runApp(MultiBlocProvider(providers: [
+    BlocProvider(
+      create: (context) => getIt<MonopolyElectronicoBloc>(),
+    ),
+  ], child: const BankerAppNfc()));
 }
 
 class BankerAppNfc extends StatelessWidget {

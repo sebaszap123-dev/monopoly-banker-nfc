@@ -1,8 +1,14 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
 import 'package:monopoly_banker/data/model/record.dart';
@@ -33,7 +39,6 @@ class _EletronicGameSetupState extends State<EletronicGameSetup> {
         cards[card] = false;
       }
     }
-    print(cards.length);
     if (mounted) {
       setState(() {
         isLoading = false;
@@ -56,11 +61,31 @@ class _EletronicGameSetupState extends State<EletronicGameSetup> {
     setState(() {});
   }
 
-  void addPlayer(MonopolyCard card) async {
+  void onTapCard(MapEntry<MonopolyCard, bool> entry) async {
+    final hasPlayer =
+        players.where((element) => element.number == entry.key.number).toList();
+    if (hasPlayer.isNotEmpty) {
+      final playerName = await BankerAlerts.showAddPlayerAlert(
+          oldName: hasPlayer[0].namePlayer);
+      final index = players.indexOf(hasPlayer[0]);
+      players[index] = hasPlayer[0].copyWith(namePlayer: playerName);
+      cards.remove(entry.key);
+      final updatedcard = entry.key.copyWith(displayName: playerName);
+      cards[updatedcard] = true;
+      setState(() {});
+      return;
+    }
     final playerName = await BankerAlerts.showAddPlayerAlert();
     if (playerName != null) {
-      players.add(MonopolyPlayerX.fromCard(card, playerName));
+      players.add(MonopolyPlayerX.fromCard(entry.key, playerName));
+      cards.remove(entry.key);
+      final updatedcard = entry.key.copyWith(displayName: playerName);
+      cards[updatedcard] = true;
+      setState(() {});
+      return;
     }
+    cards[entry.key] = !entry.value;
+    setState(() {});
   }
 
   bool get _maxPlayers {
@@ -89,47 +114,61 @@ class _EletronicGameSetupState extends State<EletronicGameSetup> {
     return MediaQuery.of(context).size.height * 0.3;
   }
 
+  void startGame() {
+    getIt<MonopolyElectronicoBloc>().add(StartGameEvent(players));
+    getIt<RouterCubit>().state.push(const ElectronicGameRoute());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          title: const Text('Choose cards for each player'),
-          backgroundColor: Colors.grey.shade100,
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: !_maxPlayers ? addNewCard : () {},
-          child: Icon(
-            !_maxPlayers ? Icons.nfc_rounded : Icons.play_circle_rounded,
-          ),
-        ),
-        body: cards.isNotEmpty
-            ? ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-                  const SizedBox(height: 50),
-                  ...cards.entries.map((e) => MonopolyCreditCard(
-                        cardHeight: cardHeight,
-                        isSelected: e.value,
-                        color: e.key.color,
-                        cardNumber: e.key.number,
-                        onTap: () {
-                          // deleteCard(e.key);
-                          cards[e.key] = !e.value;
-                          setState(() {});
-                        },
-                      ))
-                ],
-              )
-            : const Center(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+    return BlocSelector<MonopolyElectronicoBloc, MonopolyElectronicoState,
+        GameStatus>(
+      selector: (state) {
+        return state.status;
+      },
+      builder: (context, state) {
+        if (state == GameStatus.loading) {
+          return Center(
+              child: CircularProgressIndicator(color: Colors.blue.shade200));
+        }
+        return Scaffold(
+            backgroundColor: Colors.grey.shade100,
+            appBar: AppBar(
+              title: const Text('Choose cards for each player'),
+              backgroundColor: Colors.grey.shade100,
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: !_maxPlayers ? addNewCard : startGame,
+              child: Icon(
+                !_maxPlayers ? Icons.nfc_rounded : Icons.play_circle_rounded,
+              ),
+            ),
+            body: cards.isNotEmpty
+                ? ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     children: [
-                      Text('No players register',
-                          style: TextStyle(fontSize: 40)),
-                      Icon(Icons.gamepad_rounded, size: 180),
-                    ]),
-              ));
+                      const SizedBox(height: 50),
+                      ...cards.entries.map((e) => MonopolyCreditCard(
+                            cardHeight: cardHeight,
+                            isSelected: e.value,
+                            color: e.key.color,
+                            cardNumber: e.key.number,
+                            displayName: e.key.displayName,
+                            onTap: () => onTapCard(e),
+                          ))
+                    ],
+                  )
+                : const Center(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('No players register',
+                              style: TextStyle(fontSize: 40)),
+                          Icon(Icons.gamepad_rounded, size: 180),
+                        ]),
+                  ));
+      },
+    );
   }
 }
 
@@ -210,6 +249,7 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
       setState(() {
         isNfc = false;
       });
+      // ignore: use_build_context_synchronously
       Navigator.of(context).pop(card);
       // return '[Ndef - Write] is completed.';
     }
@@ -224,8 +264,6 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
     NfcManager.instance
         .startSession(onDiscovered: (NfcTag tag) async => writeToTag(tag));
   }
-
-  // TODO: ADD LISTENER SESION NFC
 
   @override
   void dispose() async {

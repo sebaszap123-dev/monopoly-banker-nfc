@@ -1,17 +1,11 @@
 import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
-import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
-import 'package:monopoly_banker/data/model/monopoly_player.dart';
 import 'package:monopoly_banker/interface/views/config/setup_game_electronic.dart';
-import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
-import 'package:monopoly_banker/interface/widgets/monopoly_keyboard.dart';
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:nfc_manager/platform_tags.dart';
 
 @RoutePage()
-class SetupGameScreen extends StatelessWidget {
-  const SetupGameScreen({super.key, required this.versions});
+class GameScreen extends StatelessWidget {
+  const GameScreen({super.key, required this.versions});
   final GameVersions versions;
   @override
   Widget build(BuildContext context) {
@@ -151,11 +145,6 @@ class ClassicGameSetup extends StatelessWidget {
 //           crossAxisAlignment: CrossAxisAlignment.center,
 //           mainAxisAlignment: MainAxisAlignment.center,
 //           children: [
-//             // TODO: MOSTRAR DATOS DEL JUGADOR
-//             // TODO: CREAR BASE DE DATOS DE JUGADORES
-//             // TODO: CUANDO SE SELECCIONE PAGAR A UN JUGADOR DEBE APARECER LA LISTA DE JUGADORES
-//             // jugador 1 -> jugador 2 (buscar ui bonita :3)
-//             // MONTO A PAGAR: M$ 200
 //             MaterialButton(
 //               color: Colors.amber,
 //               onPressed: () => _testFocus.unfocus(),

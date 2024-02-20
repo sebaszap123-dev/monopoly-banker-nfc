@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:nfc_manager/nfc_manager.dart';
 
 class WriteRecord {
