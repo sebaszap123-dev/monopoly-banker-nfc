@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
+import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
 import 'package:monopoly_banker/interface/widgets/numeric_button.dart';
 import 'package:monopoly_banker/interface/widgets/transaction_button.dart';
@@ -53,9 +54,7 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
       case TriggerType.miles:
         moneyValue = 'K';
       case TriggerType.salida:
-        final user =
-            context.read<MonopolyElectronicoBloc>().state.currentPlayer;
-      // TODO: Add money to player (checar reglas).
+        getIt<MonopolyElectronicoBloc>().add(PassExitEvent());
     }
     setState(() {});
   }

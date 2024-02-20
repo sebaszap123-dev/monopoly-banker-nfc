@@ -17,6 +17,8 @@ class MonopolyElectronicoBloc
     on<HandleCardsEvent>(_handleCardsEvent);
     on<StartGameEvent>(_startGameEvent);
     on<ChangeCurrentUser>(_changeUserEvent);
+    on<PassExitEvent>(_passExitEvent);
+    on<FinishTurnPlayer>(_finishTurnPlayer);
   }
   _handleCardsEvent(
       HandleCardsEvent event, Emitter<MonopolyElectronicoState> emit) async {
@@ -55,17 +57,67 @@ class MonopolyElectronicoBloc
   _changeUserEvent(
       ChangeCurrentUser event, Emitter<MonopolyElectronicoState> emit) async {
     try {
-      final player = state.playerFromCard(event.cardPlayer);
+      final resp = await BankerAlerts.readNfcDataCard();
+      if (resp == null) {
+        BankerAlerts.unhandleErros(error: 'Can handle card');
+        return;
+      }
+      final player = state.playerFromCard(resp);
       if (player == null) {
         BankerAlerts.unhandleErros(error: 'No player found in this sesion');
         emit(state.copyWith(
             status: GameStatus.success,
-            erroMessage:
-                'No card found in this sesion: ${event.cardPlayer.number}'));
+            errorMessage: 'No card found in this sesion: ${resp.number}'));
+        return;
       }
       emit(state.copyWith(player: player, status: GameStatus.transaction));
     } catch (e) {
       BankerAlerts.unhandleErros(error: e.toString());
     }
+  }
+
+  _finishTurnPlayer(_, Emitter<MonopolyElectronicoState> emit) async {
+    emit(state.copyWith(
+      player: null,
+      status: GameStatus.playing,
+    ));
+  }
+
+  _passExitEvent(_, Emitter<MonopolyElectronicoState> emit) async {
+    try {
+      if (state.currentPlayer == null) {
+        final resp = await BankerAlerts.readNfcDataCard();
+        if (resp == null) return;
+
+        final player = state.playerFromCard(resp);
+        if (player == null) {
+          BankerAlerts.unhandleErros(
+            error: 'No player found in this session',
+          );
+          emit(state.copyWith(
+            status: GameStatus.success,
+            errorMessage: 'No card found in this session: ${resp.number}',
+          ));
+          return;
+        }
+        emit(_updatePlayers(player));
+      } else {
+        emit(_updatePlayers(state.currentPlayer!));
+      }
+      emit(state.copyWith(status: GameStatus.transaction));
+    } catch (e) {
+      BankerAlerts.unhandleErros(error: e.toString());
+    }
+  }
+
+  MonopolyElectronicoState _updatePlayers(MonopolyPlayerX old) {
+    final playerPassExit = old.copyWith(money: old.money + 2);
+    final index = state.players.indexOf(old);
+    final temp = List.of(state.players);
+    temp[index] = playerPassExit;
+    return state.copyWith(
+      players: temp,
+      player: playerPassExit,
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
@@ -16,12 +17,10 @@ class ElectronicGameScreen extends StatefulWidget {
 }
 
 class _ElectronicGameScreenState extends State<ElectronicGameScreen> {
-  void getCurrentUser() async {
-    final card = await BankerAlerts.readNfcDataCard();
-    if (card != null) {
-      getIt<MonopolyElectronicoBloc>().add(ChangeCurrentUser(card));
-    }
-  }
+  void getCurrentUser() =>
+      getIt<MonopolyElectronicoBloc>().add(ChangeCurrentUser());
+
+  void finishTurn() => getIt<MonopolyElectronicoBloc>().add(FinishTurnPlayer());
 
   double get cardHeight {
     return MediaQuery.of(context).size.height * 0.3;
@@ -43,12 +42,52 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen> {
         return Scaffold(
           body: state.status == GameStatus.transaction
               ? Center(
-                  child: MonopolyCreditCard(
-                    cardHeight: cardHeight,
-                    color: state.currentPlayer!.color,
-                    onTap: () {},
-                    cardNumber: state.currentPlayer!.number,
-                    displayName: state.currentPlayer!.namePlayer,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 50),
+                      MonopolyCreditCard(
+                        cardHeight: cardHeight,
+                        color: state.currentPlayer!.color,
+                        onTap: finishTurn,
+                        cardNumber: state.currentPlayer!.number,
+                        displayName: state.currentPlayer!.namePlayer,
+                        transactions: state.status == GameStatus.transaction,
+                      ),
+                      Card(
+                        color: Colors.blue,
+                        child: SizedBox(
+                          width: 200,
+                          height: 50,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Money:',
+                                  style: GoogleFonts.roboto(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                              const SizedBox(width: 10),
+                              Text('M',
+                                  style: GoogleFonts.raleway(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontStyle: FontStyle.italic,
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                              const SizedBox(width: 10),
+                              Text(state.currentPlayer!.money.toString(),
+                                  style: GoogleFonts.spicyRice(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                          onPressed: () {}, child: const Text('Complete Turn'))
+                    ],
                   ),
                 )
               : Column(

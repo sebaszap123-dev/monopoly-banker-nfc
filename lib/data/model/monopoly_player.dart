@@ -19,7 +19,7 @@ class MonopolyPlayerX {
     required this.infoNfc,
     this.namePlayer,
     this.gameSesion,
-    this.money = 2.5,
+    this.money = 15,
   });
 
   factory MonopolyPlayerX.fromCard(MonopolyCard card, String player) {
@@ -63,6 +63,7 @@ class MonopolyPlayerX {
     String? infoNfc,
     String? namePlayer,
     String? gameSesion,
+    double? money,
   }) {
     return MonopolyPlayerX._(
       id: id ?? this.id,
@@ -71,6 +72,7 @@ class MonopolyPlayerX {
       namePlayer: namePlayer ?? this.namePlayer,
       gameSesion: gameSesion,
       infoNfc: const Uuid().v6(),
+      money: money ?? this.money,
     );
   }
 }

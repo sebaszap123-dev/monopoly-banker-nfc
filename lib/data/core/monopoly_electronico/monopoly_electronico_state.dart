@@ -8,31 +8,32 @@ class MonopolyElectronicoState extends Equatable {
     this.players = const [],
     this.status = GameStatus.setup,
     this.currentPlayer,
-    this.erroMessage,
+    this.errorMessage,
   });
   final GameStatus status;
   final List<MonopolyCard> cards;
   final List<MonopolyPlayerX> players;
   final MonopolyPlayerX? currentPlayer;
-  final String? erroMessage;
+  final String? errorMessage;
   MonopolyElectronicoState copyWith({
     GameStatus? status,
     List<MonopolyCard>? cards,
     List<MonopolyPlayerX>? players,
     MonopolyPlayerX? player,
-    String? erroMessage,
+    String? errorMessage,
   }) {
     return MonopolyElectronicoState(
-        status: status ?? this.status,
-        cards: cards ?? this.cards,
-        players: players ?? this.players,
-        currentPlayer: player ?? currentPlayer,
-        erroMessage: erroMessage ?? this.erroMessage);
+      status: status ?? this.status,
+      cards: cards ?? this.cards,
+      players: players ?? this.players,
+      currentPlayer: player,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
   }
 
   @override
   List<Object?> get props =>
-      [status, cards, players, currentPlayer, erroMessage];
+      [status, cards, players, currentPlayer, errorMessage];
 
   MonopolyPlayerX? playerFromCard(MonopolyCard card) {
     final index =

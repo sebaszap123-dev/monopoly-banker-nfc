@@ -10,6 +10,7 @@ class MonopolyCreditCard extends StatelessWidget {
     required this.onTap,
     required this.cardNumber,
     this.displayName,
+    this.transactions = false,
   });
 
   final double cardHeight;
@@ -18,6 +19,7 @@ class MonopolyCreditCard extends StatelessWidget {
   final String? displayName;
   final Color color;
   final VoidCallback onTap;
+  final bool transactions;
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -94,6 +96,22 @@ class MonopolyCreditCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (transactions)
+                Positioned(
+                    bottom: 10,
+                    right: 10,
+                    child: GestureDetector(
+                      onTap: onTap,
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                                colors: [Colors.black, Colors.blue.shade200])),
+                        child: const Icon(Icons.done_all, color: Colors.white),
+                      ),
+                    ))
             ],
           ),
         ),

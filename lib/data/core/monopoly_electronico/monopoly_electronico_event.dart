@@ -12,7 +12,8 @@ class StartGameEvent extends MonopolyElectronicoEvent {
   StartGameEvent(this.players);
 }
 
-class ChangeCurrentUser extends MonopolyElectronicoEvent {
-  final MonopolyCard cardPlayer;
-  ChangeCurrentUser(this.cardPlayer);
-}
+class ChangeCurrentUser extends MonopolyElectronicoEvent {}
+
+class PassExitEvent extends MonopolyElectronicoEvent {}
+
+class FinishTurnPlayer extends MonopolyElectronicoEvent {}
