@@ -29,13 +29,14 @@ class MonopolyElectronicoBloc
   _handleCardsEvent(
       HandleCardsEvent event, Emitter<MonopolyElectronicoState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
-    final hasSavedGames = await getIt<MonopolyGamesStorage>().hasCurrentGames;
-    // TODO: RESTORE IF SAVEDGAMES IN ELETRONIC and user wants to (show alert)
+    // final hasSavedGames = await getIt<MonopolyGamesStorage>().hasCurrentGames;
+    // TODO-FEATURE: RESTORE IF SAVEDGAMES IN ELETRONIC and user wants to (show alert)
     final cards =
         await getIt<MonopolyElectronicService>().getAllMonopolyCards();
     emit(state.copyWith(
       cards: cards,
       status: GameStatus.playing,
+      gameTransaction: PlayerTransaction.none,
     ));
   }
 
@@ -54,7 +55,11 @@ class MonopolyElectronicoBloc
       }
       await Future.delayed(const Duration(milliseconds: 900));
       await getIt<MonopolyGamesStorage>().startGameX();
-      emit(state.copyWith(players: event.players, status: GameStatus.playing));
+      emit(state.copyWith(
+        players: event.players,
+        status: GameStatus.playing,
+        gameTransaction: PlayerTransaction.none,
+      ));
     } catch (e) {
       BankerAlerts.unhandleErros(error: e.toString());
     }
@@ -72,8 +77,11 @@ class MonopolyElectronicoBloc
       if (player == null) {
         BankerAlerts.unhandleErros(error: 'No player found in this sesion');
         emit(state.copyWith(
-            status: GameStatus.playing,
-            errorMessage: 'No card found in this sesion: ${resp.number}'));
+          status: GameStatus.playing,
+          // ? TODO: USE ERROR MESSAGE IN OTHER FUNCTIONS OR DELETE? (USE BANKER ALERT INSTEAD?)
+          errorMessage: 'No card found in this sesion: ${resp.number}',
+          gameTransaction: PlayerTransaction.none,
+        ));
         return;
       }
       emit(state.copyWith(
@@ -200,9 +208,7 @@ class MonopolyElectronicoBloc
         case PayTo.playersToPlayer:
           await _playersToP1(event);
       }
-      // TODO: HANDLE PLAYERS O PLAYER TO PLAYER (NFC data (get cardnumber))
     }
-    print(resp);
   }
 
   _p1ToPlayers(PayPlayersEvent event) async {
@@ -226,7 +232,7 @@ class MonopolyElectronicoBloc
 
       if (player.money < reduceMoney) {
         emit(state.copyWith(
-          // TODO: HACER QUE NO PUEDA CAMBIAR DE TARJETA HASTA QUE PAGUE O BANCARROTA (PUEDE HACER OTRAS COSAS COMO COBRAR ETC)
+          // TODO: HACER QUE NO PUEDA CAMBIAR DE TARJETA HASTA QUE PAGUE O BANCARROTA (PUEDE HACER OTRAS COSAS COMO COBRAR ETC) [PlayerTransaction.paying]
           gameTransaction: PlayerTransaction.paying,
           status: GameStatus.transaction,
         ));
@@ -243,20 +249,21 @@ class MonopolyElectronicoBloc
       emit(state.copyWith(
         players: updatedPlayers,
         status: GameStatus.playing,
-        // TODO: AGREGAR A TODOS LOS EMITS QUE TENGAN PLAYING
         gameTransaction: PlayerTransaction.none,
       ));
     }
   }
 
-  // TODO: FUNCIONA PERO QUE PASA SI UNO NO TIENE CON QUE PAGAR???
   _playersToP1(PayPlayersEvent event) async {
     final card = await BankerAlerts.readNfcDataCard(
         customText: 'Este jugador recibirá dinero de todos los demás');
 
     if (card == null) {
       await BankerAlerts.noCardReaded(count: 1);
-      emit(state.copyWith(status: GameStatus.playing));
+      emit(state.copyWith(
+        status: GameStatus.playing,
+        gameTransaction: PlayerTransaction.none,
+      ));
       return;
     }
 
@@ -311,7 +318,10 @@ class MonopolyElectronicoBloc
     if (card1 == null || card2 == null || card1 == card2) {
       BankerAlerts.customMessageAlertFail(
           text: 'No se leyó correctamente las tarjetas');
-      emit(state.copyWith(status: GameStatus.playing));
+      emit(state.copyWith(
+        status: GameStatus.playing,
+        gameTransaction: PlayerTransaction.none,
+      ));
       return;
     }
 
@@ -326,7 +336,10 @@ class MonopolyElectronicoBloc
     if (cards.length != 2) {
       final count = 2 - cards.length;
       await BankerAlerts.noCardReaded(count: count);
-      emit(state.copyWith(status: GameStatus.playing));
+      emit(state.copyWith(
+        status: GameStatus.playing,
+        gameTransaction: PlayerTransaction.none,
+      ));
       return;
     }
 
@@ -348,7 +361,10 @@ class MonopolyElectronicoBloc
     _updatePlayer(player1, updatedPlayer1);
     _updatePlayer(player2, updatedPlayer2);
 
-    emit(state.copyWith(status: GameStatus.playing));
+    emit(state.copyWith(
+      status: GameStatus.playing,
+      gameTransaction: PlayerTransaction.none,
+    ));
   }
 
   double _convertKtoM(MoneyValue value, double currentMoney) {
@@ -365,7 +381,6 @@ class MonopolyElectronicoBloc
     final index = state.players.indexOf(old);
     final temp = List.of(state.players);
     temp[index] = uplayer;
-    // ignore: invalid_use_of_visible_for_testing_member
     emit(state.copyWith(players: temp));
   }
 
