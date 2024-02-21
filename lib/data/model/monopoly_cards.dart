@@ -1,32 +1,12 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:monopoly_banker/config/utils/default_colors.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/data/model/ndfe_record_info.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 
 enum NdefStatus { empty, format, card }
-
-final Map<String, Map<String, Color>> defaultCards = {
-  'Rojo': {
-    '0001 1935 2011 7070': Colors.red.shade800,
-  },
-  'Morado': {
-    '0002 1935 2011 7070': Colors.purpleAccent.shade700,
-  },
-  'Verde': {
-    '0003 1935 2011 7070': Colors.green.shade500,
-  },
-  'Azul': {
-    '0004 1935 2011 7070': Colors.blue.shade900,
-  },
-  'Azul cielo': {
-    '0006 1935 2011 7070': Colors.blue.shade200,
-  },
-  'Amarillo': {
-    '0005 1935 2011 7070': Colors.yellowAccent.shade700,
-  },
-};
 
 class MonopolyCard {
   final int id;

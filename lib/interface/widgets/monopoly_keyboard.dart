@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
@@ -45,32 +43,45 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
 
   void _onTapC() => controller.clear();
 
-  String moneyValue = '';
+  String moneyValue = 'M';
+  MoneyValue currentType = MoneyValue.millon;
 
-  void onTapSpecialButton(TriggerType type) async {
+  void onTapSpecialButton(MoneyValue type) async {
     switch (type) {
-      case TriggerType.millon:
+      case MoneyValue.millon:
         moneyValue = 'M';
-      case TriggerType.miles:
+        break;
+
+      case MoneyValue.miles:
         moneyValue = 'K';
-      case TriggerType.salida:
+        break;
+
+      case MoneyValue.salida:
         getIt<MonopolyElectronicoBloc>().add(PassExitEvent());
+        break;
     }
+    currentType = type;
     setState(() {});
   }
 
-  void onTransactions(Transactions data) async {
-    final resp = await BankerAlerts.readNfcDataCard();
-    if (resp != null) {
-      switch (data) {
-        case Transactions.add:
+  void onTransactions(Transactions data) {
+    if (controller.text.isEmpty) return;
+    switch (data) {
+      case Transactions.add:
+        getIt<MonopolyElectronicoBloc>().add(AddPlayerMoneyEvent(
+            type: currentType, money: double.parse(controller.text)));
+        break;
+
+      case Transactions.substract:
+        getIt<MonopolyElectronicoBloc>().add(SubstractMoneyEvent(
+            type: currentType, money: double.parse(controller.text)));
+        break;
+
+      case Transactions.fromPlayers:
         // TODO: Handle this case.
-        case Transactions.substract:
-        // TODO: Handle this case.
-        case Transactions.fromPlayers:
-        // TODO: Handle this case.
-      }
+        break;
     }
+    controller.clear();
   }
 
   @override
@@ -84,23 +95,26 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
         child: Column(
           children: [
             TextFormField(
+              textAlignVertical: TextAlignVertical.center,
               decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: '0',
-                  hintStyle: const TextStyle(color: Colors.black),
-                  disabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                filled: true,
+                fillColor: Colors.white,
+                hintText: '0',
+                hintStyle: const TextStyle(color: Colors.black),
+                disabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.black),
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                suffixIcon: Text(
+                  moneyValue,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.raleway(
+                    color: moneyValue == 'M' ? Colors.red : Colors.blue,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
                   ),
-                  icon: Text(
-                    moneyValue,
-                    style: GoogleFonts.raleway(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )),
+                ),
+              ),
               textAlign: TextAlign.center,
               controller: controller,
               enabled: false,
@@ -116,7 +130,7 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
                 mainAxisSpacing: 10,
               ),
               children: [
-                ...TriggerType.values.map((e) => MonopolyTriggerButton(
+                ...MoneyValue.values.map((e) => MonopolyTriggerButton(
                       onTap: () => onTapSpecialButton(e),
                       type: e,
                     )),

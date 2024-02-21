@@ -2,9 +2,9 @@ import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
+import 'package:monopoly_banker/interface/widgets/animated_icon_button.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_keyboard.dart';
 
@@ -16,21 +16,61 @@ class ElectronicGameScreen extends StatefulWidget {
   State<ElectronicGameScreen> createState() => _ElectronicGameScreenState();
 }
 
-class _ElectronicGameScreenState extends State<ElectronicGameScreen> {
-  void getCurrentUser() =>
-      getIt<MonopolyElectronicoBloc>().add(ChangeCurrentUser());
+class _ElectronicGameScreenState extends State<ElectronicGameScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
-  void finishTurn() => getIt<MonopolyElectronicoBloc>().add(FinishTurnPlayer());
+  void getCurrentUser() =>
+      getIt<MonopolyElectronicoBloc>().add(UpdatePlayerEvent());
+
+  void finishTurn() =>
+      getIt<MonopolyElectronicoBloc>().add(FinishTurnPlayerEvent());
 
   double get cardHeight {
     return MediaQuery.of(context).size.height * 0.3;
   }
 
+  final TextStyle statuscards = GoogleFonts.robotoMono(
+    color: Colors.white,
+    fontSize: 22,
+  );
+
+  final borderRadius = const BorderRadius.all(Radius.circular(12));
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _animation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeIn,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  double get _maxWidth {
+    return MediaQuery.of(context).size.width;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MonopolyElectronicoBloc, MonopolyElectronicoState>(
-      builder: (context, state) {
-        if (state.status == GameStatus.loading) {
+      builder: (context, blocState) {
+        if (blocState.status == GameStatus.loading) {
           return Scaffold(
             body: Center(
               child: CircularProgressIndicator(
@@ -40,53 +80,98 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen> {
           );
         }
         return Scaffold(
-          body: state.status == GameStatus.transaction
+          body: blocState.status == GameStatus.transaction
               ? Center(
                   child: Column(
                     children: [
                       const SizedBox(height: 50),
                       MonopolyCreditCard(
                         cardHeight: cardHeight,
-                        color: state.currentPlayer!.color,
+                        color: blocState.currentPlayer!.color,
                         onTap: finishTurn,
-                        cardNumber: state.currentPlayer!.number,
-                        displayName: state.currentPlayer!.namePlayer,
-                        transactions: state.status == GameStatus.transaction,
+                        cardNumber: blocState.currentPlayer!.number,
+                        displayName: blocState.currentPlayer!.namePlayer,
+                        transactions:
+                            blocState.status == GameStatus.transaction,
                       ),
-                      Card(
-                        color: Colors.blue,
-                        child: SizedBox(
-                          width: 200,
-                          height: 50,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Money:',
-                                  style: GoogleFonts.roboto(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  )),
-                              const SizedBox(width: 10),
-                              Text('M',
-                                  style: GoogleFonts.raleway(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontStyle: FontStyle.italic,
-                                    fontWeight: FontWeight.bold,
-                                  )),
-                              const SizedBox(width: 10),
-                              Text(state.currentPlayer!.money.toString(),
-                                  style: GoogleFonts.spicyRice(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                  )),
-                            ],
-                          ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        constraints: BoxConstraints(
+                            maxWidth: _maxWidth, minWidth: _maxWidth),
+                        width: 50,
+                        child: Row(
+                          children: [
+                            Flexible(
+                              flex: 8,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    borderRadius: borderRadius),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text('Money:',
+                                        style: GoogleFonts.roboto(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        )),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                        blocState.currentPlayer!.money
+                                            .toString(),
+                                        style: statuscards),
+                                    const SizedBox(width: 2.5),
+                                    Text('M',
+                                        style: GoogleFonts.raleway(
+                                          color: Colors.white,
+                                          fontSize: 22,
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.bold,
+                                        )),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Spacer(flex: 1),
+                            BlocSelector<MonopolyElectronicoBloc,
+                                MonopolyElectronicoState, PlayerTransaction>(
+                              selector: (playerTransactionState) {
+                                return playerTransactionState.gameTransaction;
+                              },
+                              builder: (context, state) {
+                                if (state != PlayerTransaction.none) {
+                                  _controller.reset();
+                                  _controller.forward();
+                                  return Flexible(
+                                    flex: 6,
+                                    child: FadeTransition(
+                                      opacity: _animation,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: state ==
+                                                  PlayerTransaction.substract
+                                              ? Colors.red
+                                              : Colors.green,
+                                          borderRadius: borderRadius,
+                                        ),
+                                        alignment: Alignment.center,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 5,
+                                        ),
+                                        child: Text(
+                                            blocState.messageTransaction,
+                                            style: statuscards),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                return Container();
+                              },
+                            ),
+                          ],
                         ),
                       ),
-                      TextButton(
-                          onPressed: () {}, child: const Text('Complete Turn'))
                     ],
                   ),
                 )
@@ -94,27 +179,10 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    IconButton(
-                        onPressed: getCurrentUser,
-                        icon: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Align(
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  Icons.circle,
-                                  size: 200,
-                                  color: Colors.blue.shade300,
-                                )),
-                            const Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Icon(
-                                  Icons.person,
-                                  color: Colors.white,
-                                  size: 80,
-                                )),
-                          ],
-                        ))
+                    AnimatedIconButton(
+                      onPressed: getCurrentUser,
+                      colorsPlayers: [...blocState.players.map((e) => e.color)],
+                    )
                   ],
                 ),
           bottomNavigationBar: const MonopolyTerminal(),
@@ -123,6 +191,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen> {
     );
   }
 }
+
 
 // class _GridviewTest extends StatelessWidget {
 //   const _GridviewTest();

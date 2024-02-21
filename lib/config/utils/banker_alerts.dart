@@ -41,6 +41,49 @@ abstract class BankerAlerts {
     );
   }
 
+  static void invalidAmount({required double amount, bool isBigger = true}) {
+    String message;
+    if (isBigger) {
+      message =
+          'The amount entered, $amount, is too large. Please enter a valid amount between 20k and 500M.';
+    } else {
+      message =
+          'The amount entered, $amount, is too small. Please enter a valid amount between 20k and 500M.';
+    }
+
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.danger,
+        title: 'Sorry!',
+        confirmButtonText: 'Okay',
+        text: message,
+        onConfirm: () {
+          // Perform any action upon confirmation (if needed)
+          // For example, close the alert or navigate to another screen.
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+
+  static void noMoneyToSubstract({required double amount}) {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.danger,
+        title: 'Sorry!',
+        confirmButtonText: 'Okay',
+        text: "You don't have enough founds or money",
+        onConfirm: () {
+          // Perform any action upon confirmation (if needed)
+          // For example, close the alert or navigate to another screen.
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+
   static void alreadyRegisteredCard() {
     ArtSweetAlert.show(
       context: context,
