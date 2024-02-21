@@ -35,3 +35,10 @@ class SubstractMoneyEvent extends MonopolyElectronicoEvent {
     required this.money,
   });
 }
+
+class PayPlayersEvent extends MonopolyElectronicoEvent {
+  final double moneyToPay;
+  final MoneyValue type;
+
+  PayPlayersEvent(this.moneyToPay, this.type);
+}

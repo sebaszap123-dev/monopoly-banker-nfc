@@ -2,7 +2,16 @@ part of 'monopoly_electronico_bloc.dart';
 
 enum GameStatus { setup, loading, endgame, playing, transaction }
 
-enum PlayerTransaction { none, salida, add, substract, fromPlayers }
+enum PlayerTransaction { none, salida, add, substract, paying }
+
+/// P1-P2 [int] P1 PAGA A P2
+/// P1-P'S el P1 paga a todos los demas
+/// P'S-P1 Los players le pagan al player en cuestión (tarjetas especiales)
+enum PayTo {
+  playerToPlayer,
+  playerToPlayers,
+  playersToPlayer,
+}
 
 class MonopolyElectronicoState extends Equatable {
   const MonopolyElectronicoState({
@@ -79,8 +88,8 @@ class MonopolyElectronicoState extends Equatable {
       case PlayerTransaction.add:
       case PlayerTransaction.substract:
         return '$_moneyExchange ${_moneyValue == MoneyValue.millon ? 'M' : 'K'}';
-      case PlayerTransaction.fromPlayers:
-        return '+ $_moneyExchange ${_moneyValue.name}: ${fromPlayer?.namePlayer}';
+      case PlayerTransaction.paying:
+        return 'Paying to player';
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
@@ -65,7 +66,10 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
   }
 
   void onTransactions(Transactions data) {
-    if (controller.text.isEmpty) return;
+    if (controller.text.isEmpty) {
+      data == Transactions.fromPlayers ? BankerAlerts.addMoneyToPay() : null;
+      return;
+    }
     switch (data) {
       case Transactions.add:
         getIt<MonopolyElectronicoBloc>().add(AddPlayerMoneyEvent(
@@ -78,7 +82,8 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
         break;
 
       case Transactions.fromPlayers:
-        // TODO: Handle this case.
+        getIt<MonopolyElectronicoBloc>()
+            .add(PayPlayersEvent(double.parse(controller.text), currentType));
         break;
     }
     controller.clear();

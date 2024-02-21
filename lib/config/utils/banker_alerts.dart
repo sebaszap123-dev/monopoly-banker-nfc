@@ -1,9 +1,11 @@
 import 'package:art_sweetalert/art_sweetalert.dart';
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';
+import 'package:monopoly_banker/interface/widgets/pay_to_button.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 
 abstract class BankerAlerts {
@@ -17,9 +19,18 @@ abstract class BankerAlerts {
         confirmButtonText: 'Okay',
         text:
             'We encountered an error while processing your request:\n$error\nPlease try again later or contact support for assistance.',
-        onConfirm: () {
-          getIt<RouterCubit>().popDialogs();
-        },
+      ),
+    );
+  }
+
+  static noCardReaded({required int count}) {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.warning,
+        title: 'Missing $count card',
+        confirmButtonText: 'Okay',
+        text: 'We missing $count card(s) lets try again.',
       ),
     );
   }
@@ -32,11 +43,6 @@ abstract class BankerAlerts {
         title: 'Success!',
         confirmButtonText: 'Okay',
         text: 'Deleted $deletedUsersCount users.',
-        onConfirm: () {
-          // Perform any action upon confirmation (if needed)
-          // For example, close the alert or navigate to another screen.
-          Navigator.of(context).pop();
-        },
       ),
     );
   }
@@ -58,11 +64,6 @@ abstract class BankerAlerts {
         title: 'Sorry!',
         confirmButtonText: 'Okay',
         text: message,
-        onConfirm: () {
-          // Perform any action upon confirmation (if needed)
-          // For example, close the alert or navigate to another screen.
-          Navigator.of(context).pop();
-        },
       ),
     );
   }
@@ -75,13 +76,34 @@ abstract class BankerAlerts {
         title: 'Sorry!',
         confirmButtonText: 'Okay',
         text: "You don't have enough founds or money",
-        onConfirm: () {
-          // Perform any action upon confirmation (if needed)
-          // For example, close the alert or navigate to another screen.
-          Navigator.of(context).pop();
-        },
       ),
     );
+  }
+
+  static void addMoneyToPay() {
+    ArtSweetAlert.show(
+        context: context,
+        artDialogArgs: ArtDialogArgs(
+          type: ArtSweetAlertType.info,
+          title: 'Sorry!',
+          confirmButtonText: 'Okay',
+          text: "Please add a amount to pay to a player",
+        ));
+  }
+
+  static Future<PayTo?> chooseTransaction() async {
+    return await ArtSweetAlert.show(
+        context: context,
+        artDialogArgs: ArtDialogArgs(
+          type: ArtSweetAlertType.question,
+          title: 'Choose a transaction',
+          customColumns: PayTo.values
+              .map((data) => PayToButton(
+                    payTo: data,
+                    onTap: (PayTo value) => Navigator.of(context).pop(value),
+                  ))
+              .toList(),
+        ));
   }
 
   static void alreadyRegisteredCard() {
@@ -92,6 +114,53 @@ abstract class BankerAlerts {
         title: 'Card Already Registered',
         confirmButtonText: 'Okay',
         text: 'This card is already registered. Please try with another card.',
+        onConfirm: () {
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+
+  static Future<void> customMessageAlertSuccess({required String text}) async {
+    await ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.success,
+        title: 'Success',
+        confirmButtonText: 'Okay',
+        text: text,
+        onConfirm: () {
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+
+  static void customMessageAlertFail({required String text}) {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.danger,
+        title: 'Error',
+        confirmButtonText: 'Okay',
+        text: text,
+        onConfirm: () {
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+
+  static Future<void> insufficientFundsPlayers(
+      {required String players}) async {
+    await ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.danger,
+        title: 'Error',
+        confirmButtonText: 'Okay',
+        text:
+            'Estos jugadores no tienen el saldo suficiente para pagar: $players',
         onConfirm: () {
           Navigator.of(context).pop();
         },
@@ -137,21 +206,25 @@ abstract class BankerAlerts {
     }
   }
 
-  static Future<MonopolyCard?> readNfcDataCard() async {
+  static Future<MonopolyCard?> readNfcDataCard({String? customText}) async {
     return await showDialog<MonopolyCard?>(
         context: context,
         builder: (context) {
-          return const Dialog(
+          return Dialog(
             backgroundColor: Colors.white,
-            child: SizedBox(height: 300, child: ReadCardNfc()),
+            child: SizedBox(
+                height: 300,
+                child: ReadCardNfc(
+                  customText: customText,
+                )),
           );
         });
   }
 }
 
 class ReadCardNfc extends StatefulWidget {
-  const ReadCardNfc({super.key});
-
+  const ReadCardNfc({super.key, this.customText});
+  final String? customText;
   @override
   State<ReadCardNfc> createState() => _ReadCardNfcState();
 }
@@ -163,17 +236,13 @@ class _ReadCardNfcState extends State<ReadCardNfc> {
     readDataCard();
   }
 
-  @override
-  void dispose() async {
-    super.dispose();
-    await NfcManager.instance.stopSession();
-  }
-
   MonopolyCard? cardPlayer;
   String? errorScanning;
 
-  void readDataCard() {
-    NfcManager.instance.startSession(onDiscovered: (tag) async {
+  void readDataCard() async {
+    await NfcManager.instance.startSession(onError: (error) async {
+      errorScanning = error.message;
+    }, onDiscovered: (tag) async {
       if (tag.data.containsKey('ndef')) {
         // Identificar el tipo de tecnología NFC
         final ndef = Ndef.from(tag);
@@ -181,6 +250,8 @@ class _ReadCardNfcState extends State<ReadCardNfc> {
           final cachedMessage = ndef.cachedMessage;
           if (cachedMessage != null) {
             final resp = MonopolyCard.fromNdefMessage(cachedMessage);
+            await NfcManager.instance.stopSession();
+            // ignore: use_build_context_synchronously
             Navigator.of(context).pop(resp);
           }
         } else {
@@ -196,6 +267,8 @@ class _ReadCardNfcState extends State<ReadCardNfc> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        if (widget.customText != null) Text(widget.customText!),
+        const SizedBox(height: 10),
         if (errorScanning != null) Text(errorScanning!),
         const NfcLoadingAnimation(),
       ],

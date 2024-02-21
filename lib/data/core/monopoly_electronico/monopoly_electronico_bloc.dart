@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
@@ -7,7 +9,6 @@ import 'package:monopoly_banker/data/service/monopoly_electronic_service.dart';
 import 'package:monopoly_banker/data/service/secure_storage.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
-import 'package:monopoly_banker/interface/widgets/transaction_button.dart';
 import 'package:uuid/uuid.dart';
 
 part 'monopoly_electronico_event.dart';
@@ -23,6 +24,7 @@ class MonopolyElectronicoBloc
     on<FinishTurnPlayerEvent>(_finishTurnPlayer);
     on<AddPlayerMoneyEvent>(_addMoneyEvent);
     on<SubstractMoneyEvent>(_substractMoneyEvent);
+    on<PayPlayersEvent>(_payPlayersEvent);
   }
   _handleCardsEvent(
       HandleCardsEvent event, Emitter<MonopolyElectronicoState> emit) async {
@@ -111,14 +113,13 @@ class MonopolyElectronicoBloc
     final toAddMoney = double.parse(money);
     final uplayed =
         state.currentPlayer!.copyWith(money: toAddMoney + state.moneyPlayer!);
-    final players = _updatePlayers(state.currentPlayer!, uplayed);
+    _updatePlayer(state.currentPlayer!, uplayed);
     emit(state.copyWith(
       status: GameStatus.transaction,
       gameTransaction: PlayerTransaction.add,
       moneyExchange: event.money,
       moneyValue: event.type,
       player: uplayed,
-      players: players,
     ));
   }
 
@@ -145,14 +146,13 @@ class MonopolyElectronicoBloc
     final substract = double.parse(money);
     final uplayed = state.currentPlayer!
         .copyWith(money: (state.moneyPlayer! - substract).abs());
-    final players = _updatePlayers(state.currentPlayer!, uplayed);
+    _updatePlayer(state.currentPlayer!, uplayed);
     emit(state.copyWith(
       status: GameStatus.transaction,
       gameTransaction: PlayerTransaction.substract,
       moneyExchange: event.money,
       moneyValue: event.type,
       player: uplayed,
-      players: players,
     ));
   }
 
@@ -186,12 +186,187 @@ class MonopolyElectronicoBloc
     }
   }
 
-  List<MonopolyPlayerX> _updatePlayers(
-      MonopolyPlayerX old, MonopolyPlayerX uplayer) {
+  _payPlayersEvent(
+      PayPlayersEvent event, Emitter<MonopolyElectronicoState> emit) async {
+    emit(state.copyWith(status: GameStatus.loading));
+    final resp = await BankerAlerts.chooseTransaction();
+    if (resp != null) {
+      switch (resp) {
+        case PayTo.playerToPlayer:
+          await _p1ToP2(event);
+          break;
+        case PayTo.playerToPlayers:
+          await _p1ToPlayers(event);
+        case PayTo.playersToPlayer:
+          await _playersToP1(event);
+      }
+      // TODO: HANDLE PLAYERS O PLAYER TO PLAYER (NFC data (get cardnumber))
+    }
+    print(resp);
+  }
+
+  _p1ToPlayers(PayPlayersEvent event) async {
+    final card1 = await BankerAlerts.readNfcDataCard(
+        customText: 'Este jugador paga a los demas');
+
+    if (card1 == null) {
+      await BankerAlerts.noCardReaded(count: 1);
+      emit(state.copyWith(status: GameStatus.playing));
+      return;
+    }
+
+    final payMoney = _convertKtoM(event.type, event.moneyToPay);
+    final reduceMoney = payMoney * (state.players.length - 1);
+
+    final playerIndex =
+        state.players.indexWhere((element) => element.number == card1.number);
+
+    if (playerIndex != -1) {
+      MonopolyPlayerX player = state.players[playerIndex];
+
+      if (player.money < reduceMoney) {
+        emit(state.copyWith(
+          // TODO: HACER QUE NO PUEDA CAMBIAR DE TARJETA HASTA QUE PAGUE O BANCARROTA (PUEDE HACER OTRAS COSAS COMO COBRAR ETC)
+          gameTransaction: PlayerTransaction.paying,
+          status: GameStatus.transaction,
+        ));
+        return;
+      }
+
+      final updatedPlayers = state.players
+          .map((e) => e.copyWith(
+              money: e.number == card1.number
+                  ? e.money - reduceMoney
+                  : e.money + payMoney))
+          .toList();
+
+      emit(state.copyWith(
+        players: updatedPlayers,
+        status: GameStatus.playing,
+        // TODO: AGREGAR A TODOS LOS EMITS QUE TENGAN PLAYING
+        gameTransaction: PlayerTransaction.none,
+      ));
+    }
+  }
+
+  // TODO: FUNCIONA PERO QUE PASA SI UNO NO TIENE CON QUE PAGAR???
+  _playersToP1(PayPlayersEvent event) async {
+    final card = await BankerAlerts.readNfcDataCard(
+        customText: 'Este jugador recibirá dinero de todos los demás');
+
+    if (card == null) {
+      await BankerAlerts.noCardReaded(count: 1);
+      emit(state.copyWith(status: GameStatus.playing));
+      return;
+    }
+
+    final receiverIndex =
+        state.players.indexWhere((element) => element.number == card.number);
+
+    if (receiverIndex != -1) {
+      final receiver = state.players[receiverIndex];
+      final totalAmount = event.moneyToPay * (state.players.length - 1);
+
+      // Actualizar el saldo del jugador receptor y los demás jugadores
+      List<MonopolyPlayerX> cantPay = [];
+      for (var player in state.players) {
+        if (player.money < event.moneyToPay &&
+            player.number != receiver.number) {
+          cantPay.add(player);
+        }
+      }
+      if (cantPay.isNotEmpty) {
+        final String players = cantPay.map((e) => e.namePlayer).join(', ');
+        await BankerAlerts.insufficientFundsPlayers(players: players);
+        emit(state.copyWith(
+          status: GameStatus.playing,
+          gameTransaction: PlayerTransaction.paying,
+        ));
+      }
+
+      final updatedPlayers = state.players
+          .map((player) => player.copyWith(
+              money: player.number == receiver.number
+                  ? player.money + totalAmount
+                  : player.money - event.moneyToPay))
+          .toList();
+
+      emit(state.copyWith(
+        players: updatedPlayers,
+        status: GameStatus.playing,
+        gameTransaction: PlayerTransaction.none,
+      ));
+    }
+  }
+
+  _p1ToP2(PayPlayersEvent event) async {
+    final List<MonopolyCard?> cards = [];
+    final card1 = await BankerAlerts.readNfcDataCard(
+        customText: 'Inserta la tarjeta de quien pagará');
+    await BankerAlerts.customMessageAlertSuccess(
+        text: 'AHora inserta otra tarjeta');
+    final card2 = await BankerAlerts.readNfcDataCard(
+        customText: 'Inserta la tarjeta de quien recibe el dinero');
+
+    if (card1 == null || card2 == null || card1 == card2) {
+      BankerAlerts.customMessageAlertFail(
+          text: 'No se leyó correctamente las tarjetas');
+      emit(state.copyWith(status: GameStatus.playing));
+      return;
+    }
+
+    cards.add(card1);
+    cards.add(card2);
+
+    final cardNumbers = cards.map((card) => card?.number).toSet();
+    final playersToUpdate = state.players
+        .where((player) => cardNumbers.contains(player.number))
+        .toList();
+
+    if (cards.length != 2) {
+      final count = 2 - cards.length;
+      await BankerAlerts.noCardReaded(count: count);
+      emit(state.copyWith(status: GameStatus.playing));
+      return;
+    }
+
+    final player1 = playersToUpdate[0];
+    final player2 = playersToUpdate[1];
+    final payMoney = _convertKtoM(event.type, event.moneyToPay);
+
+    if (player1.money < payMoney) {
+      emit(state.copyWith(
+        gameTransaction: PlayerTransaction.paying,
+        status: GameStatus.transaction,
+      ));
+      return;
+    }
+
+    final updatedPlayer1 = player1.copyWith(money: player1.money - payMoney);
+    final updatedPlayer2 = player2.copyWith(money: player2.money + payMoney);
+
+    _updatePlayer(player1, updatedPlayer1);
+    _updatePlayer(player2, updatedPlayer2);
+
+    emit(state.copyWith(status: GameStatus.playing));
+  }
+
+  double _convertKtoM(MoneyValue value, double currentMoney) {
+    double money = 0;
+    if (value == MoneyValue.miles) {
+      money = currentMoney / 1000;
+    } else {
+      money = currentMoney;
+    }
+    return money;
+  }
+
+  void _updatePlayer(MonopolyPlayerX old, MonopolyPlayerX uplayer) {
     final index = state.players.indexOf(old);
     final temp = List.of(state.players);
     temp[index] = uplayer;
-    return temp;
+    // ignore: invalid_use_of_visible_for_testing_member
+    emit(state.copyWith(players: temp));
   }
 
   MonopolyElectronicoState _updateWhenExit(MonopolyPlayerX old) {

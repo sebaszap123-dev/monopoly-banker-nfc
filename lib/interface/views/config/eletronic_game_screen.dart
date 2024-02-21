@@ -119,7 +119,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                                     const SizedBox(width: 10),
                                     Text(
                                         blocState.currentPlayer!.money
-                                            .toString(),
+                                            .toStringAsFixed(2),
                                         style: statuscards),
                                     const SizedBox(width: 2.5),
                                     Text('M',
