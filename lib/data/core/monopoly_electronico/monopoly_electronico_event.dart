@@ -19,8 +19,8 @@ class RestoreGameEvent extends MonopolyElectronicoEvent {
 }
 
 class BackupGame extends MonopolyElectronicoEvent {
-  final bool appClose;
-  BackupGame({required this.appClose});
+  final bool appPaused;
+  BackupGame({required this.appPaused});
 }
 
 class UpdatePlayerEvent extends MonopolyElectronicoEvent {}

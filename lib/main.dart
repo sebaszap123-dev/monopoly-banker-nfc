@@ -17,8 +17,34 @@ void main() async {
   ], child: const BankerAppNfc()));
 }
 
-class BankerAppNfc extends StatelessWidget {
+class BankerAppNfc extends StatefulWidget {
   const BankerAppNfc({super.key});
+
+  @override
+  State<BankerAppNfc> createState() => _BankerAppNfcState();
+}
+
+class _BankerAppNfcState extends State<BankerAppNfc>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance?.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused) {
+      getIt<MonopolyElectronicoBloc>().add(BackupGame(appPaused: true));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

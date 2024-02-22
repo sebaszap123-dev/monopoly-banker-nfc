@@ -46,7 +46,7 @@ class MonopolyElectronicoBloc
 
   _backGameEvent(
       BackupGame event, Emitter<MonopolyElectronicoState> emit) async {
-    if (event.appClose) {
+    if (event.appPaused) {
       if (state.status == GameStatus.backup) return;
       await getIt<MonopolyElectronicService>().backupPlayers(state.players);
       return;

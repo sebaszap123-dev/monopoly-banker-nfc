@@ -62,7 +62,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
   @override
   void dispose() {
     _controller.dispose();
-    getIt<MonopolyElectronicoBloc>().add(BackupGame(appClose: true));
+    getIt<MonopolyElectronicoBloc>().add(BackupGame(appPaused: true));
     super.dispose();
   }
 
@@ -88,7 +88,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios),
               onPressed: () => getIt<MonopolyElectronicoBloc>()
-                  .add(BackupGame(appClose: false)),
+                  .add(BackupGame(appPaused: false)),
             ),
             actions: [
               TextButton(
