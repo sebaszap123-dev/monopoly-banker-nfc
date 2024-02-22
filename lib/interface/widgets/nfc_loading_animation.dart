@@ -5,30 +5,37 @@ class NfcLoadingAnimation extends StatelessWidget {
   const NfcLoadingAnimation({
     super.key,
     this.color,
+    this.customText,
   });
   final Color? color;
+  final String? customText;
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Align(
-          alignment: Alignment.center,
-          child: LoadingAnimationWidget.beat(
-            color: color ?? Colors.blue.shade300,
-            size: 80,
-          ),
-        ),
-        const Padding(
-          padding: EdgeInsets.only(bottom: 8.0, top: 15),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Text('Hold your phone near the NFC tag',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold,
+        if (customText != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Row(
+              children: [
+                Expanded(
+                    child: Text(
+                  customText!,
+                  textAlign: TextAlign.justify,
                 )),
+              ],
+            ),
           ),
-        )
+        LoadingAnimationWidget.beat(
+          color: color ?? Colors.blue.shade300,
+          size: 80,
+        ),
+        const Text('Hold your phone near the NFC tag',
+            style: TextStyle(
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+            ))
       ],
     );
   }

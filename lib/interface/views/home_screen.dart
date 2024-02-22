@@ -49,8 +49,9 @@ class HomeScreen extends StatelessWidget {
                     ),
                     shrinkWrap: true,
                     itemBuilder: (context, index) => InkWell(
-                      onTap: () => getIt<RouterCubit>().state.push(
-                          GameRoute(versions: GameVersions.values[index])),
+                      onTap: () => getIt<RouterCubit>()
+                          .state
+                          .push(GameRoute(version: GameVersions.values[index])),
                       child: Card(
                         clipBehavior: Clip.hardEdge,
                         color: Colors.red,

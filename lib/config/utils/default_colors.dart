@@ -11,13 +11,13 @@ final Map<String, Map<String, Color>> defaultCards = {
     '0003 1935 2011 7070': Colors.green.shade500,
   },
   'Azul': {
-    '0004 1935 2011 7070': Colors.blue.shade900,
+    '0005 1935 2011 7070': Colors.blue.shade900,
   },
   'Azul cielo': {
     '0006 1935 2011 7070': Colors.blue.shade200,
   },
   'Amarillo': {
-    '0005 1935 2011 7070': Colors.yellowAccent.shade700,
+    '0004 1935 2011 7070': Colors.yellowAccent.shade700,
   },
 };
 

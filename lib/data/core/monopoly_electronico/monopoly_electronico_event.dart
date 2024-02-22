@@ -12,6 +12,17 @@ class StartGameEvent extends MonopolyElectronicoEvent {
   StartGameEvent(this.players);
 }
 
+class RestoreGameEvent extends MonopolyElectronicoEvent {
+  final String sesionId;
+
+  RestoreGameEvent({required this.sesionId});
+}
+
+class BackupGame extends MonopolyElectronicoEvent {
+  final bool appClose;
+  BackupGame({required this.appClose});
+}
+
 class UpdatePlayerEvent extends MonopolyElectronicoEvent {}
 
 class PassExitEvent extends MonopolyElectronicoEvent {}

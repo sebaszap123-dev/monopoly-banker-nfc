@@ -95,15 +95,17 @@ abstract class BankerAlerts {
     return await ArtSweetAlert.show(
         context: context,
         artDialogArgs: ArtDialogArgs(
-          type: ArtSweetAlertType.question,
-          title: 'Choose a transaction',
-          customColumns: PayTo.values
-              .map((data) => PayToButton(
-                    payTo: data,
-                    onTap: (PayTo value) => Navigator.of(context).pop(value),
-                  ))
-              .toList(),
-        ));
+            type: ArtSweetAlertType.question,
+            title: 'Choose a transaction',
+            customColumns: PayTo.values
+                .map((data) => PayToButton(
+                      payTo: data,
+                      onTap: (PayTo value) => Navigator.of(context).pop(value),
+                    ))
+                .toList(),
+            onConfirm: () {
+              Navigator.of(context).pop(null);
+            }));
   }
 
   static void alreadyRegisteredCard() {
@@ -151,16 +153,39 @@ abstract class BankerAlerts {
     );
   }
 
-  static Future<void> insufficientFundsPlayers(
-      {required String players}) async {
+  static Future<bool> endGame() async {
+    final ArtDialogResponse? resp = await ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.question,
+        title: '¿Terminar partida?',
+        confirmButtonText: 'Okay',
+        text:
+            'Si aceptas se terminara la partida y se mostrara el resumen de esta.',
+        showCancelBtn: true,
+      ),
+    );
+    if (resp != null && resp.isTapConfirmButton) {
+      return true;
+    }
+    return false;
+  }
+
+  static Future<void> insufficientFundsPlayersX({
+    required Map<String, double> players,
+  }) async {
+    String message = 'Estos jugadores no tienen saldo suficiente para pagar:\n';
+    players.forEach((playerName, money) {
+      message += '$playerName le faltan $money M';
+    });
+
     await ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
-        type: ArtSweetAlertType.danger,
+        type: ArtSweetAlertType.warning,
         title: 'Error',
         confirmButtonText: 'Okay',
-        text:
-            'Estos jugadores no tienen el saldo suficiente para pagar: $players',
+        text: message,
         onConfirm: () {
           Navigator.of(context).pop();
         },
@@ -223,54 +248,101 @@ abstract class BankerAlerts {
 }
 
 class ReadCardNfc extends StatefulWidget {
-  const ReadCardNfc({super.key, this.customText});
+  const ReadCardNfc({Key? key, this.customText}) : super(key: key);
   final String? customText;
+
   @override
   State<ReadCardNfc> createState() => _ReadCardNfcState();
 }
 
 class _ReadCardNfcState extends State<ReadCardNfc> {
+  MonopolyCard? cardPlayer;
+  bool hasError = false;
+  String error = '';
+  bool hasData = false;
+
   @override
   void initState() {
     super.initState();
-    readDataCard();
+    initSesion();
   }
 
-  MonopolyCard? cardPlayer;
-  String? errorScanning;
-
-  void readDataCard() async {
-    await NfcManager.instance.startSession(onError: (error) async {
-      errorScanning = error.message;
-    }, onDiscovered: (tag) async {
-      if (tag.data.containsKey('ndef')) {
-        // Identificar el tipo de tecnología NFC
-        final ndef = Ndef.from(tag);
-        if (ndef != null) {
-          final cachedMessage = ndef.cachedMessage;
-          if (cachedMessage != null) {
-            final resp = MonopolyCard.fromNdefMessage(cachedMessage);
-            await NfcManager.instance.stopSession();
-            // ignore: use_build_context_synchronously
-            Navigator.of(context).pop(resp);
+  Future<void> initSesion() async {
+    try {
+      await getIt<NfcManager>().startSession(onError: (nfcError) async {
+        setState(() {
+          hasError = true;
+          error = nfcError.message;
+        });
+      }, onDiscovered: (tag) async {
+        if (hasData && !hasError) return;
+        if (tag.data.containsKey('ndef')) {
+          final ndef = Ndef.from(tag);
+          if (ndef != null) {
+            final cachedMessage = ndef.cachedMessage;
+            if (cachedMessage != null) {
+              final resp = MonopolyCard.fromNdefMessage(cachedMessage);
+              setState(() {
+                cardPlayer = resp;
+                hasData = true;
+              });
+            }
+          } else {
+            setState(() {
+              hasError = true;
+              error = 'Try again please';
+            });
           }
-        } else {
-          errorScanning = 'Try again please';
-          setState(() {});
         }
-      }
-    });
+      });
+    } catch (e) {
+      setState(() {
+        hasError = true;
+        error = 'Error: $e';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    getIt<NfcManager>().stopSession();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!hasError && !hasData) {
+      return NfcLoadingAnimation(
+        customText: widget.customText,
+      );
+    }
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        if (widget.customText != null) Text(widget.customText!),
-        const SizedBox(height: 10),
-        if (errorScanning != null) Text(errorScanning!),
-        const NfcLoadingAnimation(),
+        const SizedBox(height: 15),
+        if (hasError) ...[
+          Text(error),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                hasError = false;
+              });
+            },
+            child: const Text('Reintentar'),
+          ),
+        ],
+        if (!hasError && hasData) ...[
+          Text(
+              'Tarjeta leída: ${cardPlayer?.number}'), // Mostrar la información de la tarjeta leída
+          ElevatedButton(
+            onPressed: () async {
+              await getIt<NfcManager>().stopSession();
+              // ignore: use_build_context_synchronously
+              Navigator.of(context).pop(cardPlayer);
+            },
+            child: const Text('Aceptar'),
+          ),
+        ],
       ],
     );
   }

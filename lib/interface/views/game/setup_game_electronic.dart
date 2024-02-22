@@ -269,7 +269,7 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
             error: 'Please format your nfc tag with and app',
             myContext: widget.context);
       }
-      await NfcManager.instance.stopSession();
+      await getIt<NfcManager>().stopSession();
       setState(() {
         isNfc = false;
       });
@@ -287,9 +287,9 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
     setState(() {
       isNfc = true;
     });
-    final resp = await NfcManager.instance.isAvailable();
+    final resp = await getIt<NfcManager>().isAvailable();
     if (resp) {
-      NfcManager.instance
+      getIt<NfcManager>()
           .startSession(onDiscovered: (NfcTag tag) async => writeToTag(tag));
       return;
     }
@@ -299,7 +299,7 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
   @override
   void dispose() async {
     super.dispose();
-    await NfcManager.instance.stopSession();
+    await getIt<NfcManager>().stopSession();
   }
 
   @override

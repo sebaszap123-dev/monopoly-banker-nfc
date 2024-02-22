@@ -23,11 +23,11 @@ class MonopolyBankerState extends State<MonopolyBanker> {
   void toggleNfc() async {
     // Check availability
     if (checkNfc) {
-      NfcManager.instance.stopSession();
+      getIt<NfcManager>().stopSession();
     }
-    bool isAvailable = await NfcManager.instance.isAvailable();
+    bool isAvailable = await getIt<NfcManager>().isAvailable();
     if (isAvailable) {
-      NfcManager.instance.startSession(
+      getIt<NfcManager>().startSession(
         onDiscovered: (NfcTag tag) async {
           readNfcTag(tag);
         },

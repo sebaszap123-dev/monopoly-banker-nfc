@@ -4,6 +4,8 @@ import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/database/monopoly_database.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
+import 'package:monopoly_banker/data/service/secure_storage.dart';
+import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:sqflite/sqflite.dart';
 
 class MonopolyElectronicService {
@@ -58,6 +60,19 @@ class MonopolyElectronicService {
     return resp;
   }
 
+  /// Create a monopoly [MonopolyPlayerX] and return the ID: [int] (0 if conflic occurs)
+  Future<List<MonopolyPlayerX>> getSesionPlayers(String idSesion) async {
+    final db = _dbX;
+
+    final resp = await db.query(
+      MonopolyDatabase.playersXTb,
+      where: 'gameSesion = ?',
+      whereArgs: [idSesion],
+    );
+
+    return resp.map((e) => MonopolyPlayerX.fromMap(e)).toList();
+  }
+
   /// Update a monopoly card and return the COUNT OF ITEMS updated: [int] (0 if conflic occurs)
   Future<int> updateMonopolyCard(MonopolyCard card) async {
     final db = _dbX;
@@ -84,6 +99,7 @@ class MonopolyElectronicService {
     final resp = await db.delete(
       MonopolyDatabase.playersXTb,
     );
+    await getIt<MonopolyGamesStorage>().deleteGameX();
     BankerAlerts.showSuccessDeletedPlayers(resp);
   }
 
@@ -91,17 +107,23 @@ class MonopolyElectronicService {
   Future<List<MonopolyPlayerX>> setupPlayers(
       List<MonopolyPlayerX> players) async {
     try {
-      final db = _dbX;
-      final List<MonopolyPlayerX> temp = [];
+      final db = _dbX.batch();
       for (var player in players) {
-        final id = await db.insert(
+        db.insert(
           MonopolyDatabase.playersXTb,
           player.toSql(),
         );
-        temp.add(player.copyWith(id: id));
       }
+      final resp = await db.commit();
 
-      return temp;
+      // temp.add(player.copyWith(id: id));
+      print(resp[0]);
+      final List<MonopolyPlayerX> playersx = [];
+      for (int index = 0; resp.length > index; index++) {
+        final idPlayer = players[index].copyWith(id: resp[index] as int);
+        playersx.add(idPlayer);
+      }
+      return playersx;
     } catch (e) {
       print(e);
       return [];
@@ -111,9 +133,9 @@ class MonopolyElectronicService {
   ///
   Future<void> backupPlayers(List<MonopolyPlayerX> players) async {
     try {
-      final db = _dbX;
+      final batch = _dbX.batch();
       for (var player in players) {
-        await db.update(
+        batch.update(
           MonopolyDatabase.playersXTb,
           player.toSql(),
           conflictAlgorithm: ConflictAlgorithm.replace,
@@ -121,6 +143,8 @@ class MonopolyElectronicService {
           whereArgs: [player.id],
         );
       }
+      final resp = await batch.commit();
+      print(resp);
     } catch (e) {
       print(e);
     }
@@ -133,7 +157,6 @@ class MonopolyElectronicService {
       final results = await db.delete(
         MonopolyDatabase.playersXTb,
       );
-
       return results;
     } catch (e) {
       print(e);

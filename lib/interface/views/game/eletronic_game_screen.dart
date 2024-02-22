@@ -2,6 +2,9 @@ import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
+import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/animated_icon_button.dart';
@@ -59,6 +62,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
   @override
   void dispose() {
     _controller.dispose();
+    getIt<MonopolyElectronicoBloc>().add(BackupGame(appClose: true));
     super.dispose();
   }
 
@@ -80,11 +84,39 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
           );
         }
         return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios),
+              onPressed: () => getIt<MonopolyElectronicoBloc>()
+                  .add(BackupGame(appClose: false)),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () async {
+                    final end = await BankerAlerts.endGame();
+                    if (end) {
+                      getIt<RouterCubit>()
+                          .state
+                          .push(EndGameMonopolyX(players: blocState.players));
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      borderRadius: borderRadius,
+                      color: Colors.red,
+                    ),
+                    child: const Text(
+                      'End game',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  )),
+            ],
+          ),
           body: blocState.status == GameStatus.transaction
               ? Center(
                   child: Column(
                     children: [
-                      const SizedBox(height: 50),
                       MonopolyCreditCard(
                         cardHeight: cardHeight,
                         color: blocState.currentPlayer!.color,
@@ -135,12 +167,12 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                             ),
                             const Spacer(flex: 1),
                             BlocSelector<MonopolyElectronicoBloc,
-                                MonopolyElectronicoState, PlayerTransaction>(
+                                MonopolyElectronicoState, GameTransaction>(
                               selector: (playerTransactionState) {
                                 return playerTransactionState.gameTransaction;
                               },
                               builder: (context, state) {
-                                if (state != PlayerTransaction.none) {
+                                if (state != GameTransaction.none) {
                                   _controller.reset();
                                   _controller.forward();
                                   return Flexible(
@@ -149,10 +181,17 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                                       opacity: _animation,
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          color: state ==
-                                                  PlayerTransaction.substract
-                                              ? Colors.red
-                                              : Colors.green,
+                                          color: switch (
+                                              blocState.gameTransaction) {
+                                            GameTransaction.none => null,
+                                            GameTransaction.salida =>
+                                              Colors.green,
+                                            GameTransaction.add => Colors.green,
+                                            GameTransaction.substract =>
+                                              Colors.red,
+                                            GameTransaction.paying =>
+                                              Colors.amberAccent,
+                                          },
                                           borderRadius: borderRadius,
                                         ),
                                         alignment: Alignment.center,

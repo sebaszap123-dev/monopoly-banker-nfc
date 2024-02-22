@@ -70,7 +70,7 @@ class MonopolyPlayerX {
       number: number ?? this.number,
       color: color ?? this.color,
       namePlayer: namePlayer ?? this.namePlayer,
-      gameSesion: gameSesion,
+      gameSesion: gameSesion ?? this.gameSesion,
       infoNfc: const Uuid().v6(),
       money: money ?? this.money,
     );

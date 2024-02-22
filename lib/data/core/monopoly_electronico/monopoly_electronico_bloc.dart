@@ -2,6 +2,8 @@
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
@@ -19,6 +21,8 @@ class MonopolyElectronicoBloc
   MonopolyElectronicoBloc() : super(const MonopolyElectronicoState()) {
     on<HandleCardsEvent>(_handleCardsEvent);
     on<StartGameEvent>(_startGameEvent);
+    on<RestoreGameEvent>(_restoreGameEvent);
+    on<BackupGame>(_backGameEvent);
     on<UpdatePlayerEvent>(_changeUserEvent);
     on<PassExitEvent>(_passExitEvent);
     on<FinishTurnPlayerEvent>(_finishTurnPlayer);
@@ -36,7 +40,32 @@ class MonopolyElectronicoBloc
     emit(state.copyWith(
       cards: cards,
       status: GameStatus.playing,
-      gameTransaction: PlayerTransaction.none,
+      gameTransaction: GameTransaction.none,
+    ));
+  }
+
+  _backGameEvent(
+      BackupGame event, Emitter<MonopolyElectronicoState> emit) async {
+    if (event.appClose) {
+      if (state.status == GameStatus.backup) return;
+      await getIt<MonopolyElectronicService>().backupPlayers(state.players);
+      return;
+    }
+    emit(state.copyWith(status: GameStatus.loading));
+    await getIt<MonopolyElectronicService>().backupPlayers(state.players);
+    emit(state.copyWith(status: GameStatus.backup));
+    getIt<RouterCubit>().state.popAndPush(const HomeRoute());
+  }
+
+  _restoreGameEvent(
+      RestoreGameEvent event, Emitter<MonopolyElectronicoState> emit) async {
+    emit(state.copyWith(status: GameStatus.loading));
+    final players = await getIt<MonopolyElectronicService>()
+        .getSesionPlayers(event.sesionId);
+    emit(state.copyWith(
+      players: players,
+      status: GameStatus.playing,
+      gameTransaction: GameTransaction.none,
     ));
   }
 
@@ -47,18 +76,14 @@ class MonopolyElectronicoBloc
       final sesionId = const Uuid().v1();
       final players =
           event.players.map((e) => e.copyWith(gameSesion: sesionId)).toList();
-      List<MonopolyPlayerX> sesion = [];
-      for (var player in players) {
-        final id = await getIt<MonopolyElectronicService>().addPlayerX(player);
-        final tempPlayer = player.copyWith(id: id);
-        sesion.add(tempPlayer);
-      }
+      final sesionPlayers =
+          await getIt<MonopolyElectronicService>().setupPlayers(players);
       await Future.delayed(const Duration(milliseconds: 900));
-      await getIt<MonopolyGamesStorage>().startGameX();
+      await getIt<MonopolyGamesStorage>().startGameX(sesionId: sesionId);
       emit(state.copyWith(
-        players: event.players,
+        players: sesionPlayers,
         status: GameStatus.playing,
-        gameTransaction: PlayerTransaction.none,
+        gameTransaction: GameTransaction.none,
       ));
     } catch (e) {
       BankerAlerts.unhandleErros(error: e.toString());
@@ -70,7 +95,6 @@ class MonopolyElectronicoBloc
     final resp = await BankerAlerts.readNfcDataCard();
     try {
       if (resp == null) {
-        BankerAlerts.unhandleErros(error: 'Can handle card');
         return;
       }
       final player = state.playerFromCard(resp);
@@ -78,16 +102,14 @@ class MonopolyElectronicoBloc
         BankerAlerts.unhandleErros(error: 'No player found in this sesion');
         emit(state.copyWith(
           status: GameStatus.playing,
-          // ? TODO: USE ERROR MESSAGE IN OTHER FUNCTIONS OR DELETE? (USE BANKER ALERT INSTEAD?)
-          errorMessage: 'No card found in this sesion: ${resp.number}',
-          gameTransaction: PlayerTransaction.none,
+          gameTransaction: GameTransaction.none,
         ));
         return;
       }
       emit(state.copyWith(
         player: player,
         status: GameStatus.transaction,
-        gameTransaction: PlayerTransaction.none,
+        gameTransaction: GameTransaction.none,
       ));
     } catch (e) {
       BankerAlerts.unhandleErros(error: e.toString());
@@ -98,7 +120,7 @@ class MonopolyElectronicoBloc
     emit(state.copyWith(
       player: null,
       status: GameStatus.playing,
-      gameTransaction: PlayerTransaction.none,
+      gameTransaction: GameTransaction.none,
     ));
   }
 
@@ -124,7 +146,7 @@ class MonopolyElectronicoBloc
     _updatePlayer(state.currentPlayer!, uplayed);
     emit(state.copyWith(
       status: GameStatus.transaction,
-      gameTransaction: PlayerTransaction.add,
+      gameTransaction: GameTransaction.add,
       moneyExchange: event.money,
       moneyValue: event.type,
       player: uplayed,
@@ -157,7 +179,7 @@ class MonopolyElectronicoBloc
     _updatePlayer(state.currentPlayer!, uplayed);
     emit(state.copyWith(
       status: GameStatus.transaction,
-      gameTransaction: PlayerTransaction.substract,
+      gameTransaction: GameTransaction.substract,
       moneyExchange: event.money,
       moneyValue: event.type,
       player: uplayed,
@@ -177,7 +199,7 @@ class MonopolyElectronicoBloc
           );
           emit(state.copyWith(
             status: GameStatus.playing,
-            errorMessage: 'No card found in this session: ${resp.number}',
+            gameTransaction: GameTransaction.none,
           ));
           return;
         }
@@ -190,7 +212,9 @@ class MonopolyElectronicoBloc
     } catch (e) {
       BankerAlerts.unhandleErros(error: e.toString());
       emit(state.copyWith(
-          status: GameStatus.playing, errorMessage: 'Error al tomar user'));
+        status: GameStatus.playing,
+        gameTransaction: GameTransaction.none,
+      ));
     }
   }
 
@@ -205,10 +229,16 @@ class MonopolyElectronicoBloc
           break;
         case PayTo.playerToPlayers:
           await _p1ToPlayers(event);
+          break;
         case PayTo.playersToPlayer:
           await _playersToP1(event);
+          break;
       }
     }
+    emit(state.copyWith(
+      status: GameStatus.playing,
+      gameTransaction: GameTransaction.none,
+    ));
   }
 
   _p1ToPlayers(PayPlayersEvent event) async {
@@ -231,9 +261,12 @@ class MonopolyElectronicoBloc
       MonopolyPlayerX player = state.players[playerIndex];
 
       if (player.money < reduceMoney) {
+        final insufficientMoney = (player.money - reduceMoney).abs();
+        BankerAlerts.insufficientFundsPlayersX(
+          players: {player.namePlayer!: insufficientMoney},
+        );
         emit(state.copyWith(
-          // TODO: HACER QUE NO PUEDA CAMBIAR DE TARJETA HASTA QUE PAGUE O BANCARROTA (PUEDE HACER OTRAS COSAS COMO COBRAR ETC) [PlayerTransaction.paying]
-          gameTransaction: PlayerTransaction.paying,
+          gameTransaction: GameTransaction.paying,
           status: GameStatus.transaction,
         ));
         return;
@@ -241,15 +274,16 @@ class MonopolyElectronicoBloc
 
       final updatedPlayers = state.players
           .map((e) => e.copyWith(
-              money: e.number == card1.number
-                  ? e.money - reduceMoney
-                  : e.money + payMoney))
+                money: e.number == card1.number
+                    ? e.money - reduceMoney
+                    : e.money + payMoney,
+              ))
           .toList();
 
       emit(state.copyWith(
         players: updatedPlayers,
         status: GameStatus.playing,
-        gameTransaction: PlayerTransaction.none,
+        gameTransaction: GameTransaction.none,
       ));
     }
   }
@@ -262,7 +296,7 @@ class MonopolyElectronicoBloc
       await BankerAlerts.noCardReaded(count: 1);
       emit(state.copyWith(
         status: GameStatus.playing,
-        gameTransaction: PlayerTransaction.none,
+        gameTransaction: GameTransaction.none,
       ));
       return;
     }
@@ -275,20 +309,20 @@ class MonopolyElectronicoBloc
       final totalAmount = event.moneyToPay * (state.players.length - 1);
 
       // Actualizar el saldo del jugador receptor y los demás jugadores
-      List<MonopolyPlayerX> cantPay = [];
+      Map<String, double> cantPay = {};
+      final payMoney = _convertKtoM(event.type, event.moneyToPay);
       for (var player in state.players) {
-        if (player.money < event.moneyToPay &&
-            player.number != receiver.number) {
-          cantPay.add(player);
+        if (player.money < payMoney && player.number != receiver.number) {
+          cantPay[player.namePlayer!] = (player.money - payMoney).abs();
         }
       }
       if (cantPay.isNotEmpty) {
-        final String players = cantPay.map((e) => e.namePlayer).join(', ');
-        await BankerAlerts.insufficientFundsPlayers(players: players);
+        await BankerAlerts.insufficientFundsPlayersX(players: cantPay);
         emit(state.copyWith(
           status: GameStatus.playing,
-          gameTransaction: PlayerTransaction.paying,
+          gameTransaction: GameTransaction.paying,
         ));
+        return;
       }
 
       final updatedPlayers = state.players
@@ -301,7 +335,7 @@ class MonopolyElectronicoBloc
       emit(state.copyWith(
         players: updatedPlayers,
         status: GameStatus.playing,
-        gameTransaction: PlayerTransaction.none,
+        gameTransaction: GameTransaction.none,
       ));
     }
   }
@@ -320,7 +354,7 @@ class MonopolyElectronicoBloc
           text: 'No se leyó correctamente las tarjetas');
       emit(state.copyWith(
         status: GameStatus.playing,
-        gameTransaction: PlayerTransaction.none,
+        gameTransaction: GameTransaction.none,
       ));
       return;
     }
@@ -338,7 +372,7 @@ class MonopolyElectronicoBloc
       await BankerAlerts.noCardReaded(count: count);
       emit(state.copyWith(
         status: GameStatus.playing,
-        gameTransaction: PlayerTransaction.none,
+        gameTransaction: GameTransaction.none,
       ));
       return;
     }
@@ -348,8 +382,11 @@ class MonopolyElectronicoBloc
     final payMoney = _convertKtoM(event.type, event.moneyToPay);
 
     if (player1.money < payMoney) {
+      final insufficientMoney = (player1.money - event.moneyToPay).abs();
+      BankerAlerts.insufficientFundsPlayersX(
+          players: {player1.namePlayer!: insufficientMoney});
       emit(state.copyWith(
-        gameTransaction: PlayerTransaction.paying,
+        gameTransaction: GameTransaction.paying,
         status: GameStatus.transaction,
       ));
       return;
@@ -363,14 +400,15 @@ class MonopolyElectronicoBloc
 
     emit(state.copyWith(
       status: GameStatus.playing,
-      gameTransaction: PlayerTransaction.none,
+      gameTransaction: GameTransaction.none,
     ));
   }
 
   double _convertKtoM(MoneyValue value, double currentMoney) {
     double money = 0;
     if (value == MoneyValue.miles) {
-      money = currentMoney / 1000;
+      final moneyString = (currentMoney / 1000).toStringAsFixed(2);
+      money = double.parse(moneyString);
     } else {
       money = currentMoney;
     }
@@ -393,7 +431,7 @@ class MonopolyElectronicoBloc
       players: temp,
       player: playerPassExit,
       status: GameStatus.transaction,
-      gameTransaction: PlayerTransaction.salida,
+      gameTransaction: GameTransaction.salida,
     );
   }
 }

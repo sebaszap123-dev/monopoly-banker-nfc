@@ -1,16 +1,16 @@
 import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
-import 'package:monopoly_banker/interface/views/config/setup_game_electronic.dart';
+import 'package:monopoly_banker/interface/views/game/setup_game_electronic.dart';
 
 @RoutePage()
 class GameScreen extends StatelessWidget {
-  const GameScreen({super.key, required this.versions});
-  final GameVersions versions;
+  const GameScreen({super.key, required this.version});
+  final GameVersions version;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: getScreen(versions),
+      body: getScreen(version),
     );
   }
 
@@ -52,11 +52,11 @@ class ClassicGameSetup extends StatelessWidget {
 //   void toggleNfc() async {
 //     // Check availability
 //     if (checkNfc) {
-//       NfcManager.instance.stopSession();
+//       getIt<NfcManager>().stopSession();
 //     }
-//     bool isAvailable = await NfcManager.instance.isAvailable();
+//     bool isAvailable = await getIt<NfcManager>().isAvailable();
 //     if (isAvailable) {
-//       NfcManager.instance.startSession(
+//       getIt<NfcManager>().startSession(
 //         onDiscovered: (NfcTag tag) async {
 //           readNfcTag(tag);
 //         },
