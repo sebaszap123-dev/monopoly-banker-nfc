@@ -4,6 +4,7 @@ import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
+import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
 import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';
 import 'package:monopoly_banker/interface/widgets/pay_to_button.dart';
 import 'package:nfc_manager/nfc_manager.dart';
@@ -43,6 +44,140 @@ abstract class BankerAlerts {
         title: 'Success!',
         confirmButtonText: 'Okay',
         text: 'Deleted $deletedUsersCount users.',
+      ),
+    );
+  }
+
+  static void payedJ1toJ2({
+    required double dinero,
+    required MoneyValue value,
+    required String jugador1,
+    required String jugador2,
+  }) {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.success,
+        title: "¡Pago exitoso!",
+        customColumns: [
+          Row(
+            children: [
+              const Icon(
+                Icons.person,
+                color: Colors.blue,
+                size: 30,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                jugador2,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const Icon(
+            Icons.arrow_right_alt,
+            color: Colors.green,
+            size: 30,
+          ),
+          Row(
+            children: [
+              Text(
+                "$dinero ${value == MoneyValue.millon ? 'M' : 'K'}",
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(
+                Icons.person,
+                color: Colors.orange,
+                size: 30,
+              ),
+              Text(
+                jugador1,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+        confirmButtonText: "Aceptar",
+      ),
+    );
+  }
+
+  static void payedToGroups({
+    required double dinero,
+    required MoneyValue value,
+    required String jugador,
+    required PayTo payto,
+  }) {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.success,
+        title: "¡Pago exitoso!",
+        customColumns: [
+          Row(
+            children: [
+              const Icon(
+                Icons.person,
+                color: Colors.blue,
+                size: 30,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                payto == PayTo.playerToPlayers
+                    ? jugador
+                    : 'Todos los jugadores',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const Icon(
+            Icons.arrow_right_alt,
+            color: Colors.green,
+            size: 30,
+          ),
+          Row(
+            children: [
+              Text(
+                "$dinero ${value == MoneyValue.millon ? 'M' : 'K'}",
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(
+                Icons.person,
+                color: Colors.orange,
+                size: 30,
+              ),
+              Text(
+                payto == PayTo.playerToPlayers
+                    ? 'Pagó a todos los jugadores!'
+                    : 'Pagaron a $jugador',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+        confirmButtonText: "Aceptar",
       ),
     );
   }

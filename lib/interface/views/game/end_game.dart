@@ -48,10 +48,14 @@ class _EndGameMonopolyXState extends State<EndGameMonopolyX> {
                     color: e.color,
                     onTap: () {},
                     cardNumber: e.number,
+                    displayName: e.namePlayer,
+                    isSelected: false,
+                    transactions: false,
                   ),
                   Text('money: ${e.money}'),
                 ],
               )),
+          const SizedBox(height: 20)
         ],
       ),
     );

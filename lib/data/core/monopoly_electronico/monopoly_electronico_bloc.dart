@@ -228,10 +228,10 @@ class MonopolyElectronicoBloc
           await _p1ToP2(event);
           break;
         case PayTo.playerToPlayers:
-          await _p1ToPlayers(event);
+          await _p1ToPlayers(event, resp);
           break;
         case PayTo.playersToPlayer:
-          await _playersToP1(event);
+          await _playersToP1(event, resp);
           break;
       }
     }
@@ -241,7 +241,7 @@ class MonopolyElectronicoBloc
     ));
   }
 
-  _p1ToPlayers(PayPlayersEvent event) async {
+  _p1ToPlayers(PayPlayersEvent event, PayTo payTo) async {
     final card1 = await BankerAlerts.readNfcDataCard(
         customText: 'Este jugador paga a los demas');
 
@@ -279,7 +279,12 @@ class MonopolyElectronicoBloc
                     : e.money + payMoney,
               ))
           .toList();
-
+      BankerAlerts.payedToGroups(
+        dinero: event.moneyToPay,
+        value: event.type,
+        jugador: player.namePlayer!,
+        payto: payTo,
+      );
       emit(state.copyWith(
         players: updatedPlayers,
         status: GameStatus.playing,
@@ -288,7 +293,7 @@ class MonopolyElectronicoBloc
     }
   }
 
-  _playersToP1(PayPlayersEvent event) async {
+  _playersToP1(PayPlayersEvent event, PayTo payTo) async {
     final card = await BankerAlerts.readNfcDataCard(
         customText: 'Este jugador recibirá dinero de todos los demás');
 
@@ -306,11 +311,12 @@ class MonopolyElectronicoBloc
 
     if (receiverIndex != -1) {
       final receiver = state.players[receiverIndex];
-      final totalAmount = event.moneyToPay * (state.players.length - 1);
+
+      final payMoney = _convertKtoM(event.type, event.moneyToPay);
+      final totalAmount = payMoney * (state.players.length - 1);
 
       // Actualizar el saldo del jugador receptor y los demás jugadores
       Map<String, double> cantPay = {};
-      final payMoney = _convertKtoM(event.type, event.moneyToPay);
       for (var player in state.players) {
         if (player.money < payMoney && player.number != receiver.number) {
           cantPay[player.namePlayer!] = (player.money - payMoney).abs();
@@ -329,9 +335,14 @@ class MonopolyElectronicoBloc
           .map((player) => player.copyWith(
               money: player.number == receiver.number
                   ? player.money + totalAmount
-                  : player.money - event.moneyToPay))
+                  : player.money - payMoney))
           .toList();
-
+      BankerAlerts.payedToGroups(
+        dinero: event.moneyToPay,
+        value: event.type,
+        jugador: receiver.namePlayer!,
+        payto: payTo,
+      );
       emit(state.copyWith(
         players: updatedPlayers,
         status: GameStatus.playing,
@@ -343,11 +354,11 @@ class MonopolyElectronicoBloc
   _p1ToP2(PayPlayersEvent event) async {
     final List<MonopolyCard?> cards = [];
     final card1 = await BankerAlerts.readNfcDataCard(
-        customText: 'Inserta la tarjeta de quien pagará');
+        customText: 'Inserta la tarjeta de a quién va dirigido el dinero');
     await BankerAlerts.customMessageAlertSuccess(
         text: 'AHora inserta otra tarjeta');
     final card2 = await BankerAlerts.readNfcDataCard(
-        customText: 'Inserta la tarjeta de quien recibe el dinero');
+        customText: '¿Listo para pagar? Inserta tu tarjeta');
 
     if (card1 == null || card2 == null || card1 == card2) {
       BankerAlerts.customMessageAlertFail(
@@ -377,14 +388,14 @@ class MonopolyElectronicoBloc
       return;
     }
 
-    final player1 = playersToUpdate[0];
-    final player2 = playersToUpdate[1];
+    final j1 = playersToUpdate[0];
+    final j2 = playersToUpdate[1];
     final payMoney = _convertKtoM(event.type, event.moneyToPay);
 
-    if (player1.money < payMoney) {
-      final insufficientMoney = (player1.money - event.moneyToPay).abs();
+    if (j2.money < payMoney) {
+      final insufficientMoney = (j2.money - payMoney).abs();
       BankerAlerts.insufficientFundsPlayersX(
-          players: {player1.namePlayer!: insufficientMoney});
+          players: {j2.namePlayer!: insufficientMoney});
       emit(state.copyWith(
         gameTransaction: GameTransaction.paying,
         status: GameStatus.transaction,
@@ -392,12 +403,17 @@ class MonopolyElectronicoBloc
       return;
     }
 
-    final updatedPlayer1 = player1.copyWith(money: player1.money - payMoney);
-    final updatedPlayer2 = player2.copyWith(money: player2.money + payMoney);
+    final updateJ1 = j1.copyWith(money: j1.money + payMoney);
+    final updateJ2 = j2.copyWith(money: j2.money - payMoney);
 
-    _updatePlayer(player1, updatedPlayer1);
-    _updatePlayer(player2, updatedPlayer2);
-
+    _updatePlayer(j1, updateJ1);
+    _updatePlayer(j2, updateJ2);
+    BankerAlerts.payedJ1toJ2(
+      value: event.type,
+      dinero: event.moneyToPay,
+      jugador1: j1.namePlayer!,
+      jugador2: j2.namePlayer!,
+    );
     emit(state.copyWith(
       status: GameStatus.playing,
       gameTransaction: GameTransaction.none,
