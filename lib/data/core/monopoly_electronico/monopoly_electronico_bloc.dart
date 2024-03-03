@@ -234,9 +234,11 @@ class MonopolyElectronicoBloc
           await _playersToP1(event, resp);
           break;
       }
+      return;
     }
+
     emit(state.copyWith(
-      status: GameStatus.playing,
+      status: GameStatus.transaction,
       gameTransaction: GameTransaction.none,
     ));
   }
@@ -352,13 +354,12 @@ class MonopolyElectronicoBloc
   }
 
   _p1ToP2(PayPlayersEvent event) async {
-    final List<MonopolyCard?> cards = [];
     final card1 = await BankerAlerts.readNfcDataCard(
-        customText: 'Inserta la tarjeta de a quién va dirigido el dinero');
-    await BankerAlerts.customMessageAlertSuccess(
-        text: 'AHora inserta otra tarjeta');
-    final card2 = await BankerAlerts.readNfcDataCard(
         customText: '¿Listo para pagar? Inserta tu tarjeta');
+    await Future.delayed(const Duration(milliseconds: 900));
+    final card2 = await BankerAlerts.readNfcDataCard(
+      customText: 'Recibe tu dinero! Inserta tu tarjeta',
+    );
 
     if (card1 == null || card2 == null || card1 == card2) {
       BankerAlerts.customMessageAlertFail(
@@ -370,32 +371,16 @@ class MonopolyElectronicoBloc
       return;
     }
 
-    cards.add(card1);
-    cards.add(card2);
-
-    final cardNumbers = cards.map((card) => card?.number).toSet();
-    final playersToUpdate = state.players
-        .where((player) => cardNumbers.contains(player.number))
-        .toList();
-
-    if (cards.length != 2) {
-      final count = 2 - cards.length;
-      await BankerAlerts.noCardReaded(count: count);
-      emit(state.copyWith(
-        status: GameStatus.playing,
-        gameTransaction: GameTransaction.none,
-      ));
-      return;
-    }
-
-    final j1 = playersToUpdate[0];
-    final j2 = playersToUpdate[1];
+    final playerPays =
+        state.players.firstWhere((element) => element.number == card1.number);
+    final playerReceive =
+        state.players.firstWhere((element) => element.number == card2.number);
     final payMoney = _convertKtoM(event.type, event.moneyToPay);
 
-    if (j2.money < payMoney) {
-      final insufficientMoney = (j2.money - payMoney).abs();
+    if (playerPays.money < payMoney) {
+      final insufficientMoney = (playerPays.money - payMoney).abs();
       BankerAlerts.insufficientFundsPlayersX(
-          players: {j2.namePlayer!: insufficientMoney});
+          players: {playerPays.namePlayer!: insufficientMoney});
       emit(state.copyWith(
         gameTransaction: GameTransaction.paying,
         status: GameStatus.transaction,
@@ -403,16 +388,17 @@ class MonopolyElectronicoBloc
       return;
     }
 
-    final updateJ1 = j1.copyWith(money: j1.money + payMoney);
-    final updateJ2 = j2.copyWith(money: j2.money - payMoney);
+    final updateJ1 =
+        playerReceive.copyWith(money: playerReceive.money + payMoney);
+    final updateJ2 = playerPays.copyWith(money: playerPays.money - payMoney);
 
-    _updatePlayer(j1, updateJ1);
-    _updatePlayer(j2, updateJ2);
+    _updatePlayer(playerPays, updateJ1);
+    _updatePlayer(playerReceive, updateJ2);
     BankerAlerts.payedJ1toJ2(
       value: event.type,
       dinero: event.moneyToPay,
-      jugador1: j1.namePlayer!,
-      jugador2: j2.namePlayer!,
+      playerPays: playerPays.namePlayer!,
+      playerReceive: playerReceive.namePlayer!,
     );
     emit(state.copyWith(
       status: GameStatus.playing,

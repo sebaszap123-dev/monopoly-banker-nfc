@@ -8,12 +8,19 @@ class PayToButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(maxHeight: 40),
+      constraints: const BoxConstraints(maxHeight: 60),
       child: GestureDetector(
         onTap: () => onTap(payTo),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: children,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(payTo.name.toUpperCase()),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: children,
+            ),
+          ],
         ),
       ),
     );

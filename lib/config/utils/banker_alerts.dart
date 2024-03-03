@@ -51,8 +51,8 @@ abstract class BankerAlerts {
   static void payedJ1toJ2({
     required double dinero,
     required MoneyValue value,
-    required String jugador1,
-    required String jugador2,
+    required String playerPays,
+    required String playerReceive,
   }) {
     ArtSweetAlert.show(
       context: context,
@@ -69,7 +69,7 @@ abstract class BankerAlerts {
               ),
               const SizedBox(width: 10),
               Text(
-                jugador2,
+                playerPays,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -99,7 +99,7 @@ abstract class BankerAlerts {
                 size: 30,
               ),
               Text(
-                jugador1,
+                playerReceive,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -233,9 +233,13 @@ abstract class BankerAlerts {
             type: ArtSweetAlertType.question,
             title: 'Choose a transaction',
             customColumns: PayTo.values
-                .map((data) => PayToButton(
-                      payTo: data,
-                      onTap: (PayTo value) => Navigator.of(context).pop(value),
+                .map((data) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: PayToButton(
+                        payTo: data,
+                        onTap: (PayTo value) =>
+                            Navigator.of(context).pop(value),
+                      ),
                     ))
                 .toList(),
             onConfirm: () {
