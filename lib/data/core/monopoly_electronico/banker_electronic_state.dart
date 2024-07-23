@@ -1,4 +1,4 @@
-part of 'monopoly_electronico_bloc.dart';
+part of 'banker_electronic_bloc.dart';
 
 enum GameStatus { setup, loading, endgame, playing, transaction, backup }
 
@@ -13,8 +13,8 @@ enum PayTo {
   playersToPlayer,
 }
 
-class MonopolyElectronicoState extends Equatable {
-  const MonopolyElectronicoState({
+class MonopolyElectronicState extends Equatable {
+  const MonopolyElectronicState({
     this.cards = const [],
     this.players = const [],
     this.status = GameStatus.setup,
@@ -33,7 +33,7 @@ class MonopolyElectronicoState extends Equatable {
   final GameTransaction gameTransaction;
   final double _moneyExchange;
   final MoneyValue _moneyValue;
-  MonopolyElectronicoState copyWith({
+  MonopolyElectronicState copyWith({
     GameStatus? status,
     List<MonopolyCard>? cards,
     List<MonopolyPlayerX>? players,
@@ -43,7 +43,7 @@ class MonopolyElectronicoState extends Equatable {
     double? moneyExchange,
     MoneyValue? moneyValue,
   }) {
-    return MonopolyElectronicoState(
+    return MonopolyElectronicState(
       status: status ?? this.status,
       cards: cards ?? this.cards,
       players: players ?? this.players,

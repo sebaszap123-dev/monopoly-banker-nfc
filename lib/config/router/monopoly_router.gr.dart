@@ -12,10 +12,12 @@ import 'package:auto_route/auto_route.dart' as _i5;
 import 'package:flutter/material.dart' as _i6;
 import 'package:monopoly_banker/config/utils/game_versions_support.dart' as _i8;
 import 'package:monopoly_banker/data/model/monopoly_player.dart' as _i7;
-import 'package:monopoly_banker/interface/views/game/eletronic_game_screen.dart'
+import 'package:monopoly_banker/interface/views/eletronic_game/eletronic_game_screen.dart'
     as _i1;
-import 'package:monopoly_banker/interface/views/game/end_game.dart' as _i2;
-import 'package:monopoly_banker/interface/views/game/game_screen.dart' as _i3;
+import 'package:monopoly_banker/interface/views/eletronic_game/end_game.dart'
+    as _i2;
+import 'package:monopoly_banker/interface/views/eletronic_game/game_screen.dart'
+    as _i3;
 import 'package:monopoly_banker/interface/views/home_screen.dart' as _i4;
 
 abstract class $MonopolyRouter extends _i5.RootStackRouter {

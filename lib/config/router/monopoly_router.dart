@@ -31,7 +31,7 @@ class RouterCubit extends Cubit<MonopolyRouter> {
       try {
         Navigator.of(context).pop();
       } catch (e) {
-        // ignore: avoid_print
+        // TODO: HANDLE ERROR AND NOTIFY NO USER
         print(e);
       }
     }

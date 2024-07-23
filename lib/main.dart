@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
-import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 
 void main() async {
@@ -9,7 +9,7 @@ void main() async {
   await servicelocator();
   runApp(MultiBlocProvider(providers: [
     BlocProvider(
-      create: (context) => getIt<MonopolyElectronicoBloc>(),
+      create: (context) => getIt<MonopolyElectronicBloc>(),
     ),
     BlocProvider(
       create: (context) => getIt<RouterCubit>(),
@@ -42,7 +42,7 @@ class _BankerAppNfcState extends State<BankerAppNfc>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused) {
-      getIt<MonopolyElectronicoBloc>().add(BackupGame(appPaused: true));
+      getIt<MonopolyElectronicBloc>().add(BackupGame(appPaused: true));
     }
   }
 

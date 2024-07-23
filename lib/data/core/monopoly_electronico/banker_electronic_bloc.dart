@@ -7,18 +7,18 @@ import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
-import 'package:monopoly_banker/data/service/monopoly_electronic_service.dart';
+import 'package:monopoly_banker/data/service/banker_electronic_service.dart';
 import 'package:monopoly_banker/data/service/secure_storage.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
 import 'package:uuid/uuid.dart';
 
-part 'monopoly_electronico_event.dart';
-part 'monopoly_electronico_state.dart';
+part 'banker_electronic_event.dart';
+part 'banker_electronic_state.dart';
 
-class MonopolyElectronicoBloc
-    extends Bloc<MonopolyElectronicoEvent, MonopolyElectronicoState> {
-  MonopolyElectronicoBloc() : super(const MonopolyElectronicoState()) {
+class MonopolyElectronicBloc
+    extends Bloc<MonopolyElectronicEvent, MonopolyElectronicState> {
+  MonopolyElectronicBloc() : super(const MonopolyElectronicState()) {
     on<HandleCardsEvent>(_handleCardsEvent);
     on<StartGameEvent>(_startGameEvent);
     on<RestoreGameEvent>(_restoreGameEvent);
@@ -27,16 +27,15 @@ class MonopolyElectronicoBloc
     on<PassExitEvent>(_passExitEvent);
     on<FinishTurnPlayerEvent>(_finishTurnPlayer);
     on<AddPlayerMoneyEvent>(_addMoneyEvent);
-    on<SubstractMoneyEvent>(_substractMoneyEvent);
+    on<SubtractMoneyEvent>(_subtractMoneyEvent);
     on<PayPlayersEvent>(_payPlayersEvent);
   }
   _handleCardsEvent(
-      HandleCardsEvent event, Emitter<MonopolyElectronicoState> emit) async {
+      HandleCardsEvent event, Emitter<MonopolyElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
     // final hasSavedGames = await getIt<MonopolyGamesStorage>().hasCurrentGames;
     // TODO-FEATURE: RESTORE IF SAVEDGAMES IN ELETRONIC and user wants to (show alert)
-    final cards =
-        await getIt<MonopolyElectronicService>().getAllMonopolyCards();
+    final cards = await getIt<BankerElectronicService>().getAllMonopolyCards();
     emit(state.copyWith(
       cards: cards,
       status: GameStatus.playing,
@@ -45,23 +44,23 @@ class MonopolyElectronicoBloc
   }
 
   _backGameEvent(
-      BackupGame event, Emitter<MonopolyElectronicoState> emit) async {
+      BackupGame event, Emitter<MonopolyElectronicState> emit) async {
     if (event.appPaused) {
       if (state.status == GameStatus.backup) return;
-      await getIt<MonopolyElectronicService>().backupPlayers(state.players);
+      await getIt<BankerElectronicService>().backupPlayers(state.players);
       return;
     }
     emit(state.copyWith(status: GameStatus.loading));
-    await getIt<MonopolyElectronicService>().backupPlayers(state.players);
+    await getIt<BankerElectronicService>().backupPlayers(state.players);
     emit(state.copyWith(status: GameStatus.backup));
     getIt<RouterCubit>().state.popAndPush(const HomeRoute());
   }
 
   _restoreGameEvent(
-      RestoreGameEvent event, Emitter<MonopolyElectronicoState> emit) async {
+      RestoreGameEvent event, Emitter<MonopolyElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
-    final players = await getIt<MonopolyElectronicService>()
-        .getSesionPlayers(event.sesionId);
+    final players = await getIt<BankerElectronicService>()
+        .getSesionPlayers(event.sessionId);
     emit(state.copyWith(
       players: players,
       status: GameStatus.playing,
@@ -70,16 +69,16 @@ class MonopolyElectronicoBloc
   }
 
   _startGameEvent(
-      StartGameEvent event, Emitter<MonopolyElectronicoState> emit) async {
+      StartGameEvent event, Emitter<MonopolyElectronicState> emit) async {
     try {
       emit(state.copyWith(status: GameStatus.loading));
       final sesionId = const Uuid().v1();
       final players =
           event.players.map((e) => e.copyWith(gameSesion: sesionId)).toList();
       final sesionPlayers =
-          await getIt<MonopolyElectronicService>().setupPlayers(players);
+          await getIt<BankerElectronicService>().setupPlayers(players);
       await Future.delayed(const Duration(milliseconds: 900));
-      await getIt<MonopolyGamesStorage>().startGameX(sesionId: sesionId);
+      await getIt<MonopolyGamesStorage>().startGameX(sessionId: sesionId);
       emit(state.copyWith(
         players: sesionPlayers,
         status: GameStatus.playing,
@@ -91,7 +90,7 @@ class MonopolyElectronicoBloc
   }
 
   _changeUserEvent(
-      UpdatePlayerEvent event, Emitter<MonopolyElectronicoState> emit) async {
+      UpdatePlayerEvent event, Emitter<MonopolyElectronicState> emit) async {
     final resp = await BankerAlerts.readNfcDataCard();
     try {
       if (resp == null) {
@@ -116,7 +115,7 @@ class MonopolyElectronicoBloc
     }
   }
 
-  _finishTurnPlayer(_, Emitter<MonopolyElectronicoState> emit) async {
+  _finishTurnPlayer(_, Emitter<MonopolyElectronicState> emit) async {
     emit(state.copyWith(
       player: null,
       status: GameStatus.playing,
@@ -125,7 +124,7 @@ class MonopolyElectronicoBloc
   }
 
   _addMoneyEvent(
-      AddPlayerMoneyEvent event, Emitter<MonopolyElectronicoState> emit) {
+      AddPlayerMoneyEvent event, Emitter<MonopolyElectronicState> emit) {
     if (state.currentPlayer == null || state.status == GameStatus.playing) {
       return;
     }
@@ -153,8 +152,8 @@ class MonopolyElectronicoBloc
     ));
   }
 
-  _substractMoneyEvent(
-      SubstractMoneyEvent event, Emitter<MonopolyElectronicoState> emit) {
+  _subtractMoneyEvent(
+      SubtractMoneyEvent event, Emitter<MonopolyElectronicState> emit) {
     if (state.currentPlayer == null || state.status == GameStatus.playing) {
       return;
     }
@@ -186,7 +185,7 @@ class MonopolyElectronicoBloc
     ));
   }
 
-  _passExitEvent(_, Emitter<MonopolyElectronicoState> emit) async {
+  _passExitEvent(_, Emitter<MonopolyElectronicState> emit) async {
     try {
       if (state.currentPlayer == null) {
         final resp = await BankerAlerts.readNfcDataCard();
@@ -219,7 +218,7 @@ class MonopolyElectronicoBloc
   }
 
   _payPlayersEvent(
-      PayPlayersEvent event, Emitter<MonopolyElectronicoState> emit) async {
+      PayPlayersEvent event, Emitter<MonopolyElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
     final resp = await BankerAlerts.chooseTransaction();
     if (resp != null) {
@@ -424,7 +423,7 @@ class MonopolyElectronicoBloc
     emit(state.copyWith(players: temp));
   }
 
-  MonopolyElectronicoState _updateWhenExit(MonopolyPlayerX old) {
+  MonopolyElectronicState _updateWhenExit(MonopolyPlayerX old) {
     final playerPassExit = old.copyWith(money: old.money + 2);
     final index = state.players.indexOf(old);
     final temp = List.of(state.players);

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
-import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
 import 'package:monopoly_banker/interface/widgets/numeric_button.dart';
@@ -58,7 +58,7 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
         break;
 
       case MoneyValue.salida:
-        getIt<MonopolyElectronicoBloc>().add(PassExitEvent());
+        getIt<MonopolyElectronicBloc>().add(PassExitEvent());
         break;
     }
     currentType = type;
@@ -72,17 +72,17 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
     }
     switch (data) {
       case Transactions.add:
-        getIt<MonopolyElectronicoBloc>().add(AddPlayerMoneyEvent(
+        getIt<MonopolyElectronicBloc>().add(AddPlayerMoneyEvent(
             type: currentType, money: double.parse(controller.text)));
         break;
 
       case Transactions.substract:
-        getIt<MonopolyElectronicoBloc>().add(SubstractMoneyEvent(
+        getIt<MonopolyElectronicBloc>().add(SubtractMoneyEvent(
             type: currentType, money: double.parse(controller.text)));
         break;
 
       case Transactions.fromPlayers:
-        getIt<MonopolyElectronicoBloc>()
+        getIt<MonopolyElectronicBloc>()
             .add(PayPlayersEvent(double.parse(controller.text), currentType));
         break;
     }

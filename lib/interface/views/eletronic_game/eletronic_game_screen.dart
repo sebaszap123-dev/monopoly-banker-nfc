@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
-import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/animated_icon_button.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
@@ -25,10 +25,10 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
   late Animation<double> _animation;
 
   void getCurrentUser() =>
-      getIt<MonopolyElectronicoBloc>().add(UpdatePlayerEvent());
+      getIt<MonopolyElectronicBloc>().add(UpdatePlayerEvent());
 
   void finishTurn() =>
-      getIt<MonopolyElectronicoBloc>().add(FinishTurnPlayerEvent());
+      getIt<MonopolyElectronicBloc>().add(FinishTurnPlayerEvent());
 
   double get cardHeight {
     return MediaQuery.of(context).size.height * 0.3;
@@ -62,7 +62,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
   @override
   void dispose() {
     _controller.dispose();
-    getIt<MonopolyElectronicoBloc>().add(BackupGame(appPaused: true));
+    getIt<MonopolyElectronicBloc>().add(BackupGame(appPaused: true));
     super.dispose();
   }
 
@@ -72,7 +72,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<MonopolyElectronicoBloc, MonopolyElectronicoState>(
+    return BlocBuilder<MonopolyElectronicBloc, MonopolyElectronicState>(
       builder: (context, blocState) {
         if (blocState.status == GameStatus.loading) {
           return Scaffold(
@@ -87,7 +87,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios),
-              onPressed: () => getIt<MonopolyElectronicoBloc>()
+              onPressed: () => getIt<MonopolyElectronicBloc>()
                   .add(BackupGame(appPaused: false)),
             ),
             actions: [
@@ -166,8 +166,8 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                               ),
                             ),
                             const Spacer(flex: 1),
-                            BlocSelector<MonopolyElectronicoBloc,
-                                MonopolyElectronicoState, GameTransaction>(
+                            BlocSelector<MonopolyElectronicBloc,
+                                MonopolyElectronicState, GameTransaction>(
                               selector: (playerTransactionState) {
                                 return playerTransactionState.gameTransaction;
                               },

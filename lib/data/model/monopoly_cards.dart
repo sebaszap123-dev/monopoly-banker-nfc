@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/utils/default_colors.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
+import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/model/ndfe_record_info.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 
@@ -13,12 +14,14 @@ class MonopolyCard {
   final String number;
   final Color color;
   final String colorName;
+  final GameVersions gameVersion;
   String? displayName;
   MonopolyCard._({
     this.id = 0,
     required this.color,
     required this.number,
     required this.colorName,
+    required this.gameVersion,
     this.displayName,
   });
 
@@ -29,6 +32,8 @@ class MonopolyCard {
       number: map['number'],
       color: (map['color'] as String).toColor(),
       colorName: map['colorName'],
+      gameVersion: GameVersions.values
+          .firstWhere((version) => version.name == map['gameVersion']),
     );
   }
 
@@ -38,6 +43,7 @@ class MonopolyCard {
       'number': number,
       'color': color.toHex(),
       'colorName': colorName,
+      'gameVersion': gameVersion.name,
     };
   }
 
@@ -56,10 +62,11 @@ class MonopolyCard {
       color: defaultColor,
       number: defaultNumber,
       colorName: colorName,
+      gameVersion: GameVersions.electronic,
     );
   }
 
-  static MonopolyCard fromColor(Color color) {
+  static MonopolyCard fromColor(Color color, GameVersions gameVersion) {
     // Buscar el nombre del color correspondiente al color recibido
     final colorName = _nameFromColor(color);
 
@@ -75,6 +82,7 @@ class MonopolyCard {
       color: color,
       number: defaultNumber,
       colorName: colorName,
+      gameVersion: gameVersion,
     );
   }
 
@@ -99,6 +107,7 @@ class MonopolyCard {
     String? number,
     Color? color,
     String? displayName,
+    GameVersions? gameVersion,
   }) {
     // Buscar el nombre del color correspondiente al color recibido
     String? colorName;
@@ -118,10 +127,11 @@ class MonopolyCard {
       number: number ?? this.number,
       colorName: colorName!,
       displayName: displayName ?? this.displayName,
+      gameVersion: gameVersion ?? this.gameVersion,
     );
   }
 
-  static List<MonopolyCard> get playerCards {
+  static List<MonopolyCard> get electronicPlayerCards {
     return List.generate(6, (index) => MonopolyCard.cardForPlayer(index));
   }
 
@@ -136,6 +146,7 @@ class MonopolyCard {
       color: color,
       number: number,
       colorName: colorName,
+      gameVersion: GameVersions.electronic,
     );
   }
 
@@ -158,7 +169,7 @@ class MonopolyCard {
             cards.indexWhere((card) => card.number == recordInfo.text);
         if (index != -1) {
           status = NdefStatus.card;
-          statuses.add(status = NdefStatus.card);
+          statuses.add(status);
         }
       }
     }
@@ -176,7 +187,7 @@ class MonopolyCard {
   static String _getNumber(NdefRecord record) {
     final numberCard = NdefRecordInfo.fromNdef(record).text;
     if (!numberCard.isValidCreditCardNumber()) {
-      print(numberCard);
+      // TODO: HANDLE ERROR AND NOTIFY NO USER
       // throw ("It's not a valid credit card number.");
     }
     return numberCard;
@@ -184,7 +195,6 @@ class MonopolyCard {
 
   static Color _getColor(NdefRecord record) {
     final colorText = NdefRecordInfo.fromNdef(record).text;
-    print(colorText);
     if (!colorText.isValidColor()) print(colorText);
 
     return colorText.toColor();

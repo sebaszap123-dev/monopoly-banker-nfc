@@ -14,7 +14,10 @@ class ImageGame extends StatelessWidget {
     switch (version) {
       case GameVersions.classic:
         return BankerImages.monopolyClassic;
-      case GameVersions.electronico:
+      case GameVersions.electronic:
+        return BankerImages.monopolyElectronic;
+      case GameVersions.colima:
+        // TODO: Change Image.
         return BankerImages.monopolyElectronic;
     }
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 
 class PayToButton extends StatelessWidget {
   const PayToButton({super.key, required this.payTo, required this.onTap});

@@ -4,25 +4,27 @@ import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/database/monopoly_database.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
+import 'package:monopoly_banker/data/repository/banker_repository.dart';
 import 'package:monopoly_banker/data/service/secure_storage.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:sqflite/sqflite.dart';
 
-class MonopolyElectronicService {
+class BankerElectronicService extends BankerRepository {
   final Database _dbX;
 
-  MonopolyElectronicService._(this._dbX);
+  BankerElectronicService._(this._dbX);
 
-  static Future<MonopolyElectronicService> initDbX() async {
+  static Future<BankerElectronicService> initDbX() async {
     try {
       final db = await MonopolyDatabase.initDatabase();
-      return MonopolyElectronicService._(db);
+      return BankerElectronicService._(db);
     } catch (e) {
       throw ('Error db $e');
     }
   }
 
-  // Método para obtener todas las cartas de Monopoly
+  /// Método para obtener todas las cartas de Monopoly
+  @override
   Future<List<MonopolyCard>> getAllMonopolyCards() async {
     try {
       final db = _dbX;
@@ -35,11 +37,11 @@ class MonopolyElectronicService {
   }
 
   /// Create a monopoly card and return the ID: [int] (0 if conflic occurs)
+  @override
   Future<int> addMonopolyCard(MonopolyCard card) async {
     final db = _dbX;
     final cards = await db.query(MonopolyDatabase.cardPlayerTb,
         where: 'number = ?', whereArgs: [card.number], limit: 1);
-    print(cards);
     if (cards.isNotEmpty) {
       BankerAlerts.alreadyRegisteredCard();
       return -1;
@@ -54,6 +56,7 @@ class MonopolyElectronicService {
   }
 
   /// Create a monopoly [MonopolyPlayerX] and return the ID: [int] (0 if conflic occurs)
+  @override
   Future<int> addPlayerX(MonopolyPlayerX player) async {
     final db = _dbX;
 
@@ -67,6 +70,7 @@ class MonopolyElectronicService {
   }
 
   /// Create a monopoly [MonopolyPlayerX] and return the ID: [int] (0 if conflic occurs)
+  @override
   Future<List<MonopolyPlayerX>> getSesionPlayers(String idSesion) async {
     final db = _dbX;
 
@@ -80,6 +84,7 @@ class MonopolyElectronicService {
   }
 
   /// Update a monopoly card and return the COUNT OF ITEMS updated: [int] (0 if conflic occurs)
+  @override
   Future<int> updateMonopolyCard(MonopolyCard card) async {
     final db = _dbX;
     final resp = await db.update(MonopolyDatabase.cardPlayerTb, card.toSqlMap(),
@@ -91,6 +96,7 @@ class MonopolyElectronicService {
   }
 
   /// Delete a monopoly card and return the ID: [int] (0 if conflict occurs)
+  @override
   Future<int> deleteMonopolyCard(MonopolyCard card) async {
     final db = _dbX;
     try {
@@ -110,6 +116,7 @@ class MonopolyElectronicService {
   }
 
   /// Create a monopoly player [MonopolyPlayerX] and return the COUNT: [int] (0 if conflic occurs)
+  @override
   Future<void> deleteAllPlayers() async {
     final db = _dbX;
     final resp = await db.delete(
@@ -120,6 +127,7 @@ class MonopolyElectronicService {
   }
 
   /// Setup players reponse: count of deleted players [int]
+  @override
   Future<List<MonopolyPlayerX>> setupPlayers(
       List<MonopolyPlayerX> players) async {
     try {
@@ -132,8 +140,6 @@ class MonopolyElectronicService {
       }
       final resp = await db.commit();
 
-      // temp.add(player.copyWith(id: id));
-      print(resp[0]);
       final List<MonopolyPlayerX> playersx = [];
       for (int index = 0; resp.length > index; index++) {
         final idPlayer = players[index].copyWith(id: resp[index] as int);
@@ -141,12 +147,15 @@ class MonopolyElectronicService {
       }
       return playersx;
     } catch (e) {
+      // TODO: HANDLE ERROR AND NOTIFY NO USER
+
       print(e);
       return [];
     }
   }
 
-  ///
+  /// Backup data players
+  @override
   Future<void> backupPlayers(List<MonopolyPlayerX> players) async {
     try {
       final batch = _dbX.batch();
@@ -160,13 +169,14 @@ class MonopolyElectronicService {
         );
       }
       final resp = await batch.commit();
-      print(resp);
     } catch (e) {
+      // TODO: HANDLE ERROR AND NOTIFY NO USER
       print(e);
     }
   }
 
   /// Reset players reponse: count of deleted players [int]
+  @override
   Future<int> resetPlayers() async {
     try {
       final db = _dbX;
@@ -175,6 +185,7 @@ class MonopolyElectronicService {
       );
       return results;
     } catch (e) {
+      // TODO: HANDLE ERROR AND NOTIFY NO USER
       print(e);
       return 0;
     }

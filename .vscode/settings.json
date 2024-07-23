@@ -1,5 +1,7 @@
 {
     "cSpell.words": [
-        "servicelocator"
+        "AUTOINCREMENT",
+        "servicelocator",
+        "sqflite"
     ]
 }

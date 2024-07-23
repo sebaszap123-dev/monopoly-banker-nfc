@@ -1,7 +1,7 @@
 import 'package:art_sweetalert/art_sweetalert.dart';
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
-import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
@@ -38,14 +38,30 @@ abstract class BankerAlerts {
     );
   }
 
+  static noPlayersSelected() {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.warning,
+        title: 'You need to select al least two players to play',
+        confirmButtonText: 'Okay',
+        text: 'Please selected to players in order to play the game.',
+      ),
+    );
+  }
+
   static void showSuccessDeletedPlayers(int deletedUsersCount) {
+    String message = 'Deleted $deletedUsersCount users.';
+    if (deletedUsersCount == 0) {
+      message = 'No session players to deleted';
+    }
     ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
         type: ArtSweetAlertType.success,
         title: 'Success!',
         confirmButtonText: 'Okay',
-        text: 'Deleted $deletedUsersCount users.',
+        text: message,
       ),
     );
   }
