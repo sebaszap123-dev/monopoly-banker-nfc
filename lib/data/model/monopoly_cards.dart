@@ -144,12 +144,13 @@ class MonopolyCard {
       return NdefStatus.empty;
     }
     NdefStatus status = NdefStatus.format;
+    List<NdefStatus> statuses = [];
     for (var record in message.records) {
       final recordInfo = NdefRecordInfo.fromNdef(record);
       final isValid = recordInfo.text.isValidCreditCardNumber();
 
       if (recordInfo.text == 'Empty') {
-        return NdefStatus.empty;
+        statuses.add(NdefStatus.empty);
       }
 
       if (isValid) {
@@ -157,11 +158,18 @@ class MonopolyCard {
             cards.indexWhere((card) => card.number == recordInfo.text);
         if (index != -1) {
           status = NdefStatus.card;
+          statuses.add(status = NdefStatus.card);
         }
       }
     }
-
-    return status;
+    if (statuses.isEmpty) {
+      return NdefStatus.empty;
+    }
+    final hasCard = statuses.indexWhere((status) => status == NdefStatus.card);
+    if (hasCard == -1) {
+      return NdefStatus.empty;
+    }
+    return NdefStatus.card;
   }
 
   // HANDLE ERROS WITH ART SWEET ALERT AND GET_IT CONTEXT ROUTER

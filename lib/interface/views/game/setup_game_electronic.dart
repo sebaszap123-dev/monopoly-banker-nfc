@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'dart:io';
 
@@ -63,29 +63,35 @@ class _EletronicGameSetupState extends State<EletronicGameSetup> {
   }
 
   void onTapCard(MapEntry<MonopolyCard, bool> entry) async {
-    final hasPlayer =
-        players.where((element) => element.number == entry.key.number).toList();
-    if (hasPlayer.isNotEmpty) {
-      final playerName = await BankerAlerts.showAddPlayerAlert(
-          oldName: hasPlayer[0].namePlayer);
-      final index = players.indexOf(hasPlayer[0]);
-      players[index] = hasPlayer[0].copyWith(namePlayer: playerName);
-      cards.remove(entry.key);
-      final updatedcard = entry.key.copyWith(displayName: playerName);
-      cards[updatedcard] = true;
-      setState(() {});
+    final matchingPlayers =
+        players.where((player) => player.number == entry.key.number).toList();
+    final action = matchingPlayers.isNotEmpty
+        ? await BankerAlerts.showAddPlayerAlert(
+            oldName: matchingPlayers[0].namePlayer)
+        : await BankerAlerts.showAddPlayerAlert();
+
+    if (action.key == CardManagerStatus.cancel) return;
+
+    if (action.key == CardManagerStatus.delete) {
+      deleteCard(entry.key);
       return;
     }
-    final playerName = await BankerAlerts.showAddPlayerAlert();
+
+    final playerName = action.value;
     if (playerName != null) {
-      players.add(MonopolyPlayerX.fromCard(entry.key, playerName));
+      if (matchingPlayers.isNotEmpty) {
+        final index = players.indexOf(matchingPlayers[0]);
+        players[index] = matchingPlayers[0].copyWith(namePlayer: playerName);
+      } else {
+        players.add(MonopolyPlayerX.fromCard(entry.key, playerName));
+      }
       cards.remove(entry.key);
-      final updatedcard = entry.key.copyWith(displayName: playerName);
-      cards[updatedcard] = true;
-      setState(() {});
-      return;
+      final updatedCard = entry.key.copyWith(displayName: playerName);
+      cards[updatedCard] = true;
+    } else {
+      cards[entry.key] = !entry.value;
     }
-    cards[entry.key] = !entry.value;
+
     setState(() {});
   }
 
@@ -106,6 +112,9 @@ class _EletronicGameSetupState extends State<EletronicGameSetup> {
         });
     if (resp != null) {
       final id = await getIt<MonopolyElectronicService>().addMonopolyCard(resp);
+      if (id == -1) {
+        return;
+      }
       final card = resp.copyWith(id: id);
       cards[card] = false;
       setState(() {});
@@ -203,6 +212,7 @@ class _NfcAddCards extends StatefulWidget {
 class _NfcAddCardsState extends State<_NfcAddCards> {
   bool isNfc = false;
   MonopolyCard? card;
+  NdefStatus? status;
 
   List<MonopolyCard> cards = [];
 
@@ -217,15 +227,15 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
         .any((existingPlayer) => player.number == existingPlayer.number));
   }
 
-  Future<bool> canBeWrited(NfcTag tag) async {
+  Future<bool> canOverride(NfcTag tag) async {
     if (tag.data.containsKey('ndef')) {
-      // Identificar el tipo de tecnología NFC
       final ndef = Ndef.from(tag);
       if (ndef != null) {
         final cachedMessage = ndef.cachedMessage;
 
-        final status =
-            MonopolyCard.isRawCard(cachedMessage, widget.currentCards);
+        status = MonopolyCard.isRawCard(cachedMessage, widget.currentCards);
+        print(status);
+
         if (status == NdefStatus.format) {
           final ndefFormat = NdefFormatable.from(tag);
           if (ndefFormat != null) {
@@ -234,10 +244,12 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
           }
           return true;
         }
+
         if (status == NdefStatus.card) {
-          BankerAlerts.alreadyRegisteredCard();
-          return false;
+          // BankerAlerts.alreadyRegisteredCard();
+          return true;
         }
+
         return NdefStatus.empty == status;
       }
     }
@@ -245,41 +257,53 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
   }
 
   Future<void> writeToTag(NfcTag tag) async {
-    final hasData = await canBeWrited(tag);
-    if (!Platform.isAndroid) {
-      return;
-    }
-    if (card == null && !hasData) return;
+    final hasData = await canOverride(tag);
+
+    if (!Platform.isAndroid) return;
+
+    if (card == null && !hasData && status == null) return;
 
     final tech = Ndef.from(tag);
-    // * final awa = MifareUltralight.from(tag);
+
+    if (status == NdefStatus.card) {
+      if (tech is Ndef) {
+        final ndef = await tech.read();
+        card = MonopolyCard.fromNdefMessage(ndef);
+        Navigator.of(context).pop(card);
+      }
+      return;
+    }
+
     if (tech is Ndef) {
       if (!tech.isWritable) {
-        BankerAlerts.unhandleErros(error: 'Tag is not ndef writable.');
+        BankerAlerts.unhandledError(error: 'Tag is not ndef writable.');
+        return;
       }
+
       final test = WellknownTextRecord(languageCode: 'es', text: card!.number);
       final color =
           WellknownTextRecord(languageCode: 'es', text: card!.color.toHex());
+
       try {
         final message = NdefMessage([test.toNdef(), color.toNdef()]);
         await tech.write(message);
       } on PlatformException catch (_) {
-        // ignore: use_build_context_synchronously
-        BankerAlerts.unhandleErros(
-            error: 'Please format your nfc tag with and app',
-            myContext: widget.context);
+        BankerAlerts.unhandledError(
+          error: 'Please format your nfc tag with an app',
+          myContext: widget.context,
+        );
       }
+
       await getIt<NfcManager>().stopSession();
       setState(() {
         isNfc = false;
       });
 
-      /// Return Card data
-      // ignore: use_build_context_synchronously
       Navigator.of(context).pop(card);
       return;
     }
-    BankerAlerts.unhandleErros(error: "It's a NDEF card valid");
+
+    BankerAlerts.unhandledError(error: "It's a NDEF card valid");
   }
 
   onNfc() async {
@@ -293,7 +317,7 @@ class _NfcAddCardsState extends State<_NfcAddCards> {
           .startSession(onDiscovered: (NfcTag tag) async => writeToTag(tag));
       return;
     }
-    BankerAlerts.unhandleErros(error: 'NFC disabled');
+    BankerAlerts.unhandledError(error: 'NFC disabled');
   }
 
   @override

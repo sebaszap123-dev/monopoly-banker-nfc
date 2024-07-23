@@ -9,9 +9,11 @@ import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';
 import 'package:monopoly_banker/interface/widgets/pay_to_button.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 
+enum CardManagerStatus { delete, cancel, name }
+
 abstract class BankerAlerts {
   static BuildContext context = getIt<RouterCubit>().context;
-  static unhandleErros({String? error, BuildContext? myContext}) {
+  static unhandledError({String? error, BuildContext? myContext}) {
     ArtSweetAlert.show(
       context: myContext ?? context,
       artDialogArgs: ArtDialogArgs(
@@ -332,7 +334,9 @@ abstract class BankerAlerts {
     );
   }
 
-  static Future<String?> showAddPlayerAlert({String? oldName}) async {
+  static Future<MapEntry<CardManagerStatus, String?>> showAddPlayerAlert({
+    String? oldName,
+  }) async {
     final TextEditingController playerNameController =
         TextEditingController(text: oldName);
 
@@ -340,33 +344,42 @@ abstract class BankerAlerts {
       context: context,
       artDialogArgs: ArtDialogArgs(
         type: ArtSweetAlertType.question,
-        title: oldName != null ? 'Edit Player' : 'Add Player',
+        title: 'Card manager',
         confirmButtonText: 'Accept',
+        denyButtonColor: Colors.red,
+        denyButtonText: 'Delete card',
         customColumns: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: TextField(
               controller: playerNameController,
               decoration: InputDecoration(
-                labelText: 'Player Name',
+                labelText: oldName ?? 'Player Name',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 40)
+          const SizedBox(height: 40),
         ],
         showCancelBtn: true,
       ),
     );
 
-    if (resp == null || !resp.isTapConfirmButton) {
-      // El usuario cancela la acción o cierra la alerta
-      return null;
+    if (resp == null) {
+      // El usuario cierra la alerta
+      return const MapEntry(CardManagerStatus.cancel, null);
+    }
+    if (resp.isTapCancelButton) {
+      // El usuario cancela la acción
+      return const MapEntry(CardManagerStatus.cancel, null);
+    } else if (resp.isTapDenyButton) {
+      // El usuario elige eliminar la tarjeta
+      return const MapEntry(CardManagerStatus.delete, null);
     } else {
       // El usuario confirma la acción
-      return playerNameController.text;
+      return MapEntry(CardManagerStatus.name, playerNameController.text);
     }
   }
 

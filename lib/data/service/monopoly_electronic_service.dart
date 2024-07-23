@@ -37,7 +37,13 @@ class MonopolyElectronicService {
   /// Create a monopoly card and return the ID: [int] (0 if conflic occurs)
   Future<int> addMonopolyCard(MonopolyCard card) async {
     final db = _dbX;
-
+    final cards = await db.query(MonopolyDatabase.cardPlayerTb,
+        where: 'number = ?', whereArgs: [card.number], limit: 1);
+    print(cards);
+    if (cards.isNotEmpty) {
+      BankerAlerts.alreadyRegisteredCard();
+      return -1;
+    }
     final resp = await db.insert(
       MonopolyDatabase.cardPlayerTb,
       card.toSqlMap(),
@@ -84,13 +90,23 @@ class MonopolyElectronicService {
     return resp;
   }
 
-  /// Delete a monopoly card and return the ID: [int] (0 if conflic occurs)
+  /// Delete a monopoly card and return the ID: [int] (0 if conflict occurs)
   Future<int> deleteMonopolyCard(MonopolyCard card) async {
     final db = _dbX;
-    final resp = await db.delete(MonopolyDatabase.cardPlayerTb,
-        where: 'id = ?', whereArgs: [card.id]);
+    try {
+      // Delete by id or number
+      final resp = await db.delete(
+        MonopolyDatabase.cardPlayerTb,
+        where: 'id = ? OR number = ?',
+        whereArgs: [card.id, card.number],
+      );
 
-    return resp;
+      // If a row was deleted, return the card.id, else return 0
+      return resp > 0 ? card.id : 0;
+    } catch (e) {
+      // Handle any exceptions and return 0
+      return 0;
+    }
   }
 
   /// Create a monopoly player [MonopolyPlayerX] and return the COUNT: [int] (0 if conflic occurs)

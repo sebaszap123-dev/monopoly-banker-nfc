@@ -86,7 +86,7 @@ class MonopolyElectronicoBloc
         gameTransaction: GameTransaction.none,
       ));
     } catch (e) {
-      BankerAlerts.unhandleErros(error: e.toString());
+      BankerAlerts.unhandledError(error: e.toString());
     }
   }
 
@@ -99,7 +99,7 @@ class MonopolyElectronicoBloc
       }
       final player = state.playerFromCard(resp);
       if (player == null) {
-        BankerAlerts.unhandleErros(error: 'No player found in this sesion');
+        BankerAlerts.unhandledError(error: 'No player found in this sesion');
         emit(state.copyWith(
           status: GameStatus.playing,
           gameTransaction: GameTransaction.none,
@@ -112,7 +112,7 @@ class MonopolyElectronicoBloc
         gameTransaction: GameTransaction.none,
       ));
     } catch (e) {
-      BankerAlerts.unhandleErros(error: e.toString());
+      BankerAlerts.unhandledError(error: e.toString());
     }
   }
 
@@ -194,7 +194,7 @@ class MonopolyElectronicoBloc
 
         final player = state.playerFromCard(resp);
         if (player == null) {
-          BankerAlerts.unhandleErros(
+          BankerAlerts.unhandledError(
             error: 'No player found in this session',
           );
           emit(state.copyWith(
@@ -210,7 +210,7 @@ class MonopolyElectronicoBloc
         return;
       }
     } catch (e) {
-      BankerAlerts.unhandleErros(error: e.toString());
+      BankerAlerts.unhandledError(error: e.toString());
       emit(state.copyWith(
         status: GameStatus.playing,
         gameTransaction: GameTransaction.none,
