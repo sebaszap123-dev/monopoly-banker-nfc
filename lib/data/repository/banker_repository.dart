@@ -5,7 +5,7 @@ abstract class BankerRepository {
   Future<List<MonopolyCard>> getAllMonopolyCards();
   Future<int> addMonopolyCard(MonopolyCard card);
   Future<int> addPlayerX(MonopolyPlayerX player);
-  Future<List<MonopolyPlayerX>> getSesionPlayers(String idSesion);
+  Future<List<MonopolyPlayerX>> getSessionPlayers(String idSession);
   Future<int> updateMonopolyCard(MonopolyCard card);
   Future<int> deleteMonopolyCard(MonopolyCard card);
   Future<void> deleteAllPlayers();

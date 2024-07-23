@@ -36,7 +36,7 @@ class BankerElectronicService extends BankerRepository {
     }
   }
 
-  /// Create a monopoly card and return the ID: [int] (0 if conflic occurs)
+  /// Create a monopoly card and return the ID: [int] (0 if conflict occurs)
   @override
   Future<int> addMonopolyCard(MonopolyCard card) async {
     final db = _dbX;
@@ -55,7 +55,7 @@ class BankerElectronicService extends BankerRepository {
     return resp;
   }
 
-  /// Create a monopoly [MonopolyPlayerX] and return the ID: [int] (0 if conflic occurs)
+  /// Create a monopoly [MonopolyPlayerX] and return the ID: [int] (0 if conflict occurs)
   @override
   Future<int> addPlayerX(MonopolyPlayerX player) async {
     final db = _dbX;
@@ -69,21 +69,21 @@ class BankerElectronicService extends BankerRepository {
     return resp;
   }
 
-  /// Create a monopoly [MonopolyPlayerX] and return the ID: [int] (0 if conflic occurs)
+  /// Create a monopoly [MonopolyPlayerX] and return the ID: [int] (0 if conflict occurs)
   @override
-  Future<List<MonopolyPlayerX>> getSesionPlayers(String idSesion) async {
+  Future<List<MonopolyPlayerX>> getSessionPlayers(String idSession) async {
     final db = _dbX;
 
     final resp = await db.query(
       MonopolyDatabase.playersXTb,
       where: 'gameSesion = ?',
-      whereArgs: [idSesion],
+      whereArgs: [idSession],
     );
 
     return resp.map((e) => MonopolyPlayerX.fromMap(e)).toList();
   }
 
-  /// Update a monopoly card and return the COUNT OF ITEMS updated: [int] (0 if conflic occurs)
+  /// Update a monopoly card and return the COUNT OF ITEMS updated: [int] (0 if conflict occurs)
   @override
   Future<int> updateMonopolyCard(MonopolyCard card) async {
     final db = _dbX;
@@ -115,7 +115,7 @@ class BankerElectronicService extends BankerRepository {
     }
   }
 
-  /// Create a monopoly player [MonopolyPlayerX] and return the COUNT: [int] (0 if conflic occurs)
+  /// Create a monopoly player [MonopolyPlayerX] and return the COUNT: [int] (0 if conflict occurs)
   @override
   Future<void> deleteAllPlayers() async {
     final db = _dbX;
@@ -168,7 +168,7 @@ class BankerElectronicService extends BankerRepository {
           whereArgs: [player.id],
         );
       }
-      final resp = await batch.commit();
+      await batch.commit();
     } catch (e) {
       // TODO: HANDLE ERROR AND NOTIFY NO USER
       print(e);

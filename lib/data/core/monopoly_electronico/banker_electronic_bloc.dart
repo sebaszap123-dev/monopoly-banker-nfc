@@ -60,7 +60,7 @@ class MonopolyElectronicBloc
       RestoreGameEvent event, Emitter<MonopolyElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
     final players = await getIt<BankerElectronicService>()
-        .getSesionPlayers(event.sessionId);
+        .getSessionPlayers(event.sessionId);
     emit(state.copyWith(
       players: players,
       status: GameStatus.playing,
@@ -72,13 +72,13 @@ class MonopolyElectronicBloc
       StartGameEvent event, Emitter<MonopolyElectronicState> emit) async {
     try {
       emit(state.copyWith(status: GameStatus.loading));
-      final sesionId = const Uuid().v1();
+      final sessionId = const Uuid().v1();
       final players =
-          event.players.map((e) => e.copyWith(gameSesion: sesionId)).toList();
+          event.players.map((e) => e.copyWith(gameSession: sessionId)).toList();
       final sesionPlayers =
           await getIt<BankerElectronicService>().setupPlayers(players);
       await Future.delayed(const Duration(milliseconds: 900));
-      await getIt<MonopolyGamesStorage>().startGameX(sessionId: sesionId);
+      await getIt<MonopolyGamesStorage>().startGameX(sessionId: sessionId);
       emit(state.copyWith(
         players: sesionPlayers,
         status: GameStatus.playing,

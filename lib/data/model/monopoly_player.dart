@@ -10,7 +10,7 @@ class MonopolyPlayerX {
   final Color color;
   final double money;
   final String infoNfc;
-  final String? gameSesion;
+  final String? gameSession;
   final String? namePlayer;
   MonopolyPlayerX._({
     this.id = 0,
@@ -18,7 +18,7 @@ class MonopolyPlayerX {
     required this.color,
     required this.infoNfc,
     this.namePlayer,
-    this.gameSesion,
+    this.gameSession,
     this.money = 15,
   });
 
@@ -39,7 +39,8 @@ class MonopolyPlayerX {
       color: (map['color'] as String).toColor(),
       money: map['money'],
       namePlayer: map['namePlayer'],
-      gameSesion: map['gameSesion'],
+      // DATABASE HAS THIS NAMED [gameSesion]
+      gameSession: map['gameSesion'],
       infoNfc: const Uuid().v6(),
     );
   }
@@ -50,7 +51,7 @@ class MonopolyPlayerX {
       'number': number,
       'color': color.toHex(),
       'namePlayer': namePlayer,
-      'gameSesion': gameSesion,
+      'gameSession': gameSession,
       'money': money,
       'infoNfc': infoNfc
     };
@@ -62,7 +63,7 @@ class MonopolyPlayerX {
     Color? color,
     String? infoNfc,
     String? namePlayer,
-    String? gameSesion,
+    String? gameSession,
     double? money,
   }) {
     return MonopolyPlayerX._(
@@ -70,7 +71,7 @@ class MonopolyPlayerX {
       number: number ?? this.number,
       color: color ?? this.color,
       namePlayer: namePlayer ?? this.namePlayer,
-      gameSesion: gameSesion ?? this.gameSesion,
+      gameSession: gameSession ?? this.gameSession,
       infoNfc: const Uuid().v6(),
       money: money ?? this.money,
     );
