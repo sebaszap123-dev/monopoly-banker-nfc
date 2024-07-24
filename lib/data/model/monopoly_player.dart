@@ -51,7 +51,7 @@ class MonopolyPlayerX {
       'number': number,
       'color': color.toHex(),
       'namePlayer': namePlayer,
-      'gameSession': gameSession,
+      'gameSesion': gameSession,
       'money': money,
       'infoNfc': infoNfc
     };

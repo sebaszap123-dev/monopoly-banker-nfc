@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
+import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/database/monopoly_database.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
@@ -19,20 +20,22 @@ class BankerElectronicService extends BankerRepository {
       final db = await MonopolyDatabase.initDatabase();
       return BankerElectronicService._(db);
     } catch (e) {
+      // TODO: HANDLE ERROR AND NOTIFY NO USER
       throw ('Error db $e');
     }
   }
 
   /// Método para obtener todas las cartas de Monopoly
   @override
-  Future<List<MonopolyCard>> getAllMonopolyCards() async {
+  Future<List<MonopolyCard>> getAllMonopolyCards(GameVersions version) async {
     try {
       final db = _dbX;
-      final results = await db.query(MonopolyDatabase.cardPlayerTb);
+      final results = await db.query(MonopolyDatabase.cardPlayerTb,
+          where: 'gameVersion = ?', whereArgs: [version.name]);
       return results.map((map) => MonopolyCard.fromMap(map)).toList();
     } catch (e) {
-      // Manejo de errores
-      return [];
+      // TODO: HANDLE ERROR AND NOTIFY NO USER
+      throw e;
     }
   }
 
@@ -110,18 +113,17 @@ class BankerElectronicService extends BankerRepository {
       // If a row was deleted, return the card.id, else return 0
       return resp > 0 ? card.id : 0;
     } catch (e) {
-      // Handle any exceptions and return 0
-      return 0;
+      // TODO: HANDLE ERROR AND NOTIFY NO USER
+      throw e;
     }
   }
 
   /// Create a monopoly player [MonopolyPlayerX] and return the COUNT: [int] (0 if conflict occurs)
   @override
-  Future<void> deleteAllPlayers() async {
+  Future<void> deleteAllPlayers(GameVersions version) async {
     final db = _dbX;
-    final resp = await db.delete(
-      MonopolyDatabase.playersXTb,
-    );
+    final resp = await db.delete(MonopolyDatabase.playersXTb,
+        where: 'gameVersion = ?', whereArgs: [version.name]);
     await getIt<MonopolyGamesStorage>().deleteGameX();
     BankerAlerts.showSuccessDeletedPlayers(resp);
   }
@@ -148,9 +150,7 @@ class BankerElectronicService extends BankerRepository {
       return playersx;
     } catch (e) {
       // TODO: HANDLE ERROR AND NOTIFY NO USER
-
-      print(e);
-      return [];
+      throw e;
     }
   }
 
@@ -171,7 +171,7 @@ class BankerElectronicService extends BankerRepository {
       await batch.commit();
     } catch (e) {
       // TODO: HANDLE ERROR AND NOTIFY NO USER
-      print(e);
+      throw e;
     }
   }
 
@@ -186,8 +186,7 @@ class BankerElectronicService extends BankerRepository {
       return results;
     } catch (e) {
       // TODO: HANDLE ERROR AND NOTIFY NO USER
-      print(e);
-      return 0;
+      throw e;
     }
   }
 }

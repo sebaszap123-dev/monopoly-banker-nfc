@@ -29,7 +29,8 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
   bool isLoading = true;
   final GameVersions gameVersion = GameVersions.electronic;
   _initCards() async {
-    final resp = await getIt<BankerElectronicService>().getAllMonopolyCards();
+    final resp =
+        await getIt<BankerElectronicService>().getAllMonopolyCards(gameVersion);
     if (resp.isNotEmpty) {
       for (var card in resp) {
         cards[card] = false;
@@ -159,8 +160,8 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
                       color: Colors.blue.shade200,
                       size: 30,
                     ),
-                    onPressed:
-                        getIt<BankerElectronicService>().deleteAllPlayers,
+                    onPressed: () => getIt<BankerElectronicService>()
+                        .deleteAllPlayers(gameVersion),
                   ),
                 )
               ],

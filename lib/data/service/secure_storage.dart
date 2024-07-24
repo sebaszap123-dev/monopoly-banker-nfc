@@ -8,19 +8,24 @@ class MonopolyGamesStorage {
   static const String _classicGames = 'saved_games_c';
 
   /// Has games saved [bool]
-  Future<bool> get hasCurrentGames async {
-    final futures = [
-      storage.read(key: _electronicGames),
-      storage.read(key: _classicGames),
-    ];
-
-    final responses = await Future.wait(futures);
-
-    return responses.contains('1');
+  Future<bool> get hasCurrentGamesClassic async {
+    final response = await storage.read(key: _classicGames);
+    if (response == null) {
+      return false;
+    }
+    return response.contains('1');
   }
 
-  Future<void> startGameX({required String sessionId}) async {
-    await storage.write(key: _sessionId, value: sessionId);
+  Future<bool> get hasCurrentGamesElectronic async {
+    final response = await storage.read(key: _electronicGames);
+    if (response == null) {
+      return false;
+    }
+    return response.contains('1');
+  }
+
+  Future<void> startGameX({required String lastSessionId}) async {
+    await storage.write(key: _sessionId, value: lastSessionId);
     await storage.write(key: _electronicGames, value: '1');
   }
 
@@ -28,7 +33,7 @@ class MonopolyGamesStorage {
     await storage.write(key: _classicGames, value: '1');
   }
 
-  Future<String?> idSesion() async {
+  Future<String?> idSession() async {
     return await storage.read(key: _sessionId);
   }
 

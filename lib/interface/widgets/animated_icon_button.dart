@@ -18,7 +18,9 @@ class AnimatedIconButtonState extends State<AnimatedIconButton> {
   List<Color> _colors = [];
   @override
   void initState() {
-    _colors = widget.colorsPlayers ?? defaultColors;
+    _colors = (widget.colorsPlayers == null || widget.colorsPlayers!.isNotEmpty
+        ? widget.colorsPlayers
+        : defaultColors)!;
     _currentColorIndex = 0;
 
     _startTimer();

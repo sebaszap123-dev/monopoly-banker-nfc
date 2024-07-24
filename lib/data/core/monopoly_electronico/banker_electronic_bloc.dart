@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
+import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
 import 'package:monopoly_banker/data/service/banker_electronic_service.dart';
@@ -35,7 +36,8 @@ class MonopolyElectronicBloc
     emit(state.copyWith(status: GameStatus.loading));
     // final hasSavedGames = await getIt<MonopolyGamesStorage>().hasCurrentGames;
     // TODO-FEATURE: RESTORE IF SAVEDGAMES IN ELETRONIC and user wants to (show alert)
-    final cards = await getIt<BankerElectronicService>().getAllMonopolyCards();
+    final cards = await getIt<BankerElectronicService>()
+        .getAllMonopolyCards(GameVersions.electronic);
     emit(state.copyWith(
       cards: cards,
       status: GameStatus.playing,
@@ -61,6 +63,15 @@ class MonopolyElectronicBloc
     emit(state.copyWith(status: GameStatus.loading));
     final players = await getIt<BankerElectronicService>()
         .getSessionPlayers(event.sessionId);
+    if (players.isEmpty) {
+      BankerAlerts.unhandledError(error: 'No players of the last session');
+      emit(state.copyWith(
+        players: players,
+        status: GameStatus.endgame,
+        gameTransaction: GameTransaction.none,
+      ));
+      return;
+    }
     emit(state.copyWith(
       players: players,
       status: GameStatus.playing,
@@ -75,12 +86,15 @@ class MonopolyElectronicBloc
       final sessionId = const Uuid().v1();
       final players =
           event.players.map((e) => e.copyWith(gameSession: sessionId)).toList();
-      final sesionPlayers =
+      final sessionPlayers =
           await getIt<BankerElectronicService>().setupPlayers(players);
       await Future.delayed(const Duration(milliseconds: 900));
-      await getIt<MonopolyGamesStorage>().startGameX(sessionId: sessionId);
+      await getIt<MonopolyGamesStorage>().startGameX(lastSessionId: sessionId);
+      if (sessionPlayers.isEmpty) {
+        throw 'Error players not found after make session';
+      }
       emit(state.copyWith(
-        players: sesionPlayers,
+        players: sessionPlayers,
         status: GameStatus.playing,
         gameTransaction: GameTransaction.none,
       ));
