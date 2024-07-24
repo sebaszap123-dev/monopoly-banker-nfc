@@ -359,11 +359,12 @@ abstract class BankerAlerts {
     final ArtDialogResponse? resp = await ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
+        dialogMainAxisSize: MainAxisSize.max,
         type: ArtSweetAlertType.question,
         title: 'Card manager',
         confirmButtonText: 'Accept',
         denyButtonColor: Colors.red,
-        denyButtonText: 'Delete card',
+        denyButtonText: 'Delete',
         customColumns: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),

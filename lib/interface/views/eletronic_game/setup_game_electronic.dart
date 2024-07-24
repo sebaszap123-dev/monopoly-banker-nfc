@@ -178,7 +178,6 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
                     children: [
                       const SizedBox(height: 50),
                       ...cards.entries.map((e) => MonopolyCreditCard(
-                            cardHeight: cardHeight,
                             isSelected: e.value,
                             color: e.key.color,
                             cardNumber: e.key.number,

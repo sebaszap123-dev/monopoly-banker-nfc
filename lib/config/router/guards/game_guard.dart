@@ -8,8 +8,6 @@ import 'package:monopoly_banker/data/service_locator.dart';
 class GameGuard extends AutoRouteGuard {
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
-    // TODO: AGREGAR FORMA DE SABER SI ES ELECTRONICO O CLASIC Y AVISAR AL USER
-
     final args = resolver.route.args as GameRouteArgs;
     // final gameVersion = routeArgs.version;
     switch (args.version) {
@@ -21,6 +19,7 @@ class GameGuard extends AutoRouteGuard {
         final electronic =
             await getIt<MonopolyGamesStorage>().hasCurrentGamesElectronic;
         if (electronic) {
+          // TODO: JALAR LAS SESIONES EXISTENTES Y USARLAS PARA MOSTRARLAS Y QUE DECIDA CUAL QUIERE USAR (REDIRIGIR A OTRA PANTALLA DE SELECCIONAR PARTIDA)
           final id = await getIt<MonopolyGamesStorage>().idSession();
           if (id != null) {
             getIt<MonopolyElectronicBloc>()

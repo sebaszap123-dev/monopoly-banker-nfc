@@ -30,10 +30,6 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
   void finishTurn() =>
       getIt<MonopolyElectronicBloc>().add(FinishTurnPlayerEvent());
 
-  double get cardHeight {
-    return MediaQuery.of(context).size.height * 0.3;
-  }
-
   final TextStyle statuscards = GoogleFonts.robotoMono(
     color: Colors.white,
     fontSize: 22,
@@ -118,7 +114,6 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                   child: Column(
                     children: [
                       MonopolyCreditCard(
-                        cardHeight: cardHeight,
                         color: blocState.currentPlayer!.color,
                         onTap: finishTurn,
                         cardNumber: blocState.currentPlayer!.number,
