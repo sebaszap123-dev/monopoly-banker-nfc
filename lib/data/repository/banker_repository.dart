@@ -1,4 +1,5 @@
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
+import 'package:monopoly_banker/data/model/game_session.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
 
@@ -13,4 +14,5 @@ abstract class BankerRepository {
   Future<List<MonopolyPlayerX>> setupPlayers(List<MonopolyPlayerX> players);
   Future<void> backupPlayers(List<MonopolyPlayerX> players);
   Future<int> resetPlayers();
+  Future<List<GameSession>> getGameSessions(GameVersions version);
 }

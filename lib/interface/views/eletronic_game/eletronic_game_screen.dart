@@ -9,7 +9,7 @@ import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/animated_icon_button.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
-import 'package:monopoly_banker/interface/widgets/monopoly_keyboard.dart';
+import 'package:monopoly_banker/interface/widgets/monopoly_terminal.dart';
 
 @RoutePage()
 class ElectronicGameScreen extends StatefulWidget {
@@ -57,13 +57,41 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
 
   @override
   void dispose() {
-    _controller.dispose();
-    getIt<MonopolyElectronicBloc>().add(BackupGame(appPaused: true));
     super.dispose();
+    _controller.stop();
+    _controller.dispose();
+    if (getIt<MonopolyElectronicBloc>().state.status != GameStatus.backup) {
+      getIt<MonopolyElectronicBloc>().add(BackupGame(appPaused: true));
+    }
   }
 
   double get _maxWidth {
     return MediaQuery.of(context).size.width;
+  }
+
+  void _showTerminal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      sheetAnimationStyle: AnimationStyle(
+        curve: Curves.bounceIn,
+        duration: Durations.long1,
+        reverseCurve: Curves.bounceOut,
+        reverseDuration: Durations.medium1,
+      ),
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+          ),
+          child: const MonopolyTerminal(),
+        );
+      },
+    );
   }
 
   @override
@@ -110,103 +138,106 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
             ],
           ),
           body: blocState.status == GameStatus.transaction
-              ? Center(
-                  child: Column(
-                    children: [
-                      MonopolyCreditCard(
-                        color: blocState.currentPlayer!.color,
-                        onTap: finishTurn,
-                        cardNumber: blocState.currentPlayer!.number,
-                        displayName: blocState.currentPlayer!.namePlayer,
-                        transactions:
-                            blocState.status == GameStatus.transaction,
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        constraints: BoxConstraints(
-                            maxWidth: _maxWidth, minWidth: _maxWidth),
-                        width: 50,
-                        child: Row(
-                          children: [
-                            Flexible(
-                              flex: 8,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.blue,
-                                    borderRadius: borderRadius),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('Money:',
-                                        style: GoogleFonts.roboto(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        )),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                        blocState.currentPlayer!.money
-                                            .toStringAsFixed(2),
-                                        style: statuscards),
-                                    const SizedBox(width: 2.5),
-                                    Text('M',
-                                        style: GoogleFonts.raleway(
-                                          color: Colors.white,
-                                          fontSize: 22,
-                                          fontStyle: FontStyle.italic,
-                                          fontWeight: FontWeight.bold,
-                                        )),
-                                  ],
+              ? SingleChildScrollView(
+                  child: Center(
+                    child: Column(
+                      children: [
+                        MonopolyCreditCard(
+                          color: blocState.currentPlayer!.color,
+                          onTap: finishTurn,
+                          cardNumber: blocState.currentPlayer!.number,
+                          displayName: blocState.currentPlayer!.namePlayer,
+                          transactions:
+                              blocState.status == GameStatus.transaction,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          constraints: BoxConstraints(
+                              maxWidth: _maxWidth, minWidth: _maxWidth),
+                          width: 50,
+                          child: Row(
+                            children: [
+                              Flexible(
+                                flex: 8,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.blue,
+                                      borderRadius: borderRadius),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('Money:',
+                                          style: GoogleFonts.roboto(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          )),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                          blocState.currentPlayer!.money
+                                              .toStringAsFixed(2),
+                                          style: statuscards),
+                                      const SizedBox(width: 2.5),
+                                      Text('M',
+                                          style: GoogleFonts.raleway(
+                                            color: Colors.white,
+                                            fontSize: 22,
+                                            fontStyle: FontStyle.italic,
+                                            fontWeight: FontWeight.bold,
+                                          )),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Spacer(flex: 1),
-                            BlocSelector<MonopolyElectronicBloc,
-                                MonopolyElectronicState, GameTransaction>(
-                              selector: (playerTransactionState) {
-                                return playerTransactionState.gameTransaction;
-                              },
-                              builder: (context, state) {
-                                if (state != GameTransaction.none) {
-                                  _controller.reset();
-                                  _controller.forward();
-                                  return Flexible(
-                                    flex: 6,
-                                    child: FadeTransition(
-                                      opacity: _animation,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: switch (
-                                              blocState.gameTransaction) {
-                                            GameTransaction.none => null,
-                                            GameTransaction.salida =>
-                                              Colors.green,
-                                            GameTransaction.add => Colors.green,
-                                            GameTransaction.substract =>
-                                              Colors.red,
-                                            GameTransaction.paying =>
-                                              Colors.amberAccent,
-                                          },
-                                          borderRadius: borderRadius,
+                              const Spacer(flex: 1),
+                              BlocSelector<MonopolyElectronicBloc,
+                                  MonopolyElectronicState, GameTransaction>(
+                                selector: (playerTransactionState) {
+                                  return playerTransactionState.gameTransaction;
+                                },
+                                builder: (context, state) {
+                                  if (state != GameTransaction.none) {
+                                    _controller.reset();
+                                    _controller.forward();
+                                    return Flexible(
+                                      flex: 6,
+                                      child: FadeTransition(
+                                        opacity: _animation,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: switch (
+                                                blocState.gameTransaction) {
+                                              GameTransaction.none => null,
+                                              GameTransaction.salida =>
+                                                Colors.green,
+                                              GameTransaction.add =>
+                                                Colors.green,
+                                              GameTransaction.substract =>
+                                                Colors.red,
+                                              GameTransaction.paying =>
+                                                Colors.amberAccent,
+                                            },
+                                            borderRadius: borderRadius,
+                                          ),
+                                          alignment: Alignment.center,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 5,
+                                          ),
+                                          child: Text(
+                                              blocState.messageTransaction,
+                                              style: statuscards),
                                         ),
-                                        alignment: Alignment.center,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 5,
-                                        ),
-                                        child: Text(
-                                            blocState.messageTransaction,
-                                            style: statuscards),
                                       ),
-                                    ),
-                                  );
-                                }
-                                return Container();
-                              },
-                            ),
-                          ],
+                                    );
+                                  }
+                                  return Container();
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 )
               : Column(
@@ -219,39 +250,14 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                     )
                   ],
                 ),
-          bottomNavigationBar: const MonopolyTerminal(),
+          floatingActionButton: FloatingActionButton(
+            heroTag: null,
+            onPressed: () => _showTerminal(context),
+            child: const Icon(Icons.keyboard),
+            backgroundColor: Colors.blue,
+          ),
         );
       },
     );
   }
 }
-
-
-// class _GridviewTest extends StatelessWidget {
-//   const _GridviewTest();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return GridView.builder(
-//         itemCount: 6,
-//         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-//           crossAxisCount: 2,
-//           mainAxisSpacing: 5,
-//           childAspectRatio: 1.4,
-//           crossAxisSpacing: 10,
-//           mainAxisExtent: 120,
-//         ),
-//         itemBuilder: (context, index) {
-//           return SizedBox(
-//             height: 30,
-//             child: Card(
-//               clipBehavior: Clip.hardEdge,
-//               color: Colors.blue.withOpacity(0.5),
-//               child: const Stack(
-//                 children: [Text('data')],
-//               ),
-//             ),
-//           );
-//         });
-//   }
-// }

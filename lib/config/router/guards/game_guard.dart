@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
+import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 import 'package:monopoly_banker/data/service/secure_storage.dart';
@@ -10,8 +11,14 @@ class GameGuard extends AutoRouteGuard {
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     final args = resolver.route.args as GameRouteArgs;
     // final gameVersion = routeArgs.version;
+    if (args.isNewGame) {
+      resolver.next(args.isNewGame);
+      return;
+    }
+
     switch (args.version) {
       case GameVersions.classic:
+        // TODO: IMPLEMENT
         // final classic =
         //     await getIt<MonopolyGamesStorage>().hasCurrentGamesClassic;
         resolver.next(true);
@@ -19,18 +26,43 @@ class GameGuard extends AutoRouteGuard {
         final electronic =
             await getIt<MonopolyGamesStorage>().hasCurrentGamesElectronic;
         if (electronic) {
-          // TODO: JALAR LAS SESIONES EXISTENTES Y USARLAS PARA MOSTRARLAS Y QUE DECIDA CUAL QUIERE USAR (REDIRIGIR A OTRA PANTALLA DE SELECCIONAR PARTIDA)
-          final id = await getIt<MonopolyGamesStorage>().idSession();
-          if (id != null) {
-            getIt<MonopolyElectronicBloc>()
-                .add(RestoreGameEvent(sessionId: id));
-            resolver.redirect(const ElectronicGameRoute());
+          final action = await BankerAlerts.recoveryLastSession();
+          if (action == null) {
+            resolver.next(false);
+            return;
+          }
+          switch (action) {
+            case RecoveryAction.last:
+              _handleLastSessionGame(resolver);
+            case RecoveryAction.menu:
+              _goMenuGameSessions(resolver, args.version);
           }
         }
         resolver.next(true);
       // TODO: Handle this case.
       case GameVersions.colima:
         resolver.next(true);
+    }
+  }
+
+  void _handleLastSessionGame(NavigationResolver resolver) async {
+    final id = await getIt<MonopolyGamesStorage>().idSession();
+    print(id);
+    if (id != null) {
+      getIt<MonopolyElectronicBloc>().add(RestoreGameEvent(sessionId: id));
+      resolver.redirect(const ElectronicGameRoute());
+      return;
+    }
+  }
+
+  void _goMenuGameSessions(
+      NavigationResolver resolver, GameVersions version) async {
+    final id = await getIt<MonopolyGamesStorage>().idSession();
+    print(id);
+    if (id != null) {
+      getIt<MonopolyElectronicBloc>().add(RestoreGameEvent(sessionId: id));
+      resolver.redirect(GameSessionsRoute(version: version));
+      return;
     }
   }
 }

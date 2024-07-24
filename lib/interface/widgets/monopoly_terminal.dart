@@ -7,6 +7,8 @@ import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
 import 'package:monopoly_banker/interface/widgets/numeric_button.dart';
 import 'package:monopoly_banker/interface/widgets/transaction_button.dart';
 
+enum ButtonType { clear, dot, numeric, transaction }
+
 /// A quick example "keyboard" widget for Numeric.
 class MonopolyTerminal extends StatefulWidget implements PreferredSizeWidget {
   const MonopolyTerminal({
@@ -89,6 +91,23 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
     controller.clear();
   }
 
+  Widget buildButton(ButtonType buttonType,
+      {int? number, Transactions? transactionType}) {
+    switch (buttonType) {
+      case ButtonType.clear:
+        return _buildButton(text: 'C', color: Colors.black, type: buttonType);
+      case ButtonType.dot:
+        return _buildButton(text: ".", color: Colors.black, type: buttonType);
+      case ButtonType.numeric:
+        return MonopolyNumericButton(
+            onTap: () => _onTapNumber('$number'), number: number!);
+      case ButtonType.transaction:
+        return TransactionButton(
+            transactionType: transactionType!,
+            onTap: () => onTransactions(transactionType));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -141,17 +160,13 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
                     )),
                 ...List.generate(
                   9,
-                  (index) => MonopolyNumericButton(
-                    number: index + 1,
-                    onTap: () => _onTapNumber('${index + 1}'),
-                  ),
+                  (index) => buildButton(ButtonType.numeric, number: index + 1),
                 ),
-                _buildButton(text: 'C', color: Colors.black),
-                MonopolyNumericButton(
-                    onTap: () => _onTapNumber('0'), number: 0),
-                _buildButton(text: ".", color: Colors.black),
-                ...Transactions.values.map((e) => TransactionButton(
-                    transactionType: e, onTap: () => onTransactions(e)))
+                buildButton(ButtonType.clear),
+                buildButton(ButtonType.numeric, number: 0),
+                buildButton(ButtonType.dot),
+                ...Transactions.values.map((e) =>
+                    buildButton(ButtonType.transaction, transactionType: e)),
               ],
             ),
           ],
@@ -163,10 +178,11 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
   Widget _buildButton({
     required String text,
     Color? color,
+    required ButtonType type,
   }) =>
       BaseButton(
         text: text,
         color: color,
-        onTap: () => text == 'C' ? _onTapC() : _onDot(),
+        onTap: () => type == ButtonType.clear ? _onTapC() : _onDot(),
       );
 }

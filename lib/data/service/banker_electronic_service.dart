@@ -3,6 +3,7 @@
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/database/monopoly_database.dart';
+import 'package:monopoly_banker/data/model/game_session.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
 import 'package:monopoly_banker/data/repository/banker_repository.dart';
@@ -188,5 +189,43 @@ class BankerElectronicService extends BankerRepository {
       // TODO: HANDLE ERROR AND NOTIFY NO USER
       throw e;
     }
+  }
+
+  @override
+  Future<List<GameSession>> getGameSessions(GameVersions version) async {
+    final db = _dbX;
+
+    // Obtén los jugadores de la base de datos filtrados por la versión del juego.
+    final resp = await db.query(
+      MonopolyDatabase.playersXTb,
+      where: '"gameVersion" = ?',
+      whereArgs: [version.name],
+      orderBy: '"gameSesion"',
+    );
+
+    // Convierte los resultados en una lista de objetos MonopolyPlayerX.
+    final players = resp.map((e) => MonopolyPlayerX.fromMap(e)).toList();
+
+    // Agrupa los jugadores por el ID de sesión.
+    final Map<String, List<MonopolyPlayerX>> sessionsMap = {};
+    for (var player in players) {
+      final sessionId = player.gameSession;
+      if (sessionId != null) {
+        if (sessionsMap.containsKey(sessionId)) {
+          sessionsMap[sessionId]!.add(player);
+        } else {
+          sessionsMap[sessionId] = [player];
+        }
+      }
+    }
+
+    // Crea una lista de GameSession a partir de las sesiones agrupadas.
+    final gameSessions = sessionsMap.entries.map((entry) {
+      final sessionId = entry.key;
+      final sessionPlayers = entry.value;
+      return GameSession(version, sessionPlayers, sessionId);
+    }).toList();
+
+    return gameSessions;
   }
 }

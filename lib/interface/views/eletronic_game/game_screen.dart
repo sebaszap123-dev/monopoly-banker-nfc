@@ -5,8 +5,9 @@ import 'package:monopoly_banker/interface/views/eletronic_game/setup_game_electr
 
 @RoutePage()
 class GameScreen extends StatelessWidget {
-  const GameScreen({super.key, required this.version});
+  const GameScreen({super.key, required this.version, this.isNewGame = false});
   final GameVersions version;
+  final bool isNewGame;
   @override
   Widget build(BuildContext context) {
     return Scaffold(

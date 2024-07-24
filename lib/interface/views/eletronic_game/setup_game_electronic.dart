@@ -95,6 +95,10 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
     return cards.length == 6;
   }
 
+  bool get _canPlay {
+    return players.length >= 2;
+  }
+
   Color? color;
 
   void addNewCard() async {
@@ -104,6 +108,8 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
           return NfcAddCards(
             context: context,
             version: gameVersion,
+            validPlay: _canPlay,
+            startGame: startGame,
             currentCards: cards.keys.map((key) => key).toList(),
           );
         });
@@ -167,6 +173,7 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
               ],
             ),
             floatingActionButton: FloatingActionButton(
+              heroTag: 'NFC-GAME',
               onPressed: !_maxPlayers ? addNewCard : startGame,
               child: Icon(
                 !_maxPlayers ? Icons.nfc_rounded : Icons.play_circle_rounded,

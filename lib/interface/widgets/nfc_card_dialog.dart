@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
+import 'package:monopoly_banker/config/utils/banker_textstyle.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
@@ -13,15 +14,18 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/platform_tags.dart';
 
 class NfcAddCards extends StatefulWidget {
-  final GameVersions version;
-
   const NfcAddCards({
     required this.currentCards,
     required this.context,
     required this.version,
+    this.validPlay = false,
+    this.startGame,
   });
+  final GameVersions version;
+  final bool validPlay;
   final List<MonopolyCard> currentCards;
   final BuildContext context;
+  final void Function()? startGame;
   @override
   State<NfcAddCards> createState() => _NfcAddCardsState();
 }
@@ -30,13 +34,16 @@ class _NfcAddCardsState extends State<NfcAddCards> {
   bool isNfc = false;
   MonopolyCard? card;
   NdefStatus? status;
-
+  String messageDialog = 'Select a card to be pair';
   List<MonopolyCard> cards = [];
 
   @override
   void initState() {
     super.initState();
     // Copiar la lista de currentCards para evitar modificar la lista original
+    if (widget.validPlay) {
+      messageDialog = 'You can play or pair a new card';
+    }
     cards = MonopolyCard.electronicPlayerCards;
 
     // Eliminar las cartas existentes de la lista original
@@ -123,7 +130,11 @@ class _NfcAddCardsState extends State<NfcAddCards> {
   }
 
   onNfc() async {
-    if (card == null) return;
+    if (card == null) {
+      BankerAlerts.noCardSelected();
+      return;
+    }
+    ;
     setState(() {
       isNfc = true;
     });
@@ -147,51 +158,118 @@ class _NfcAddCardsState extends State<NfcAddCards> {
     return Dialog(
         backgroundColor: Colors.white,
         child: SizedBox(
-            height: 300,
-            child: isNfc
-                ? Column(
+          height: 300,
+          child: isNfc
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    NfcLoadingAnimation(
+                      color: card?.color,
+                    ),
+                  ],
+                )
+              : Center(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      NfcLoadingAnimation(
-                        color: card?.color,
+                      Text(
+                        messageDialog,
+                        style: BankerTextStyle.subtitle.copyWith(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade700,
+                        ),
                       ),
-                    ],
-                  )
-                : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('Select a color for the card'),
-                        DropdownButton<Color>(
-                          value: card?.color,
-                          items: [
-                            ...cards.map(
-                              (e) => DropdownMenuItem<Color>(
-                                value: e.color,
-                                child: Text(
-                                  e.colorName,
+                      const SizedBox(height: 20),
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 5,
+                        color: Colors.blue.shade50,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<Color>(
+                              borderRadius: BorderRadius.circular(12),
+                              icon: Icon(
+                                Icons.color_lens,
+                                color: Colors.blue.shade700,
+                              ),
+                              value: card?.color,
+                              items: [
+                                ...cards.map(
+                                  (e) => DropdownMenuItem<Color>(
+                                    value: e.color,
+                                    child: Text(
+                                      e.colorName,
+                                      style: TextStyle(
+                                          color: Colors.blue.shade900),
+                                    ),
+                                  ),
+                                )
+                              ],
+                              onChanged: (Color? value) {
+                                if (value != null) {
+                                  setState(() {
+                                    card = MonopolyCard.fromColor(
+                                        value, widget.version);
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          TextButton(
+                            onPressed: onNfc,
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.blue.shade100,
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 30, vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            child: Text(
+                              'Pair',
+                              style: TextStyle(
+                                color: Colors.blue.shade700,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          if (widget.validPlay)
+                            TextButton(
+                              onPressed: widget.startGame,
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.blue.shade100,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 30, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
                               ),
-                            )
-                          ],
-                          onChanged: (Color? value) {
-                            if (value != null) {
-                              setState(() {
-                                card = MonopolyCard.fromColor(
-                                    value, widget.version);
-                              });
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        TextButton(
-                            onPressed: onNfc,
-                            child: Text(
-                              'Accept',
-                              style: TextStyle(color: Colors.blue.shade500),
-                            ))
-                      ],
-                    ),
-                  )));
+                              child: Text(
+                                'Play',
+                                style: TextStyle(
+                                  color: Colors.blue.shade700,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+        ));
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:monopoly_banker/config/utils/extensions.dart';
+import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:uuid/uuid.dart';
 
@@ -12,6 +13,7 @@ class MonopolyPlayerX {
   final String infoNfc;
   final String? gameSession;
   final String? namePlayer;
+  final GameVersions version;
   MonopolyPlayerX._({
     this.id = 0,
     required this.number,
@@ -19,6 +21,7 @@ class MonopolyPlayerX {
     required this.infoNfc,
     this.namePlayer,
     this.gameSession,
+    this.version = GameVersions.electronic,
     this.money = 15,
   });
 
@@ -27,6 +30,7 @@ class MonopolyPlayerX {
       number: card.number,
       color: card.color,
       namePlayer: player,
+      version: card.gameVersion,
       infoNfc: const Uuid().v6(),
     );
   }
@@ -41,6 +45,8 @@ class MonopolyPlayerX {
       namePlayer: map['namePlayer'],
       // DATABASE HAS THIS NAMED [gameSesion]
       gameSession: map['gameSesion'],
+      version: GameVersions.values
+          .firstWhere((version) => version.name == map['gameVersion']),
       infoNfc: const Uuid().v6(),
     );
   }
@@ -52,6 +58,7 @@ class MonopolyPlayerX {
       'color': color.toHex(),
       'namePlayer': namePlayer,
       'gameSesion': gameSession,
+      'gameVersion': version.name,
       'money': money,
       'infoNfc': infoNfc
     };
@@ -65,15 +72,16 @@ class MonopolyPlayerX {
     String? namePlayer,
     String? gameSession,
     double? money,
+    GameVersions? version,
   }) {
     return MonopolyPlayerX._(
-      id: id ?? this.id,
-      number: number ?? this.number,
-      color: color ?? this.color,
-      namePlayer: namePlayer ?? this.namePlayer,
-      gameSession: gameSession ?? this.gameSession,
-      infoNfc: const Uuid().v6(),
-      money: money ?? this.money,
-    );
+        id: id ?? this.id,
+        number: number ?? this.number,
+        color: color ?? this.color,
+        namePlayer: namePlayer ?? this.namePlayer,
+        gameSession: gameSession ?? this.gameSession,
+        infoNfc: const Uuid().v6(),
+        money: money ?? this.money,
+        version: version ?? this.version);
   }
 }

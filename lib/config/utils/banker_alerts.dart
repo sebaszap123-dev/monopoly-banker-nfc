@@ -1,20 +1,22 @@
 import 'package:art_sweetalert/art_sweetalert.dart';
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
+import 'package:monopoly_banker/config/utils/widgets/read_card_nfc_dialog.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
-import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';
 import 'package:monopoly_banker/interface/widgets/pay_to_button.dart';
-import 'package:nfc_manager/nfc_manager.dart';
 
 enum CardManagerStatus { delete, cancel, name }
 
+enum RecoveryAction { last, menu }
+
 abstract class BankerAlerts {
   static BuildContext context = getIt<RouterCubit>().context;
-  static unhandledError({String? error, BuildContext? myContext}) {
-    ArtSweetAlert.show(
+  static unhandledError({String? error, BuildContext? myContext}) async {
+    await ArtSweetAlert.show(
       context: myContext ?? context,
       artDialogArgs: ArtDialogArgs(
         type: ArtSweetAlertType.info,
@@ -24,9 +26,10 @@ abstract class BankerAlerts {
             'We encountered an error while processing your request:\n$error\nPlease try again later or contact support for assistance.',
       ),
     );
+    getIt<RouterCubit>().state.push(HomeRoute());
   }
 
-  static noCardReaded({required int count}) {
+  static noCardReader({required int count}) {
     ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
@@ -46,6 +49,18 @@ abstract class BankerAlerts {
         title: 'You need to select al least two players to play',
         confirmButtonText: 'Okay',
         text: 'Please selected to players in order to play the game.',
+      ),
+    );
+  }
+
+  static noCardSelected() {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.warning,
+        title: 'You need to select one card based on the color',
+        confirmButtonText: 'Okay',
+        text: 'Please selected one card to pair with NFC.',
       ),
     );
   }
@@ -221,7 +236,7 @@ abstract class BankerAlerts {
     );
   }
 
-  static void noMoneyToSubstract({required double amount}) {
+  static void noMoneyToSubtract({required double amount}) {
     ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
@@ -340,7 +355,7 @@ abstract class BankerAlerts {
       context: context,
       artDialogArgs: ArtDialogArgs(
         type: ArtSweetAlertType.warning,
-        title: 'Error',
+        title: 'Hey!',
         confirmButtonText: 'Okay',
         text: message,
         onConfirm: () {
@@ -348,6 +363,29 @@ abstract class BankerAlerts {
         },
       ),
     );
+  }
+
+  static Future<RecoveryAction?> recoveryLastSession() async {
+    final ArtDialogResponse? resp = await ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.question,
+        title: 'Recuperar última sesión',
+        text: '¿Deseas recuperar tu última sesión?',
+        confirmButtonText: 'Recuperar',
+        denyButtonText: 'Ver mis sesiones',
+        denyButtonColor: Colors.lightGreen,
+      ),
+    );
+    if (resp == null) {
+      return null;
+    }
+    if (resp.isTapConfirmButton) {
+      return RecoveryAction.last;
+    } else if (resp.isTapDenyButton) {
+      return RecoveryAction.menu;
+    }
+    return null;
   }
 
   static Future<MapEntry<CardManagerStatus, String?>> showAddPlayerAlert({
@@ -413,106 +451,5 @@ abstract class BankerAlerts {
                 )),
           );
         });
-  }
-}
-
-class ReadCardNfc extends StatefulWidget {
-  const ReadCardNfc({Key? key, this.customText}) : super(key: key);
-  final String? customText;
-
-  @override
-  State<ReadCardNfc> createState() => _ReadCardNfcState();
-}
-
-class _ReadCardNfcState extends State<ReadCardNfc> {
-  MonopolyCard? cardPlayer;
-  bool hasError = false;
-  String error = '';
-  bool hasData = false;
-
-  @override
-  void initState() {
-    super.initState();
-    initSesion();
-  }
-
-  Future<void> initSesion() async {
-    try {
-      await getIt<NfcManager>().startSession(onError: (nfcError) async {
-        setState(() {
-          hasError = true;
-          error = nfcError.message;
-        });
-      }, onDiscovered: (tag) async {
-        if (hasData && !hasError) return;
-        if (tag.data.containsKey('ndef')) {
-          final ndef = Ndef.from(tag);
-          if (ndef != null) {
-            final cachedMessage = ndef.cachedMessage;
-            if (cachedMessage != null) {
-              final resp = MonopolyCard.fromNdefMessage(cachedMessage);
-              setState(() {
-                cardPlayer = resp;
-                hasData = true;
-              });
-            }
-          } else {
-            setState(() {
-              hasError = true;
-              error = 'Try again please';
-            });
-          }
-        }
-      });
-    } catch (e) {
-      setState(() {
-        hasError = true;
-        error = 'Error: $e';
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    getIt<NfcManager>().stopSession();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!hasError && !hasData) {
-      return NfcLoadingAnimation(
-        customText: widget.customText,
-      );
-    }
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        const SizedBox(height: 15),
-        if (hasError) ...[
-          Text(error),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                hasError = false;
-              });
-            },
-            child: const Text('Reintentar'),
-          ),
-        ],
-        if (!hasError && hasData) ...[
-          Text(
-              'Tarjeta leída: ${cardPlayer?.number}'), // Mostrar la información de la tarjeta leída
-          ElevatedButton(
-            onPressed: () async {
-              await getIt<NfcManager>().stopSession();
-              // ignore: use_build_context_synchronously
-              Navigator.of(context).pop(cardPlayer);
-            },
-            child: const Text('Aceptar'),
-          ),
-        ],
-      ],
-    );
   }
 }

@@ -55,7 +55,11 @@ class MonopolyElectronicBloc
     emit(state.copyWith(status: GameStatus.loading));
     await getIt<BankerElectronicService>().backupPlayers(state.players);
     emit(state.copyWith(status: GameStatus.backup));
-    getIt<RouterCubit>().state.popAndPush(const HomeRoute());
+    try {
+      getIt<RouterCubit>().state.replace(const HomeRoute());
+    } catch (e) {
+      print(e);
+    }
   }
 
   _restoreGameEvent(
@@ -174,7 +178,7 @@ class MonopolyElectronicBloc
     final parseMoney =
         event.type == MoneyValue.millon ? event.money : event.money / 1000;
     if (state.currentPlayer!.money < parseMoney) {
-      BankerAlerts.noMoneyToSubstract(amount: parseMoney);
+      BankerAlerts.noMoneyToSubtract(amount: parseMoney);
       return;
     }
     final money = parseMoney.toStringAsFixed(2);
@@ -261,7 +265,7 @@ class MonopolyElectronicBloc
         customText: 'Este jugador paga a los demas');
 
     if (card1 == null) {
-      await BankerAlerts.noCardReaded(count: 1);
+      await BankerAlerts.noCardReader(count: 1);
       emit(state.copyWith(status: GameStatus.playing));
       return;
     }
@@ -313,7 +317,7 @@ class MonopolyElectronicBloc
         customText: 'Este jugador recibirá dinero de todos los demás');
 
     if (card == null) {
-      await BankerAlerts.noCardReaded(count: 1);
+      await BankerAlerts.noCardReader(count: 1);
       emit(state.copyWith(
         status: GameStatus.playing,
         gameTransaction: GameTransaction.none,
