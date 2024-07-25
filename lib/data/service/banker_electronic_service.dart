@@ -32,7 +32,7 @@ class BankerElectronicService extends BankerRepository {
     try {
       final db = _dbX;
       final results = await db.query(MonopolyDatabase.cardPlayerTb,
-          where: 'gameVersion = ?', whereArgs: [version.name]);
+          where: 'version = ?', whereArgs: [version.name]);
       return results.map((map) => MonopolyCard.fromMap(map)).toList();
     } catch (e) {
       // TODO: HANDLE ERROR AND NOTIFY NO USER
@@ -124,7 +124,7 @@ class BankerElectronicService extends BankerRepository {
   Future<void> deleteAllPlayers(GameVersions version) async {
     final db = _dbX;
     final resp = await db.delete(MonopolyDatabase.playersXTb,
-        where: 'gameVersion = ?', whereArgs: [version.name]);
+        where: 'version = ?', whereArgs: [version.name]);
     await getIt<MonopolyGamesStorage>().deleteGameX();
     BankerAlerts.showSuccessDeletedPlayers(resp);
   }
@@ -241,16 +241,19 @@ class BankerElectronicService extends BankerRepository {
           MonopolyDatabase.playersXTb,
           where: '"sessionId" = ?',
           whereArgs: [sessionId],
-          orderBy: '"number"',
+          orderBy: '"namePlayer"',
         );
 
         // Convertir la respuesta en una lista de jugadores
         final players =
             playerResp.map((e) => MonopolyPlayerX.fromMap(e)).toList();
 
-        // Agregar la sesión de juego a la lista
-        // TODO: ARREGLAR
-        // gameSessions.add(GameSession(version, players, sessionId.toString()));
+        // Encontrar la sesión correspondiente y agregar los jugadores
+        final sessionMap = sessionResp.firstWhere((e) => e['id'] == sessionId);
+        final session =
+            GameSession.fromMap(json: sessionMap).copyWith(players: players);
+
+        gameSessions.add(session);
       }
 
       return gameSessions;
@@ -258,6 +261,42 @@ class BankerElectronicService extends BankerRepository {
       // Manejo de errores
       print('Error fetching game sessions: $e');
       return [];
+    }
+  }
+
+  @override
+  Future<GameSession> getGameSession(int id) async {
+    final db = _dbX;
+
+    try {
+      final sessionResp = await db.query(
+        MonopolyDatabase.sessionsTb,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      final session = GameSession.fromMap(json: sessionResp[0]);
+      return session;
+    } catch (e) {
+      throw Exception('failed to get session $e');
+    }
+  }
+
+  @override
+  Future<bool> updateSession(int sessionId) async {
+    final db = _dbX;
+    final session = await getGameSession(sessionId);
+    final updated = session.copyWith(updateTime: DateTime.now());
+    try {
+      final count = await db.update(
+        MonopolyDatabase.sessionsTb,
+        updated.toSqlMap(),
+        where: 'id = ?',
+        whereArgs: [sessionId],
+        conflictAlgorithm: ConflictAlgorithm.fail,
+      );
+      return count >= 1;
+    } catch (e) {
+      throw Exception('failed to updated session $e');
     }
   }
 }

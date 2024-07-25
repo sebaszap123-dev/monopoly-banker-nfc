@@ -9,11 +9,12 @@ class HandleCardsEvent extends MonopolyElectronicEvent {}
 
 class StartGameEvent extends MonopolyElectronicEvent {
   final List<MonopolyPlayerX> players;
-  StartGameEvent(this.players);
+  final GameVersions version;
+  StartGameEvent(this.players, this.version);
 }
 
 class RestoreGameEvent extends MonopolyElectronicEvent {
-  final String sessionId;
+  final int sessionId;
 
   RestoreGameEvent({required this.sessionId});
 }

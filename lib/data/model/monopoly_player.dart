@@ -31,7 +31,7 @@ class MonopolyPlayerX {
       number: card.number,
       color: card.color,
       namePlayer: player,
-      version: card.gameVersion,
+      version: card.version,
       infoNfc: const Uuid().v6(),
     );
   }

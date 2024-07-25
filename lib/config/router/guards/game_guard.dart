@@ -35,7 +35,7 @@ class GameGuard extends AutoRouteGuard {
             case RecoveryAction.last:
               _handleLastSessionGame(resolver);
             case RecoveryAction.menu:
-              _goMenuGameSessions(resolver, args.version);
+              resolver.redirect(GameSessionsRoute(version: args.version));
           }
         }
         resolver.next(true);
@@ -47,21 +47,10 @@ class GameGuard extends AutoRouteGuard {
 
   void _handleLastSessionGame(NavigationResolver resolver) async {
     final id = await getIt<MonopolyGamesStorage>().idSession();
-    print(id);
     if (id != null) {
-      getIt<MonopolyElectronicBloc>().add(RestoreGameEvent(sessionId: id));
+      getIt<MonopolyElectronicBloc>()
+          .add(RestoreGameEvent(sessionId: int.parse(id)));
       resolver.redirect(const ElectronicGameRoute());
-      return;
-    }
-  }
-
-  void _goMenuGameSessions(
-      NavigationResolver resolver, GameVersions version) async {
-    final id = await getIt<MonopolyGamesStorage>().idSession();
-    print(id);
-    if (id != null) {
-      getIt<MonopolyElectronicBloc>().add(RestoreGameEvent(sessionId: id));
-      resolver.redirect(GameSessionsRoute(version: version));
       return;
     }
   }

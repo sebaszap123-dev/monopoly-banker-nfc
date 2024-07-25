@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 abstract class MonopolyDatabase {
   /// Name of the db
   static const int versionClassic = 1;
-  static const int versionElectronic = 3; // Updated version to 3
+  static const int versionElectronic = 4; // Updated version to 3
   static const String _dbElectronic = 'monopoly_elect_1.db';
   static const String _dbClassic = 'monopoly_classic.db';
 
@@ -20,6 +20,7 @@ CREATE TABLE $cardPlayerTb(
   number TEXT NOT NULL,
   color TEXT NOT NULL,
   colorName TEXT NOT NULL
+  version TEXT NOT NULL
 )
 ''';
 
@@ -102,6 +103,12 @@ CREATE TABLE $sessionsTb (
             DROP COLUMN gameSesion,
             ADD FOREIGN KEY (sessionId) REFERENCES $sessionsTb(id);
           ''');
+          break;
+        case 4:
+          batch.execute('''
+            ALTER TABLE $cardPlayerTb 
+            ADD COLUMN version TEXT NOT NULL DEFAULT electronic
+            ''');
           break;
       }
     }

@@ -52,8 +52,14 @@ class MonopolyElectronicBloc
       await getIt<BankerElectronicService>().backupPlayers(state.players);
       return;
     }
+    if (state.gameSessionId == null) {
+      throw Exception(
+          'No session id, why you can play if no session is created?');
+    }
+
     emit(state.copyWith(status: GameStatus.loading));
     await getIt<BankerElectronicService>().backupPlayers(state.players);
+    await getIt<BankerElectronicService>().updateSession(state.gameSessionId!);
     emit(state.copyWith(status: GameStatus.backup));
     try {
       getIt<RouterCubit>().state.replace(const HomeRoute());
@@ -65,19 +71,20 @@ class MonopolyElectronicBloc
   _restoreGameEvent(
       RestoreGameEvent event, Emitter<MonopolyElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
-    final players = await getIt<BankerElectronicService>()
-        .getSessionPlayers(event.sessionId);
-    if (players.isEmpty) {
+    final session =
+        await getIt<BankerElectronicService>().getGameSession(event.sessionId);
+    if (session.players.isEmpty) {
       BankerAlerts.unhandledError(error: 'No players of the last session');
       emit(state.copyWith(
-        players: players,
+        players: [],
         status: GameStatus.endgame,
         gameTransaction: GameTransaction.none,
       ));
       return;
     }
     emit(state.copyWith(
-      players: players,
+      gameSessionId: event.sessionId,
+      players: session.players,
       status: GameStatus.playing,
       gameTransaction: GameTransaction.none,
     ));
@@ -86,19 +93,22 @@ class MonopolyElectronicBloc
   _startGameEvent(
       StartGameEvent event, Emitter<MonopolyElectronicState> emit) async {
     try {
+      // TODO: ACTUALIZAR
+      // LOADING EVENT
       emit(state.copyWith(status: GameStatus.loading));
-      final sessionId = const Uuid().v1();
-      final players =
-          event.players.map((e) => e.copyWith(gameSession: sessionId)).toList();
-      final sessionPlayers =
-          await getIt<BankerElectronicService>().setupPlayers(players);
+
+      //
+      final session = await getIt<BankerElectronicService>()
+          .createGameSessions(event.version, event.players);
+      await getIt<MonopolyGamesStorage>()
+          .startGameX(lastSessionId: session.id.toString());
       await Future.delayed(const Duration(milliseconds: 900));
-      await getIt<MonopolyGamesStorage>().startGameX(lastSessionId: sessionId);
-      if (sessionPlayers.isEmpty) {
+      if (session.players.isEmpty) {
         throw 'Error players not found after make session';
       }
       emit(state.copyWith(
-        players: sessionPlayers,
+        gameSessionId: session.id,
+        players: session.players,
         status: GameStatus.playing,
         gameTransaction: GameTransaction.none,
       ));

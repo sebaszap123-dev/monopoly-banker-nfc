@@ -14,14 +14,14 @@ class MonopolyCard {
   final String number;
   final Color color;
   final String colorName;
-  final GameVersions gameVersion;
+  final GameVersions version;
   String? displayName;
   MonopolyCard._({
     this.id = 0,
     required this.color,
     required this.number,
     required this.colorName,
-    required this.gameVersion,
+    required this.version,
     this.displayName,
   });
 
@@ -32,8 +32,8 @@ class MonopolyCard {
       number: map['number'],
       color: (map['color'] as String).toColor(),
       colorName: map['colorName'],
-      gameVersion: GameVersions.values
-          .firstWhere((version) => version.name == map['gameVersion']),
+      version: GameVersions.values
+          .firstWhere((version) => version.name == map['version']),
     );
   }
 
@@ -43,7 +43,7 @@ class MonopolyCard {
       'number': number,
       'color': color.toHex(),
       'colorName': colorName,
-      'gameVersion': gameVersion.name,
+      'version': version.name,
     };
   }
 
@@ -62,11 +62,11 @@ class MonopolyCard {
       color: defaultColor,
       number: defaultNumber,
       colorName: colorName,
-      gameVersion: GameVersions.electronic,
+      version: GameVersions.electronic,
     );
   }
 
-  static MonopolyCard fromColor(Color color, GameVersions gameVersion) {
+  static MonopolyCard fromColor(Color color, GameVersions version) {
     // Buscar el nombre del color correspondiente al color recibido
     final colorName = _nameFromColor(color);
 
@@ -82,7 +82,7 @@ class MonopolyCard {
       color: color,
       number: defaultNumber,
       colorName: colorName,
-      gameVersion: gameVersion,
+      version: version,
     );
   }
 
@@ -107,7 +107,7 @@ class MonopolyCard {
     String? number,
     Color? color,
     String? displayName,
-    GameVersions? gameVersion,
+    GameVersions? version,
   }) {
     // Buscar el nombre del color correspondiente al color recibido
     String? colorName;
@@ -127,7 +127,7 @@ class MonopolyCard {
       number: number ?? this.number,
       colorName: colorName!,
       displayName: displayName ?? this.displayName,
-      gameVersion: gameVersion ?? this.gameVersion,
+      version: version ?? this.version,
     );
   }
 
@@ -146,7 +146,7 @@ class MonopolyCard {
       color: color,
       number: number,
       colorName: colorName,
-      gameVersion: GameVersions.electronic,
+      version: GameVersions.electronic,
     );
   }
 

@@ -135,7 +135,7 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
       BankerAlerts.noPlayersSelected();
       return;
     }
-    getIt<MonopolyElectronicBloc>().add(StartGameEvent(players));
+    getIt<MonopolyElectronicBloc>().add(StartGameEvent(players, gameVersion));
     getIt<RouterCubit>().state.push(const ElectronicGameRoute());
   }
 

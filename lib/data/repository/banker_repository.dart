@@ -17,4 +17,6 @@ abstract class BankerRepository {
   Future<GameSession> createGameSessions(
       GameVersions version, List<MonopolyPlayerX> players);
   Future<List<GameSession>> getGameSessions(GameVersions version);
+  Future<GameSession> getGameSession(int id);
+  Future<bool> updateSession(int sessionId);
 }
