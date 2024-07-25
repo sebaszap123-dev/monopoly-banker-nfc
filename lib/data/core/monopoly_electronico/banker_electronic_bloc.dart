@@ -12,7 +12,6 @@ import 'package:monopoly_banker/data/service/banker_electronic_service.dart';
 import 'package:monopoly_banker/data/service/secure_storage.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
-import 'package:uuid/uuid.dart';
 
 part 'banker_electronic_event.dart';
 part 'banker_electronic_state.dart';

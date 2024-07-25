@@ -81,6 +81,27 @@ abstract class BankerAlerts {
     );
   }
 
+  static Future<bool> deleteSessionGame(int deletedUsersCount) async {
+    final ArtDialogResponse? resp = await ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.question,
+        // title: 'You are going to delete your game!',
+        title: '¿Estas seguro de eliminar esta sesión?',
+        confirmButtonText: 'Estoy seguro',
+        showCancelBtn: true,
+        text:
+            'Si borras esta sesión los datos de los jugadores y todo lo relacionado será borrado',
+      ),
+    );
+
+    if (resp != null && resp.isTapConfirmButton) {
+      return true;
+    }
+
+    return false;
+  }
+
   static void payedJ1toJ2({
     required double dinero,
     required MoneyValue value,

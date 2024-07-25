@@ -34,9 +34,12 @@ class GameGuard extends AutoRouteGuard {
           switch (action) {
             case RecoveryAction.last:
               _handleLastSessionGame(resolver);
+              break;
             case RecoveryAction.menu:
               resolver.redirect(GameSessionsRoute(version: args.version));
+              break;
           }
+          return;
         }
         resolver.next(true);
       // TODO: Handle this case.

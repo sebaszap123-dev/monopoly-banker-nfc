@@ -19,4 +19,5 @@ abstract class BankerRepository {
   Future<List<GameSession>> getGameSessions(GameVersions version);
   Future<GameSession> getGameSession(int id);
   Future<bool> updateSession(int sessionId);
+  Future<bool> deleteSession(int sessionId);
 }

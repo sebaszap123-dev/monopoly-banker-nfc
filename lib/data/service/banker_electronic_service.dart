@@ -299,4 +299,20 @@ class BankerElectronicService extends BankerRepository {
       throw Exception('failed to updated session $e');
     }
   }
+
+  @override
+  Future<bool> deleteSession(int sessionId) async {
+    final db = _dbX;
+
+    try {
+      final count = await db.delete(
+        MonopolyDatabase.sessionsTb,
+        where: 'id = ?',
+        whereArgs: [sessionId],
+      );
+      return count >= 1;
+    } catch (e) {
+      throw Exception('failed to updated session $e');
+    }
+  }
 }

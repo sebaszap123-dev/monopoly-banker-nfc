@@ -6,6 +6,7 @@ import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/model/game_session.dart';
 import 'package:monopoly_banker/data/service/banker_electronic_service.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
+import 'package:monopoly_banker/interface/widgets/session_slide_card.dart';
 
 @RoutePage()
 class GameSessionsScreen extends StatelessWidget {
@@ -17,6 +18,7 @@ class GameSessionsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Game sessions'),
       ),
+      // TODO: usar el bloc provider
       body: FutureBuilder<List<GameSession>>(
           future: getIt<BankerElectronicService>().getGameSessions(version),
           builder: (context, snapshot) {
@@ -29,25 +31,11 @@ class GameSessionsScreen extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                 child: Column(
-                  children: snapshot.data!
-                      .map((session) => Card(
-                            child: Column(
-                              children: [
-                                SizedBox(height: 10),
-                                Text(session.id.toString()),
-                                SizedBox(height: 5),
-                                ...session.players
-                                    .map((player) => ListTile(
-                                          title: Text(
-                                              player.namePlayer ?? 'No name'),
-                                          iconColor: player.color,
-                                          leading: Icon(Icons.person),
-                                        ))
-                                    .toList()
-                              ],
-                            ),
-                          ))
-                      .toList(),
+                  children: snapshot.data!.map((session) =>
+                      // session.players.isEmpty
+                      //     ? Container()
+                      // :
+                      SessionSlideCard(session: session)).toList(),
                 ),
               );
             }
