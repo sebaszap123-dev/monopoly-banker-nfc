@@ -5,21 +5,21 @@ import 'package:sqflite/sqflite.dart';
 abstract class MonopolyDatabase {
   /// Name of the db
   static const int versionClassic = 1;
-  static const int versionElectronic = 2; // Updated version to 2
+  static const int versionElectronic = 3; // Updated version to 3
   static const String _dbElectronic = 'monopoly_elect_1.db';
   static const String _dbClassic = 'monopoly_classic.db';
 
   // ELECTRONIC
   static const cardPlayerTb = 'MonopolyCards';
   static const playersXTb = 'MonopolyPlayerX';
+  static const sessionsTb = 'MonopolySessions'; // New sessions table
 
   static const String sqlCreateCardPlayers = '''
 CREATE TABLE $cardPlayerTb(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   number TEXT NOT NULL,
   color TEXT NOT NULL,
-  colorName TEXT NOT NULL,
-  gameVersion TEXT NOT NULL
+  colorName TEXT NOT NULL
 )
 ''';
 
@@ -30,8 +30,17 @@ CREATE TABLE $playersXTb (
   color TEXT NOT NULL,
   infoNfc TEXT NOT NULL,
   namePlayer TEXT NOT NULL,
-  gameSesion TEXT NOT NULL,
   money REAL NOT NULL,
+  sessionId INTEGER NOT NULL,
+  FOREIGN KEY (sessionId) REFERENCES $sessionsTb(id)
+)
+''';
+
+  static const String sqlCreateSessions = '''
+CREATE TABLE $sessionsTb (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  startTime INTEGER NOT NULL,
+  updateTime INTEGER NOT NULL,
   gameVersion TEXT NOT NULL
 )
 ''';
@@ -61,7 +70,8 @@ CREATE TABLE $playersXTb (
       version: versionElectronic,
       onCreate: (db, version) async {
         await db.execute(sqlCreateCardPlayers);
-        await db.execute(sqlCreatePlayers);
+        await db.execute(sqlCreateSessions); // Create sessions table first
+        await db.execute(sqlCreatePlayers); // Create players table with FK
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         var batch = db.batch();
@@ -82,9 +92,18 @@ CREATE TABLE $playersXTb (
           batch.execute('''
         ALTER TABLE $playersXTb ADD COLUMN gameVersion TEXT NOT NULL DEFAULT '${GameVersions.electronic.name}';
       ''');
+          break;
+        case 3:
+          batch.execute(sqlCreateSessions); // Create sessions table
+          batch.execute('''
+            ALTER TABLE $playersXTb 
+            ADD COLUMN sessionId INTEGER NOT NULL DEFAULT 0,
+            DROP COLUMN gameVersion,
+            DROP COLUMN gameSesion,
+            ADD FOREIGN KEY (sessionId) REFERENCES $sessionsTb(id);
+          ''');
+          break;
       }
-      // Add further version upgrades here
-      // e.g., if (oldVersion < 3) { ... }
     }
   }
 }

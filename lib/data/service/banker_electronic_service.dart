@@ -129,32 +129,6 @@ class BankerElectronicService extends BankerRepository {
     BankerAlerts.showSuccessDeletedPlayers(resp);
   }
 
-  /// Setup players reponse: count of deleted players [int]
-  @override
-  Future<List<MonopolyPlayerX>> setupPlayers(
-      List<MonopolyPlayerX> players) async {
-    try {
-      final db = _dbX.batch();
-      for (var player in players) {
-        db.insert(
-          MonopolyDatabase.playersXTb,
-          player.toSql(),
-        );
-      }
-      final resp = await db.commit();
-
-      final List<MonopolyPlayerX> playersx = [];
-      for (int index = 0; resp.length > index; index++) {
-        final idPlayer = players[index].copyWith(id: resp[index] as int);
-        playersx.add(idPlayer);
-      }
-      return playersx;
-    } catch (e) {
-      // TODO: HANDLE ERROR AND NOTIFY NO USER
-      throw e;
-    }
-  }
-
   /// Backup data players
   @override
   Future<void> backupPlayers(List<MonopolyPlayerX> players) async {
@@ -191,41 +165,99 @@ class BankerElectronicService extends BankerRepository {
     }
   }
 
+  /// Setup players reponse: count of deleted players [int]
+  Future<List<MonopolyPlayerX>> _setupPlayers(
+      List<MonopolyPlayerX> players) async {
+    try {
+      final db = _dbX.batch();
+      for (var player in players) {
+        db.insert(
+          MonopolyDatabase.playersXTb,
+          player.toSql(),
+        );
+      }
+      final resp = await db.commit();
+
+      final List<MonopolyPlayerX> playersx = [];
+      for (int index = 0; resp.length > index; index++) {
+        final idPlayer = players[index].copyWith(id: resp[index] as int);
+        playersx.add(idPlayer);
+      }
+      return playersx;
+    } catch (e) {
+      // Maneja el error y notifica que no se pudo agregar jugadores
+      // Puedes registrar el error o mostrar una notificación adecuada aquí
+      // TODO: HANDLE ERROR AND NOTIFY NO USER
+
+      throw Exception('Failed to setup players: $e');
+    }
+  }
+
+  @override
+  Future<GameSession> createGameSessions(
+      GameVersions version, List<MonopolyPlayerX> players) async {
+    try {
+      final db = _dbX;
+      GameSession session = GameSession.generateSession(version);
+      final sessionId = await db.insert(
+        MonopolyDatabase.sessionsTb,
+        session.toSqlMap(),
+        conflictAlgorithm: ConflictAlgorithm.fail,
+      );
+      session = session.copyWith(id: sessionId);
+      final rawPlayers =
+          players.map((player) => player.copyWith(sessionId: 1)).toList();
+      final sessionPlayers = await _setupPlayers(rawPlayers);
+      session = session.copyWith(players: sessionPlayers);
+      return session;
+    } catch (e) {
+      print('Failed to save session $e');
+      throw Exception('invalid session');
+    }
+  }
+
   @override
   Future<List<GameSession>> getGameSessions(GameVersions version) async {
     final db = _dbX;
 
-    // Obtén los jugadores de la base de datos filtrados por la versión del juego.
-    final resp = await db.query(
-      MonopolyDatabase.playersXTb,
-      where: '"gameVersion" = ?',
-      whereArgs: [version.name],
-      orderBy: '"gameSesion"',
-    );
+    try {
+      // Obtener las sesiones de la base de datos
+      final sessionResp = await db.query(
+        MonopolyDatabase.sessionsTb,
+        where: '"gameVersion" = ?',
+        whereArgs: [version.name],
+        orderBy: '"startTime"',
+      );
 
-    // Convierte los resultados en una lista de objetos MonopolyPlayerX.
-    final players = resp.map((e) => MonopolyPlayerX.fromMap(e)).toList();
+      // Convierte las sesiones obtenidas en una lista de IDs de sesiones
+      final sessionIds = sessionResp.map((e) => e['id'] as int).toList();
 
-    // Agrupa los jugadores por el ID de sesión.
-    final Map<String, List<MonopolyPlayerX>> sessionsMap = {};
-    for (var player in players) {
-      final sessionId = player.gameSession;
-      if (sessionId != null) {
-        if (sessionsMap.containsKey(sessionId)) {
-          sessionsMap[sessionId]!.add(player);
-        } else {
-          sessionsMap[sessionId] = [player];
-        }
+      // Inicializar una lista para almacenar las sesiones de juego
+      final List<GameSession> gameSessions = [];
+
+      for (var sessionId in sessionIds) {
+        // Obtener los jugadores de cada sesión
+        final playerResp = await db.query(
+          MonopolyDatabase.playersXTb,
+          where: '"sessionId" = ?',
+          whereArgs: [sessionId],
+          orderBy: '"number"',
+        );
+
+        // Convertir la respuesta en una lista de jugadores
+        final players =
+            playerResp.map((e) => MonopolyPlayerX.fromMap(e)).toList();
+
+        // Agregar la sesión de juego a la lista
+        // TODO: ARREGLAR
+        // gameSessions.add(GameSession(version, players, sessionId.toString()));
       }
+
+      return gameSessions;
+    } catch (e) {
+      // Manejo de errores
+      print('Error fetching game sessions: $e');
+      return [];
     }
-
-    // Crea una lista de GameSession a partir de las sesiones agrupadas.
-    final gameSessions = sessionsMap.entries.map((entry) {
-      final sessionId = entry.key;
-      final sessionPlayers = entry.value;
-      return GameSession(version, sessionPlayers, sessionId);
-    }).toList();
-
-    return gameSessions;
   }
 }

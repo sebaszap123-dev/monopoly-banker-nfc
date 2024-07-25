@@ -34,7 +34,7 @@ class GameSessionsScreen extends StatelessWidget {
                             child: Column(
                               children: [
                                 SizedBox(height: 10),
-                                Text(session.sessionId),
+                                Text(session.id.toString()),
                                 SizedBox(height: 5),
                                 ...session.players
                                     .map((player) => ListTile(

@@ -11,16 +11,17 @@ class MonopolyPlayerX {
   final Color color;
   final double money;
   final String infoNfc;
-  final String? gameSession;
+  final int? sessionId;
   final String? namePlayer;
   final GameVersions version;
+
   MonopolyPlayerX._({
     this.id = 0,
     required this.number,
     required this.color,
     required this.infoNfc,
     this.namePlayer,
-    this.gameSession,
+    this.sessionId,
     this.version = GameVersions.electronic,
     this.money = 15,
   });
@@ -44,7 +45,7 @@ class MonopolyPlayerX {
       money: map['money'],
       namePlayer: map['namePlayer'],
       // DATABASE HAS THIS NAMED [gameSesion]
-      gameSession: map['gameSesion'],
+      sessionId: map['sessionId'],
       version: GameVersions.values
           .firstWhere((version) => version.name == map['gameVersion']),
       infoNfc: const Uuid().v6(),
@@ -57,7 +58,7 @@ class MonopolyPlayerX {
       'number': number,
       'color': color.toHex(),
       'namePlayer': namePlayer,
-      'gameSesion': gameSession,
+      'sessionId': sessionId,
       'gameVersion': version.name,
       'money': money,
       'infoNfc': infoNfc
@@ -70,7 +71,7 @@ class MonopolyPlayerX {
     Color? color,
     String? infoNfc,
     String? namePlayer,
-    String? gameSession,
+    int? sessionId,
     double? money,
     GameVersions? version,
   }) {
@@ -79,7 +80,7 @@ class MonopolyPlayerX {
         number: number ?? this.number,
         color: color ?? this.color,
         namePlayer: namePlayer ?? this.namePlayer,
-        gameSession: gameSession ?? this.gameSession,
+        sessionId: sessionId ?? this.sessionId,
         infoNfc: const Uuid().v6(),
         money: money ?? this.money,
         version: version ?? this.version);
