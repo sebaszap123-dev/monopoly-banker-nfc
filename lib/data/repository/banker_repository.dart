@@ -10,7 +10,7 @@ abstract class BankerRepository {
   Future<List<MonopolyPlayerX>> getSessionPlayers(String idSession);
   Future<int> updateMonopolyCard(MonopolyCard card);
   Future<int> deleteMonopolyCard(MonopolyCard card);
-  Future<void> deleteAllPlayers(GameVersions version);
+  Future<void> deleteAllPlayers(int sessionId);
   // Future<List<MonopolyPlayerX>> _setupPlayers(List<MonopolyPlayerX> players);
   Future<void> backupPlayers(List<MonopolyPlayerX> players);
   Future<int> resetPlayers();
@@ -20,4 +20,5 @@ abstract class BankerRepository {
   Future<GameSession> getGameSession(int id);
   Future<bool> updateSession(int sessionId);
   Future<bool> deleteSession(int sessionId);
+  Future<int> getLastSession(GameVersions version);
 }

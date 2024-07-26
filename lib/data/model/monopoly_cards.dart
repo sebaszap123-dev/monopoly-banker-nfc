@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/utils/default_colors.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
@@ -195,7 +193,7 @@ class MonopolyCard {
 
   static Color _getColor(NdefRecord record) {
     final colorText = NdefRecordInfo.fromNdef(record).text;
-    if (!colorText.isValidColor()) print(colorText);
+    if (!colorText.isValidColor()) throw Exception('no valid color $colorText');
 
     return colorText.toColor();
   }

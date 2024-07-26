@@ -1,5 +1,4 @@
-// ignore_for_file: avoid_print
-
+import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/database/monopoly_database.dart';
@@ -7,19 +6,19 @@ import 'package:monopoly_banker/data/model/game_session.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
 import 'package:monopoly_banker/data/repository/banker_repository.dart';
-import 'package:monopoly_banker/data/service/secure_storage.dart';
+import 'package:monopoly_banker/data/service/banker_preferences.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:sqflite/sqflite.dart';
 
-class BankerElectronicService extends BankerRepository {
+class BankerManagerService extends BankerRepository {
   final Database _dbX;
 
-  BankerElectronicService._(this._dbX);
+  BankerManagerService._(this._dbX);
 
-  static Future<BankerElectronicService> initDbX() async {
+  static Future<BankerManagerService> initDbX() async {
     try {
       final db = await MonopolyDatabase.initDatabase();
-      return BankerElectronicService._(db);
+      return BankerManagerService._(db);
     } catch (e) {
       // TODO: HANDLE ERROR AND NOTIFY NO USER
       throw ('Error db $e');
@@ -119,13 +118,12 @@ class BankerElectronicService extends BankerRepository {
     }
   }
 
-  /// Create a monopoly player [MonopolyPlayerX] and return the COUNT: [int] (0 if conflict occurs)
+  /// delete all the players of a banker version [MonopolyPlayerX] and return the COUNT: [int] (0 if conflict occurs)
   @override
-  Future<void> deleteAllPlayers(GameVersions version) async {
+  Future<void> deleteAllPlayers(int sessionId) async {
     final db = _dbX;
     final resp = await db.delete(MonopolyDatabase.playersXTb,
-        where: 'version = ?', whereArgs: [version.name]);
-    await getIt<MonopolyGamesStorage>().deleteGameX();
+        where: 'sessionId = ?', whereArgs: [sessionId]);
     BankerAlerts.showSuccessDeletedPlayers(resp);
   }
 
@@ -205,13 +203,13 @@ class BankerElectronicService extends BankerRepository {
         conflictAlgorithm: ConflictAlgorithm.fail,
       );
       session = session.copyWith(id: sessionId);
-      final rawPlayers =
-          players.map((player) => player.copyWith(sessionId: 1)).toList();
+      final rawPlayers = players
+          .map((player) => player.copyWith(sessionId: sessionId))
+          .toList();
       final sessionPlayers = await _setupPlayers(rawPlayers);
       session = session.copyWith(players: sessionPlayers);
       return session;
     } catch (e) {
-      print('Failed to save session $e');
       throw Exception('invalid session');
     }
   }
@@ -236,14 +234,12 @@ class BankerElectronicService extends BankerRepository {
       final List<GameSession> gameSessions = [];
 
       for (var sessionId in sessionIds) {
-        // Obtener los jugadores de cada sesión
         final playerResp = await db.query(
           MonopolyDatabase.playersXTb,
-          where: '"sessionId" = ?',
+          where: 'sessionId = ?',
           whereArgs: [sessionId],
           orderBy: '"namePlayer"',
         );
-
         // Convertir la respuesta en una lista de jugadores
         final players =
             playerResp.map((e) => MonopolyPlayerX.fromMap(e)).toList();
@@ -255,11 +251,15 @@ class BankerElectronicService extends BankerRepository {
 
         gameSessions.add(session);
       }
-
+      if (gameSessions.isEmpty) {
+        await BankerAlerts.unhandledError(
+            error: 'Sessions not supouse to be empty please try again');
+        await getIt<BankerPreferences>().updateSessions(false);
+        getIt<RouterCubit>().goHome();
+      }
       return gameSessions;
     } catch (e) {
       // Manejo de errores
-      print('Error fetching game sessions: $e');
       return [];
     }
   }
@@ -274,7 +274,19 @@ class BankerElectronicService extends BankerRepository {
         where: 'id = ?',
         whereArgs: [id],
       );
-      final session = GameSession.fromMap(json: sessionResp[0]);
+
+      final playerResp = await db.query(
+        MonopolyDatabase.playersXTb,
+        where: 'sessionId = ?',
+        whereArgs: [id],
+        orderBy: '"namePlayer"',
+      );
+
+      final players =
+          playerResp.map((e) => MonopolyPlayerX.fromMap(e)).toList();
+
+      final session =
+          GameSession.fromMap(json: sessionResp[0]).copyWith(players: players);
       return session;
     } catch (e) {
       throw Exception('failed to get session $e');
@@ -285,7 +297,8 @@ class BankerElectronicService extends BankerRepository {
   Future<bool> updateSession(int sessionId) async {
     final db = _dbX;
     final session = await getGameSession(sessionId);
-    final updated = session.copyWith(updateTime: DateTime.now());
+    final updated = session.copyWith(
+        updateTime: DateTime.now(), playtime: session.playtimeMinutes);
     try {
       final count = await db.update(
         MonopolyDatabase.sessionsTb,
@@ -313,6 +326,25 @@ class BankerElectronicService extends BankerRepository {
       return count >= 1;
     } catch (e) {
       throw Exception('failed to updated session $e');
+    }
+  }
+
+  @override
+  Future<int> getLastSession(GameVersions version) async {
+    final db = _dbX;
+
+    try {
+      final sessionResp = await db.query(
+        MonopolyDatabase.sessionsTb,
+        where: 'gameVersion = ?',
+        whereArgs: [version.name],
+        orderBy: '"updateTime" desc', // Cambia asc a desc
+        limit: 1,
+      );
+      final session = GameSession.fromMap(json: sessionResp[0]);
+      return session.id ?? -1;
+    } catch (e) {
+      throw Exception('failed to get session $e');
     }
   }
 }

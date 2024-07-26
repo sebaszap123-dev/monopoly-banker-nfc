@@ -9,7 +9,8 @@ import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
-import 'package:monopoly_banker/data/service/banker_electronic_service.dart';
+import 'package:monopoly_banker/data/service/banker_manager_service.dart';
+import 'package:monopoly_banker/data/service/banker_preferences.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
 import 'package:monopoly_banker/interface/widgets/nfc_card_dialog.dart';
@@ -30,7 +31,7 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
   final GameVersions gameVersion = GameVersions.electronic;
   _initCards() async {
     final resp =
-        await getIt<BankerElectronicService>().getAllMonopolyCards(gameVersion);
+        await getIt<BankerManagerService>().getAllMonopolyCards(gameVersion);
     if (resp.isNotEmpty) {
       for (var card in resp) {
         cards[card] = false;
@@ -50,8 +51,7 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
   }
 
   void deleteCard(MonopolyCard card) async {
-    final resp =
-        await getIt<BankerElectronicService>().deleteMonopolyCard(card);
+    final resp = await getIt<BankerManagerService>().deleteMonopolyCard(card);
     if (resp != 0) {
       cards.remove(card);
     }
@@ -114,7 +114,7 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
           );
         });
     if (resp != null) {
-      final id = await getIt<BankerElectronicService>().addMonopolyCard(resp);
+      final id = await getIt<BankerManagerService>().addMonopolyCard(resp);
       if (id == -1) {
         return;
       }
@@ -129,12 +129,11 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
   }
 
   void startGame() {
-    print(players);
-    // throw Exception('stop here');
     if (players.isEmpty || players.length < 2) {
       BankerAlerts.noPlayersSelected();
       return;
     }
+    getIt<BankerPreferences>().updateSessions(true);
     getIt<MonopolyElectronicBloc>().add(StartGameEvent(players, gameVersion));
     getIt<RouterCubit>().state.push(const ElectronicGameRoute());
   }
@@ -156,21 +155,21 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
             appBar: AppBar(
               title: const Text('Choose players'),
               backgroundColor: Colors.grey.shade100,
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 15),
-                  child: IconButton(
-                    icon: Icon(
-                      // Icons.restore,
-                      Icons.cleaning_services_rounded,
-                      color: Colors.blue.shade200,
-                      size: 30,
-                    ),
-                    onPressed: () => getIt<BankerElectronicService>()
-                        .deleteAllPlayers(gameVersion),
-                  ),
-                )
-              ],
+              // actions: [
+              //   Padding(
+              //     padding: const EdgeInsets.only(right: 15),
+              //     child: IconButton(
+              //       icon: Icon(
+              //         // Icons.restore,
+              //         Icons.cleaning_services_rounded,
+              //         color: Colors.blue.shade200,
+              //         size: 30,
+              //       ),
+              //       onPressed: () => getIt<BankerManagerService>()
+              //           .deleteAllPlayers(gameVersion),
+              //     ),
+              //   )
+              // ],
             ),
             floatingActionButton: FloatingActionButton(
               heroTag: 'NFC-GAME',

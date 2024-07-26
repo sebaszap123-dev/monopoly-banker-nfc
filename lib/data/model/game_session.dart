@@ -8,16 +8,22 @@ class GameSession {
   final DateTime updateTime;
   final List<MonopolyPlayerX> players;
 
+  /// Played time in minutes
+  final int playtime;
   GameSession({
     this.id,
     required this.gameVersion,
     required this.players,
     required this.startTime,
     required this.updateTime,
+    this.playtime = 0,
   });
 
   GameSession copyWith(
-      {int? id, List<MonopolyPlayerX>? players, DateTime? updateTime}) {
+      {int? id,
+      List<MonopolyPlayerX>? players,
+      DateTime? updateTime,
+      int? playtime}) {
     return GameSession(
       id: id ?? this.id,
       players: players ?? this.players,
@@ -25,6 +31,7 @@ class GameSession {
       // IMMUTABLE
       gameVersion: this.gameVersion,
       startTime: this.startTime,
+      playtime: playtime ?? this.playtime,
     );
   }
 
@@ -32,6 +39,7 @@ class GameSession {
     return {
       'startTime': startTime.millisecondsSinceEpoch,
       'updateTime': updateTime.millisecondsSinceEpoch,
+      'playtime': playtime,
       'gameVersion': gameVersion.name,
     };
   }
@@ -45,6 +53,7 @@ class GameSession {
       updateTime:
           DateTime.fromMillisecondsSinceEpoch(json['updateTime'] as int),
       players: [],
+      playtime: json['playtime'] as int,
     );
   }
 
@@ -56,5 +65,11 @@ class GameSession {
       gameVersion: version,
       startTime: DateTime.now(),
     );
+  }
+
+  int get playtimeMinutes {
+    final now = DateTime.now();
+    final difference = now.difference(updateTime);
+    return playtime + difference.inMinutes.abs();
   }
 }
