@@ -413,7 +413,7 @@ abstract class BankerAlerts {
                 MaterialButton(
                   onPressed: () => getIt<RouterCubit>()
                       .state
-                      .push(GameRoute(version: version, startGame: true)),
+                      .popAndPush(GameRoute(version: version, startGame: true)),
                   child: SizedBox(
                     width: 150,
                     child: Card(
