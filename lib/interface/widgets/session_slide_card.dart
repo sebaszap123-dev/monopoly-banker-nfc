@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
+import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 import 'package:monopoly_banker/data/model/game_session.dart';
 import 'package:monopoly_banker/data/service/banker_manager_service.dart';
@@ -30,7 +33,6 @@ class SessionSlideCard extends StatelessWidget {
         startActionPane: ActionPane(
           motion: const ScrollMotion(),
           extentRatio: 0.5,
-          // dismissible: DismissiblePane(onDismissed: () => print('ola')),
           children: [
             SlidableAction(
               borderRadius: BorderRadius.circular(25),
@@ -45,14 +47,26 @@ class SessionSlideCard extends StatelessWidget {
         endActionPane: ActionPane(
           motion: const ScrollMotion(),
           extentRatio: 0.5,
-          // dismissible: DismissiblePane(onDismissed: () => print('ola')),
           children: [
             SlidableAction(
               // flex: 4,
               borderRadius: BorderRadius.circular(25),
               // TODO: ADD PLAY GAME (RESTORE GAME)
-              onPressed: (_) => getIt<MonopolyElectronicBloc>()
-                  .add(RestoreGameEvent(sessionId: session.id!)),
+              onPressed: (_) {
+                getIt<MonopolyElectronicBloc>()
+                    .add(RestoreGameEvent(sessionId: session.id!));
+                switch (session.gameVersion) {
+                  case GameVersions.classic:
+                    // TODO: Handle this case.
+                    throw Exception('Not ready yet');
+                  case GameVersions.electronic:
+                    getIt<RouterCubit>().state.push(ElectronicGameRoute());
+                  // TODO: Handle this case.
+                  case GameVersions.colima:
+                    // TODO: Handle this case.
+                    throw Exception('Not ready yet');
+                }
+              },
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
               icon: Icons.play_arrow_rounded,

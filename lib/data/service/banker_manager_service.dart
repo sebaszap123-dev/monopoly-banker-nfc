@@ -2,11 +2,11 @@ import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/database/monopoly_database.dart';
+import 'package:monopoly_banker/data/database/utils/utils.dart';
 import 'package:monopoly_banker/data/model/game_session.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
 import 'package:monopoly_banker/data/repository/banker_repository.dart';
-import 'package:monopoly_banker/data/service/banker_preferences.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -20,7 +20,7 @@ class BankerManagerService extends BankerRepository {
       final db = await MonopolyDatabase.initDatabase();
       return BankerManagerService._(db);
     } catch (e) {
-      // TODO: HANDLE ERROR AND NOTIFY NO USER
+      // TODO: HANDLE ERROR AND NOTIFY NO USER (ADD CRASH ANALYTICS FROM FIREBASE)
       throw ('Error db $e');
     }
   }
@@ -34,7 +34,7 @@ class BankerManagerService extends BankerRepository {
           where: 'version = ?', whereArgs: [version.name]);
       return results.map((map) => MonopolyCard.fromMap(map)).toList();
     } catch (e) {
-      // TODO: HANDLE ERROR AND NOTIFY NO USER
+      // TODO: HANDLE ERROR AND NOTIFY NO USER (ADD CRASH ANALYTICS FROM FIREBASE)
       throw e;
     }
   }
@@ -113,7 +113,7 @@ class BankerManagerService extends BankerRepository {
       // If a row was deleted, return the card.id, else return 0
       return resp > 0 ? card.id : 0;
     } catch (e) {
-      // TODO: HANDLE ERROR AND NOTIFY NO USER
+      // TODO: HANDLE ERROR AND NOTIFY NO USER (ADD CRASH ANALYTICS FROM FIREBASE)
       throw e;
     }
   }
@@ -143,22 +143,7 @@ class BankerManagerService extends BankerRepository {
       }
       await batch.commit();
     } catch (e) {
-      // TODO: HANDLE ERROR AND NOTIFY NO USER
-      throw e;
-    }
-  }
-
-  /// Reset players reponse: count of deleted players [int]
-  @override
-  Future<int> resetPlayers() async {
-    try {
-      final db = _dbX;
-      final results = await db.delete(
-        MonopolyDatabase.playersXTb,
-      );
-      return results;
-    } catch (e) {
-      // TODO: HANDLE ERROR AND NOTIFY NO USER
+      // TODO: HANDLE ERROR AND NOTIFY NO USER (ADD CRASH ANALYTICS FROM FIREBASE)
       throw e;
     }
   }
@@ -185,7 +170,7 @@ class BankerManagerService extends BankerRepository {
     } catch (e) {
       // Maneja el error y notifica que no se pudo agregar jugadores
       // Puedes registrar el error o mostrar una notificación adecuada aquí
-      // TODO: HANDLE ERROR AND NOTIFY NO USER
+      // TODO: HANDLE ERROR AND NOTIFY NO USER (ADD CRASH ANALYTICS FROM FIREBASE)
 
       throw Exception('Failed to setup players: $e');
     }
@@ -253,8 +238,7 @@ class BankerManagerService extends BankerRepository {
       }
       if (gameSessions.isEmpty) {
         await BankerAlerts.unhandledError(
-            error: 'Sessions not supouse to be empty please try again');
-        await getIt<BankerPreferences>().updateSessions(false);
+            error: 'Sessions empty please try again');
         getIt<RouterCubit>().goHome();
       }
       return gameSessions;
@@ -318,14 +302,27 @@ class BankerManagerService extends BankerRepository {
     final db = _dbX;
 
     try {
-      final count = await db.delete(
+      // Eliminar la sesión
+      final sessionCount = await db.delete(
         MonopolyDatabase.sessionsTb,
         where: 'id = ?',
         whereArgs: [sessionId],
       );
-      return count >= 1;
+
+      // Eliminar los jugadores relacionados si se eliminó la sesión
+      if (sessionCount >= 1) {
+        final playerCount = await db.delete(
+          MonopolyDatabase.playersXTb,
+          where: 'sessionId = ?',
+          whereArgs: [sessionId],
+        );
+
+        return playerCount >= 1;
+      } else {
+        return false;
+      }
     } catch (e) {
-      throw Exception('failed to updated session $e');
+      throw Exception('failed to delete session $e');
     }
   }
 
@@ -347,4 +344,8 @@ class BankerManagerService extends BankerRepository {
       throw Exception('failed to get session $e');
     }
   }
+
+  @override
+  Future<int> getCountGameSession(GameVersions version) =>
+      DatabaseUtils.countQuery(MonopolyDatabase.sessionsTb, _dbX, version);
 }

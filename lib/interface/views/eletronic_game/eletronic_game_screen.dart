@@ -61,7 +61,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
     _controller.stop();
     _controller.dispose();
     if (getIt<MonopolyElectronicBloc>().state.status != GameStatus.backup) {
-      getIt<MonopolyElectronicBloc>().add(BackupGame(appPaused: true));
+      getIt<MonopolyElectronicBloc>().add(BackupGameEvent(appPaused: true));
     }
   }
 
@@ -112,16 +112,16 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios),
               onPressed: () => getIt<MonopolyElectronicBloc>()
-                  .add(BackupGame(appPaused: false)),
+                  .add(BackupGameEvent(appPaused: false)),
             ),
             actions: [
               TextButton(
                   onPressed: () async {
                     final end = await BankerAlerts.endGame();
                     if (end) {
-                      getIt<RouterCubit>()
-                          .state
-                          .push(EndGameMonopolyX(players: blocState.players));
+                      getIt<RouterCubit>().state.push(EndGameMonopolyX(
+                          players: blocState.players,
+                          sessionId: blocState.gameSessionId!));
                     }
                   },
                   child: Container(

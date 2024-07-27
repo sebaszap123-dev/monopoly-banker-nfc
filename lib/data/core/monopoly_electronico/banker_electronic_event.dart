@@ -19,9 +19,14 @@ class RestoreGameEvent extends MonopolyElectronicEvent {
   RestoreGameEvent({required this.sessionId});
 }
 
-class BackupGame extends MonopolyElectronicEvent {
+class BackupGameEvent extends MonopolyElectronicEvent {
   final bool appPaused;
-  BackupGame({required this.appPaused});
+  BackupGameEvent({required this.appPaused});
+}
+
+class EndGameEvent extends MonopolyElectronicEvent {
+  // final bool appPaused;
+  EndGameEvent();
 }
 
 class UpdatePlayerEvent extends MonopolyElectronicEvent {}

@@ -42,7 +42,7 @@ class _BankerAppNfcState extends State<BankerAppNfc>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused) {
-      getIt<MonopolyElectronicBloc>().add(BackupGame(appPaused: true));
+      getIt<MonopolyElectronicBloc>().add(BackupGameEvent(appPaused: true));
     }
   }
 

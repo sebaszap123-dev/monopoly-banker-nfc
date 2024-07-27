@@ -10,7 +10,6 @@ import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/monopoly_player.dart';
 import 'package:monopoly_banker/data/service/banker_manager_service.dart';
-import 'package:monopoly_banker/data/service/banker_preferences.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
 import 'package:monopoly_banker/interface/widgets/nfc_card_dialog.dart';
@@ -133,7 +132,6 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
       BankerAlerts.noPlayersSelected();
       return;
     }
-    getIt<BankerPreferences>().updateSessions(true);
     getIt<MonopolyElectronicBloc>().add(StartGameEvent(players, gameVersion));
     getIt<RouterCubit>().state.push(const ElectronicGameRoute());
   }

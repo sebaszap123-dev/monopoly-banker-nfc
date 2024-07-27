@@ -40,6 +40,7 @@ abstract class $MonopolyRouter extends _i6.RootStackRouter {
         child: _i2.EndGameMonopolyX(
           key: args.key,
           players: args.players,
+          sessionId: args.sessionId,
         ),
       );
     },
@@ -50,7 +51,7 @@ abstract class $MonopolyRouter extends _i6.RootStackRouter {
         child: _i3.GameScreen(
           key: args.key,
           version: args.version,
-          isNewGame: args.isNewGame,
+          isNewGame: args.startGame,
         ),
       );
     },
@@ -93,12 +94,14 @@ class EndGameMonopolyX extends _i6.PageRouteInfo<EndGameMonopolyXArgs> {
   EndGameMonopolyX({
     _i7.Key? key,
     required List<_i8.MonopolyPlayerX> players,
+    required int sessionId,
     List<_i6.PageRouteInfo>? children,
   }) : super(
           EndGameMonopolyX.name,
           args: EndGameMonopolyXArgs(
             key: key,
             players: players,
+            sessionId: sessionId,
           ),
           initialChildren: children,
         );
@@ -113,15 +116,18 @@ class EndGameMonopolyXArgs {
   const EndGameMonopolyXArgs({
     this.key,
     required this.players,
+    required this.sessionId,
   });
 
   final _i7.Key? key;
 
   final List<_i8.MonopolyPlayerX> players;
 
+  final int sessionId;
+
   @override
   String toString() {
-    return 'EndGameMonopolyXArgs{key: $key, players: $players}';
+    return 'EndGameMonopolyXArgs{key: $key, players: $players, sessionId: $sessionId}';
   }
 }
 
@@ -131,14 +137,14 @@ class GameRoute extends _i6.PageRouteInfo<GameRouteArgs> {
   GameRoute({
     _i7.Key? key,
     required _i9.GameVersions version,
-    bool isNewGame = false,
+    bool startGame = false,
     List<_i6.PageRouteInfo>? children,
   }) : super(
           GameRoute.name,
           args: GameRouteArgs(
             key: key,
             version: version,
-            isNewGame: isNewGame,
+            startGame: startGame,
           ),
           initialChildren: children,
         );
@@ -153,18 +159,18 @@ class GameRouteArgs {
   const GameRouteArgs({
     this.key,
     required this.version,
-    this.isNewGame = false,
+    this.startGame = false,
   });
 
   final _i7.Key? key;
 
   final _i9.GameVersions version;
 
-  final bool isNewGame;
+  final bool startGame;
 
   @override
   String toString() {
-    return 'GameRouteArgs{key: $key, version: $version, isNewGame: $isNewGame}';
+    return 'GameRouteArgs{key: $key, version: $version, isNewGame: $startGame}';
   }
 }
 

@@ -21,7 +21,8 @@ class MonopolyElectronicBloc
     on<HandleCardsEvent>(_handleCardsEvent);
     on<StartGameEvent>(_startGameEvent);
     on<RestoreGameEvent>(_restoreGameEvent);
-    on<BackupGame>(_backGameEvent);
+    on<BackupGameEvent>(_backGameEvent);
+    on<EndGameEvent>(_endGameEvent);
     on<UpdatePlayerEvent>(_changeUserEvent);
     on<PassExitEvent>(_passExitEvent);
     on<FinishTurnPlayerEvent>(_finishTurnPlayer);
@@ -32,8 +33,6 @@ class MonopolyElectronicBloc
   _handleCardsEvent(
       HandleCardsEvent event, Emitter<MonopolyElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
-    // final hasSavedGames = await getIt<MonopolyGamesStorage>().hasCurrentGames;
-    // TODO-FEATURE: RESTORE IF SAVEDGAMES IN ELETRONIC and user wants to (show alert)
     final cards = await getIt<BankerManagerService>()
         .getAllMonopolyCards(GameVersions.electronic);
     emit(state.copyWith(
@@ -44,7 +43,7 @@ class MonopolyElectronicBloc
   }
 
   _backGameEvent(
-      BackupGame event, Emitter<MonopolyElectronicState> emit) async {
+      BackupGameEvent event, Emitter<MonopolyElectronicState> emit) async {
     if (event.appPaused) {
       if (state.status == GameStatus.backup) return;
       await getIt<BankerManagerService>().backupPlayers(state.players);
@@ -91,11 +90,8 @@ class MonopolyElectronicBloc
   _startGameEvent(
       StartGameEvent event, Emitter<MonopolyElectronicState> emit) async {
     try {
-      // TODO: ACTUALIZAR
-      // LOADING EVENT
       emit(state.copyWith(status: GameStatus.loading));
 
-      //
       final session = await getIt<BankerManagerService>()
           .createGameSessions(event.version, event.players);
       await Future.delayed(const Duration(milliseconds: 900));
@@ -458,5 +454,9 @@ class MonopolyElectronicBloc
       status: GameStatus.transaction,
       gameTransaction: GameTransaction.salida,
     );
+  }
+
+  _endGameEvent(EndGameEvent state, Emitter<MonopolyElectronicState> emit) {
+    emit(MonopolyElectronicState());
   }
 }

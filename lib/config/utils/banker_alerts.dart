@@ -2,6 +2,7 @@ import 'package:art_sweetalert/art_sweetalert.dart';
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
+import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/config/utils/widgets/read_card_nfc_dialog.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 import 'package:monopoly_banker/data/model/monopoly_cards.dart';
@@ -37,6 +38,19 @@ abstract class BankerAlerts {
         title: 'Missing $count card',
         confirmButtonText: 'Okay',
         text: 'We missing $count card(s) lets try again.',
+      ),
+    );
+  }
+
+  static invalidCardNumber() {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.info,
+        title: 'Sucedio un error al leer tu tarjeta',
+        confirmButtonText: 'Okay',
+        text:
+            'Parece que contiene un numero invalido para este juego, intenta de nuevo.',
       ),
     );
   }
@@ -386,16 +400,49 @@ abstract class BankerAlerts {
     );
   }
 
-  static Future<RecoveryAction?> recoveryLastSession() async {
+  static Future<RecoveryAction?> recoveryLastSession(
+      int sessions, GameVersions version) async {
     final ArtDialogResponse? resp = await ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
         type: ArtSweetAlertType.question,
         title: 'Recuperar última sesión',
         text: '¿Deseas recuperar tu última sesión?',
+        customColumns: sessions == 1
+            ? [
+                MaterialButton(
+                  onPressed: () => getIt<RouterCubit>()
+                      .state
+                      .push(GameRoute(version: version, startGame: true)),
+                  child: SizedBox(
+                    width: 150,
+                    child: Card(
+                      color: Colors.green,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'New game',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              ]
+            : null,
+        showCancelBtn: sessions > 1,
         confirmButtonText: 'Recuperar',
-        denyButtonText: 'Ver mis sesiones',
-        denyButtonColor: Colors.lightGreen,
+        cancelButtonText: 'Ver mis sesiones',
+        cancelButtonColor: Colors.lightGreen,
       ),
     );
     if (resp == null) {
@@ -403,7 +450,7 @@ abstract class BankerAlerts {
     }
     if (resp.isTapConfirmButton) {
       return RecoveryAction.last;
-    } else if (resp.isTapDenyButton) {
+    } else if (resp.isTapCancelButton) {
       return RecoveryAction.menu;
     }
     return null;

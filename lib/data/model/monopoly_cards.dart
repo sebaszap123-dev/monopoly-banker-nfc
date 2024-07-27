@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/default_colors.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
@@ -185,7 +186,7 @@ class MonopolyCard {
   static String _getNumber(NdefRecord record) {
     final numberCard = NdefRecordInfo.fromNdef(record).text;
     if (!numberCard.isValidCreditCardNumber()) {
-      // TODO: HANDLE ERROR AND NOTIFY NO USER
+      BankerAlerts.invalidCardNumber();
       // throw ("It's not a valid credit card number.");
     }
     return numberCard;

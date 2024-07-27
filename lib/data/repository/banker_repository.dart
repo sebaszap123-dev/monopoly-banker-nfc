@@ -13,11 +13,12 @@ abstract class BankerRepository {
   Future<void> deleteAllPlayers(int sessionId);
   // Future<List<MonopolyPlayerX>> _setupPlayers(List<MonopolyPlayerX> players);
   Future<void> backupPlayers(List<MonopolyPlayerX> players);
-  Future<int> resetPlayers();
+  // Future<int> resetPlayers();
   Future<GameSession> createGameSessions(
       GameVersions version, List<MonopolyPlayerX> players);
   Future<List<GameSession>> getGameSessions(GameVersions version);
   Future<GameSession> getGameSession(int id);
+  Future<int> getCountGameSession(GameVersions version);
   Future<bool> updateSession(int sessionId);
   Future<bool> deleteSession(int sessionId);
   Future<int> getLastSession(GameVersions version);
