@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
-import 'package:monopoly_banker/config/utils/default_colors.dart';
+import 'package:monopoly_banker/config/utils/default_cards.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/model/ndfe_record_info.dart';
@@ -149,37 +149,44 @@ class MonopolyCard {
     );
   }
 
-  static NdefStatus isRawCard(NdefMessage? message, List<MonopolyCard> cards) {
+  static NdefStatus isRawCard(NdefMessage? message, MonopolyCard card,
+      List<MonopolyCard> currentCards) {
     if (message == null) {
       return NdefStatus.empty;
     }
-    NdefStatus status = NdefStatus.format;
-    List<NdefStatus> statuses = [];
+
+    int matchesRecord = 0;
+
     for (var record in message.records) {
       final recordInfo = NdefRecordInfo.fromNdef(record);
-      final isValid = recordInfo.text.isValidCreditCardNumber();
 
       if (recordInfo.text == 'Empty') {
-        statuses.add(NdefStatus.empty);
+        return NdefStatus.empty;
       }
 
-      if (isValid) {
-        final index =
-            cards.indexWhere((card) => card.number == recordInfo.text);
-        if (index != -1) {
-          status = NdefStatus.card;
-          statuses.add(status);
+      if (recordInfo.text.isValidCreditCardNumber()) {
+        bool exist = true;
+        try {
+          currentCards.firstWhere((card) => card.number == card.number);
+        } on StateError catch (_) {
+          exist = false;
+        }
+        if (exist) {
+          return NdefStatus.card;
+        }
+        final match =
+            card.number == recordInfo.text || card.color == recordInfo.text;
+
+        if (match) {
+          matchesRecord++;
+          if (matchesRecord >= 2) {
+            return NdefStatus.card;
+          }
         }
       }
     }
-    if (statuses.isEmpty) {
-      return NdefStatus.empty;
-    }
-    final hasCard = statuses.indexWhere((status) => status == NdefStatus.card);
-    if (hasCard == -1) {
-      return NdefStatus.empty;
-    }
-    return NdefStatus.card;
+
+    return NdefStatus.empty;
   }
 
   // HANDLE ERROS WITH ART SWEET ALERT AND GET_IT CONTEXT ROUTER

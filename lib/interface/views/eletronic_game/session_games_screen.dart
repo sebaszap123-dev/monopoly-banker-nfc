@@ -8,7 +8,7 @@ import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/model/game_session.dart';
 import 'package:monopoly_banker/data/service/banker_manager_service.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
-import 'package:monopoly_banker/interface/widgets/session_slide_card.dart';
+import 'package:monopoly_banker/interface/widgets/session_card.dart';
 
 @RoutePage()
 class GameSessionsScreen extends StatefulWidget {
@@ -67,7 +67,7 @@ class _GameSessionsScreenState extends State<GameSessionsScreen> {
                           // session.players.isEmpty
                           //     ? Container()
                           // :
-                          SessionSlideCard(
+                          SessionCard(
                             session: session,
                             hasMore: snapshot.data?.isNotEmpty ?? false,
                             deleteSession: (int sessionId) {

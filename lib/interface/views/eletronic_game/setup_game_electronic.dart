@@ -12,7 +12,7 @@ import 'package:monopoly_banker/data/model/monopoly_player.dart';
 import 'package:monopoly_banker/data/service/banker_manager_service.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
-import 'package:monopoly_banker/interface/widgets/nfc_card_dialog.dart';
+import 'package:monopoly_banker/interface/widgets/nfc_add_card_dialog.dart';
 
 class ElectronicGameSetup extends StatefulWidget {
   const ElectronicGameSetup({
@@ -98,8 +98,6 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
     return players.length >= 2;
   }
 
-  Color? color;
-
   void addNewCard() async {
     final resp = await showDialog<MonopolyCard>(
         context: context,
@@ -153,21 +151,6 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetup> {
             appBar: AppBar(
               title: const Text('Choose players'),
               backgroundColor: Colors.grey.shade100,
-              // actions: [
-              //   Padding(
-              //     padding: const EdgeInsets.only(right: 15),
-              //     child: IconButton(
-              //       icon: Icon(
-              //         // Icons.restore,
-              //         Icons.cleaning_services_rounded,
-              //         color: Colors.blue.shade200,
-              //         size: 30,
-              //       ),
-              //       onPressed: () => getIt<BankerManagerService>()
-              //           .deleteAllPlayers(gameVersion),
-              //     ),
-              //   )
-              // ],
             ),
             floatingActionButton: FloatingActionButton(
               heroTag: 'NFC-GAME',

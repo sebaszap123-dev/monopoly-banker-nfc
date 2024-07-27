@@ -37,9 +37,11 @@ class _NfcAddCardsState extends State<NfcAddCards> {
   String messageDialog = 'Select a card to be pair';
   List<MonopolyCard> cards = [];
 
+  bool error = false;
+  String errorMessage = '';
+
   @override
   void initState() {
-    super.initState();
     // Copiar la lista de currentCards para evitar modificar la lista original
     if (widget.validPlay) {
       messageDialog = 'You can play or pair a new card';
@@ -49,6 +51,7 @@ class _NfcAddCardsState extends State<NfcAddCards> {
     // Eliminar las cartas existentes de la lista original
     cards.removeWhere((player) => widget.currentCards
         .any((existingPlayer) => player.number == existingPlayer.number));
+    super.initState();
   }
 
   Future<bool> canOverride(NfcTag tag) async {
@@ -56,8 +59,16 @@ class _NfcAddCardsState extends State<NfcAddCards> {
       final ndef = Ndef.from(tag);
       if (ndef != null) {
         final cachedMessage = ndef.cachedMessage;
-
-        status = MonopolyCard.isRawCard(cachedMessage, widget.currentCards);
+        if (card == null) {
+          setState(() {
+            error = true;
+            errorMessage = 'You need to select the card to be paired.';
+          });
+          return false;
+        }
+        error = false;
+        status =
+            MonopolyCard.isRawCard(cachedMessage, card!, widget.currentCards);
 
         if (status == NdefStatus.format) {
           final ndefFormat = NdefFormatable.from(tag);
@@ -70,6 +81,7 @@ class _NfcAddCardsState extends State<NfcAddCards> {
 
         if (status == NdefStatus.card) {
           // BankerAlerts.alreadyRegisteredCard();
+          error = false;
           return true;
         }
 
@@ -115,6 +127,19 @@ class _NfcAddCardsState extends State<NfcAddCards> {
           error: 'Please format your nfc tag with an app',
           myContext: widget.context,
         );
+        isNfc = false;
+      } on Exception catch (e) {
+        BankerAlerts.unhandledError(
+          error: 'An error has ocurred $e',
+          myContext: widget.context,
+        );
+        isNfc = false;
+      } catch (e) {
+        BankerAlerts.unhandledError(
+          error: 'An error has ocurred $e',
+          myContext: widget.context,
+        );
+        isNfc = false;
       }
 
       await getIt<NfcManager>().stopSession();
@@ -267,6 +292,11 @@ class _NfcAddCardsState extends State<NfcAddCards> {
                             ),
                         ],
                       ),
+                      if (error)
+                        Text(
+                          errorMessage,
+                          style: TextStyle(color: Colors.red),
+                        )
                     ],
                   ),
                 ),
