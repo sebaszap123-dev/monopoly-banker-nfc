@@ -5,7 +5,7 @@ import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/config/utils/widgets/read_card_nfc_dialog.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
-import 'package:monopoly_banker/data/model/monopoly_cards.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_cards.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
 import 'package:monopoly_banker/interface/widgets/pay_to_button.dart';
@@ -413,7 +413,7 @@ abstract class BankerAlerts {
                 MaterialButton(
                   onPressed: () => getIt<RouterCubit>()
                       .state
-                      .popAndPush(GameRoute(version: version, startGame: true)),
+                      .popAndPush(GameRoute(version: version, isNewGame: true)),
                   child: SizedBox(
                     width: 150,
                     child: Card(

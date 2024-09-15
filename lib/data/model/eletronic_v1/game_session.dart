@@ -1,5 +1,5 @@
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
-import 'package:monopoly_banker/data/model/monopoly_player.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_player.dart';
 
 class GameSession {
   final GameVersions gameVersion;

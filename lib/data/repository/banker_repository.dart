@@ -1,7 +1,7 @@
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
-import 'package:monopoly_banker/data/model/game_session.dart';
-import 'package:monopoly_banker/data/model/monopoly_cards.dart';
-import 'package:monopoly_banker/data/model/monopoly_player.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/game_session.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_cards.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_player.dart';
 
 abstract class BankerRepository {
   Future<List<MonopolyCard>> getAllMonopolyCards(GameVersions version);

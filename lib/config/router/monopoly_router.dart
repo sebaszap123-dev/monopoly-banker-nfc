@@ -7,7 +7,7 @@ import 'package:monopoly_banker/config/router/guards/game_guard.dart';
 import 'monopoly_router.gr.dart';
 
 @AutoRouterConfig()
-class MonopolyRouter extends $MonopolyRouter {
+class MonopolyRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
         AutoRoute(page: HomeRoute.page, initial: true),

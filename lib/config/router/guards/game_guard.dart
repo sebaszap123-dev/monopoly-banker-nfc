@@ -11,8 +11,8 @@ class GameGuard extends AutoRouteGuard {
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     final args = resolver.route.args as GameRouteArgs;
     // final gameVersion = routeArgs.version;
-    if (args.startGame) {
-      resolver.next(args.startGame);
+    if (args.isNewGame) {
+      resolver.next(args.isNewGame);
       return;
     }
 

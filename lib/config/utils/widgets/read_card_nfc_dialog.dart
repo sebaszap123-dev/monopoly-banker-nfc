@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:monopoly_banker/data/model/monopoly_cards.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_cards.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';
 import 'package:nfc_manager/nfc_manager.dart';

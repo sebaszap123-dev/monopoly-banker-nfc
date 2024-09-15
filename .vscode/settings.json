@@ -1,7 +1,4 @@
 {
-    "cSpell.words": [
-        "AUTOINCREMENT",
-        "servicelocator",
-        "sqflite"
-    ]
+  "cSpell.words": ["AUTOINCREMENT", "prefs", "servicelocator", "sqflite"],
+  "dart.flutterSdkPath": ".fvm/versions/3.24.0"
 }

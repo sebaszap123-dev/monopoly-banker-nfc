@@ -11,7 +11,8 @@
 import 'package:auto_route/auto_route.dart' as _i6;
 import 'package:flutter/material.dart' as _i7;
 import 'package:monopoly_banker/config/utils/game_versions_support.dart' as _i9;
-import 'package:monopoly_banker/data/model/monopoly_player.dart' as _i8;
+import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_player.dart'
+    as _i8;
 import 'package:monopoly_banker/interface/views/eletronic_game/eletronic_game_screen.dart'
     as _i1;
 import 'package:monopoly_banker/interface/views/eletronic_game/end_game.dart'
@@ -51,7 +52,7 @@ abstract class $MonopolyRouter extends _i6.RootStackRouter {
         child: _i3.GameScreen(
           key: args.key,
           version: args.version,
-          isNewGame: args.startGame,
+          isNewGame: args.isNewGame,
         ),
       );
     },
@@ -137,14 +138,14 @@ class GameRoute extends _i6.PageRouteInfo<GameRouteArgs> {
   GameRoute({
     _i7.Key? key,
     required _i9.GameVersions version,
-    bool startGame = false,
+    bool isNewGame = false,
     List<_i6.PageRouteInfo>? children,
   }) : super(
           GameRoute.name,
           args: GameRouteArgs(
             key: key,
             version: version,
-            startGame: startGame,
+            isNewGame: isNewGame,
           ),
           initialChildren: children,
         );
@@ -159,18 +160,18 @@ class GameRouteArgs {
   const GameRouteArgs({
     this.key,
     required this.version,
-    this.startGame = false,
+    this.isNewGame = false,
   });
 
   final _i7.Key? key;
 
   final _i9.GameVersions version;
 
-  final bool startGame;
+  final bool isNewGame;
 
   @override
   String toString() {
-    return 'GameRouteArgs{key: $key, version: $version, isNewGame: $startGame}';
+    return 'GameRouteArgs{key: $key, version: $version, isNewGame: $isNewGame}';
   }
 }
 

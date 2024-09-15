@@ -6,7 +6,7 @@ import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/banker_textstyle.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
-import 'package:monopoly_banker/data/model/monopoly_cards.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/record.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';

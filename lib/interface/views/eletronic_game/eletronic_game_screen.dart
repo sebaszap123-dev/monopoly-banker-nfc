@@ -73,12 +73,6 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      sheetAnimationStyle: AnimationStyle(
-        curve: Curves.bounceIn,
-        duration: Durations.long1,
-        reverseCurve: Curves.bounceOut,
-        reverseDuration: Durations.medium1,
-      ),
       builder: (context) {
         return Container(
           decoration: BoxDecoration(

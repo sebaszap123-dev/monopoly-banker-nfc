@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
-import 'package:monopoly_banker/data/model/monopoly_cards.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_cards.dart';
 import 'package:uuid/uuid.dart';
 
 class MonopolyPlayerX {

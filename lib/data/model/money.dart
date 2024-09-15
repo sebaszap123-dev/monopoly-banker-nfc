@@ -1,0 +1,67 @@
+import 'package:isar/isar.dart';
+part 'money.g.dart';
+
+/// MILLION: M, THOUSANDS: K
+enum MoneyType {
+  million, // M
+  thousands, // k
+}
+
+@embedded
+class Money {
+  @Enumerated(EnumType.name)
+  MoneyType? type;
+  double? value;
+
+  Money({this.type, this.value});
+
+  Money operator *(num multiplier) {
+    if (value == null) {
+      throw ArgumentError('Value cannot be null for multiplication');
+    }
+    double newValue = value! * multiplier;
+    return _normalize(newValue);
+  }
+
+  Money operator +(Money other) {
+    double newValue = _convertToThousands() + other._convertToThousands();
+    return _normalize(newValue);
+  }
+
+  Money operator -(Money other) {
+    double newValue = _convertToThousands() - other._convertToThousands();
+    return _normalize(newValue);
+  }
+
+  Money operator /(num divisor) {
+    if (divisor == 0) {
+      throw ArgumentError('Cannot divide by zero');
+    }
+    double newValue = _convertToThousands() / divisor;
+    return _normalize(newValue);
+  }
+
+  double _convertToThousands() {
+    if (value == null) {
+      throw ArgumentError('Value cannot be null');
+    }
+    return type == MoneyType.million ? value! * 1000 : value!;
+  }
+
+  Money _normalize(double newValue) {
+    if (newValue.abs() >= 1000) {
+      return Money(type: MoneyType.million, value: newValue / 1000);
+    } else {
+      return Money(type: MoneyType.thousands, value: newValue);
+    }
+  }
+
+  @override
+  String toString() {
+    if (value == null || type == null) {
+      return 'Invalid Money';
+    }
+    String suffix = type == MoneyType.million ? 'M' : 'k';
+    return '${value!.toStringAsFixed(1)} $suffix';
+  }
+}

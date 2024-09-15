@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
-import 'package:monopoly_banker/data/model/game_session.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/game_session.dart';
 import 'package:monopoly_banker/data/service/banker_manager_service.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 

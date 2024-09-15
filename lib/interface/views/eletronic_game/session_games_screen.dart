@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
-import 'package:monopoly_banker/data/model/game_session.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/game_session.dart';
 import 'package:monopoly_banker/data/service/banker_manager_service.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/session_card.dart';
@@ -96,7 +96,7 @@ class _GameSessionsScreenState extends State<GameSessionsScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => getIt<RouterCubit>()
             .state
-            .push(GameRoute(version: widget.version, startGame: true)),
+            .push(GameRoute(version: widget.version, isNewGame: true)),
         child: Icon(Icons.play_arrow_rounded),
       ),
     );

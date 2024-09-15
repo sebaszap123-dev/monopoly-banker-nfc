@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
-import 'package:monopoly_banker/data/model/monopoly_player.dart';
+import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_player.dart';
 import 'package:monopoly_banker/data/service/banker_manager_service.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
