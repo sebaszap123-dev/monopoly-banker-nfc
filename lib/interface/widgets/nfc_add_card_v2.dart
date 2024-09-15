@@ -8,7 +8,6 @@ import 'package:monopoly_banker/config/utils/extensions.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/model/electronic_v2/monopoly_cards_v2.dart'; // Actualizar importación
 import 'package:monopoly_banker/data/model/record.dart';
-import 'package:monopoly_banker/data/service/electronic_v2/cards_manager_service.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';
 import 'package:nfc_manager/nfc_manager.dart';

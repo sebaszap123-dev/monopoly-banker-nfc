@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico_v2/banker_electronic_bloc_v2.dart';
 import 'package:monopoly_banker/data/database/electronic_preference_v2.dart';
 import 'package:monopoly_banker/data/service/banker_manager_service.dart';
 import 'package:nfc_manager/nfc_manager.dart';
@@ -20,4 +21,5 @@ Future<void> servicelocator() async {
   getIt.registerSingleton(monstrance);
   getIt.registerSingleton(RouterCubit());
   getIt.registerSingleton(MonopolyElectronicBloc());
+  getIt.registerSingleton(ElectronicGameV2Bloc());
 }

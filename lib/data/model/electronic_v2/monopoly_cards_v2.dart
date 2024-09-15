@@ -16,6 +16,8 @@ class MonopolyCardV2 {
   late String number;
   late String colorHex;
   late String colorName;
+  @ignore
+  String? displayName;
 
   MonopolyCardV2();
 

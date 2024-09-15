@@ -22,7 +22,7 @@ class CardsManagerService {
     for (var color in cardPreferences.keys) {
       bool hasCard = await cardPreferences[color]!;
       if (hasCard) {
-        MonopolyCardV2? card = createCard(color);
+        MonopolyCardV2? card = createCardByColor(color);
         if (card != null) {
           cards.add(card);
         }
@@ -33,7 +33,7 @@ class CardsManagerService {
   }
 
   // Función para crear una carta MonopolyCardV2 a partir de un color
-  static MonopolyCardV2? createCard(String colorName) {
+  static MonopolyCardV2? createCardByColor(String colorName) {
     if (defaultCards.containsKey(colorName)) {
       return MonopolyCardV2()
         ..number = defaultCards[colorName]!.keys.first
@@ -41,5 +41,9 @@ class CardsManagerService {
         ..colorName = colorName;
     }
     return null; // Si no existe el color, retornamos null
+  }
+
+  static Future<void> addCard(MonopolyCardV2 card) async {
+    await getIt<ElectronicPreferenceV2>().cardAdd(card.number);
   }
 }

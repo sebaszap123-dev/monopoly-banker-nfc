@@ -10,8 +10,8 @@ import 'package:monopoly_banker/data/model/player.dart';
 part 'banker_electronic_event_v2.dart';
 part 'banker_electronic_state_v2.dart';
 
-class ElectronicGameV2 extends Bloc<ElectronicEvent, ElectronicState> {
-  ElectronicGameV2() : super(const ElectronicState()) {
+class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
+  ElectronicGameV2Bloc() : super(const ElectronicState()) {
     on<StartGameEvent>(_startGameEvent);
     on<RestoreGameEvent>(_restoreGameEvent);
     on<BackupGameEvent>(_backGameEvent);
@@ -28,14 +28,17 @@ class ElectronicGameV2 extends Bloc<ElectronicEvent, ElectronicState> {
     if (event.appPaused) {
       if (state.status == GameStatus.backup) return;
       // await getIt<BankerManagerService>().backupPlayers(state.players);
-      throw UnimplementedError();
+      BankerAlerts.unhandledError(error: "No implementado aun");
+      BankerAlerts.unhandledError(error: "No implementado aun");
+      ;
       // return;
     }
     if (state.gameSessionId == null) {
       throw Exception(
           'No session id, why you can play if no session is created?');
     }
-    throw UnimplementedError();
+    BankerAlerts.unhandledError(error: "No implementado aun");
+    ;
 
     // emit(state.copyWith(status: GameStatus.loading));
     // await getIt<BankerManagerService>().backupPlayers(state.players);
@@ -51,7 +54,8 @@ class ElectronicGameV2 extends Bloc<ElectronicEvent, ElectronicState> {
   _restoreGameEvent(
       RestoreGameEvent event, Emitter<ElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
-    throw UnimplementedError();
+    BankerAlerts.unhandledError(error: "No implementado aun");
+    ;
 
     // final session =
     //     await getIt<BankerManagerService>().getGameSession(event.sessionId);
@@ -74,7 +78,8 @@ class ElectronicGameV2 extends Bloc<ElectronicEvent, ElectronicState> {
 
   _startGameEvent(StartGameEvent event, Emitter<ElectronicState> emit) async {
     // TODO: IMPLEMENT
-    throw UnimplementedError();
+    BankerAlerts.unhandledError(error: "No implementado aun");
+    ;
     // try {
     //   emit(state.copyWith(status: GameStatus.loading));
 //
@@ -97,7 +102,8 @@ class ElectronicGameV2 extends Bloc<ElectronicEvent, ElectronicState> {
 
   _changeUserEvent(
       UpdatePlayerEvent event, Emitter<ElectronicState> emit) async {
-    throw UnimplementedError();
+    BankerAlerts.unhandledError(error: "No implementado aun");
+    ;
 
     // final resp = await BankerAlerts.readNfcDataCard();
     // try {
