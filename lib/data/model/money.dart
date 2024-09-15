@@ -41,6 +41,22 @@ class Money {
     return _normalize(newValue);
   }
 
+  bool operator <(Money other) {
+    return _convertToThousands() < other._convertToThousands();
+  }
+
+  bool operator >(Money other) {
+    return _convertToThousands() > other._convertToThousands();
+  }
+
+  bool operator <=(Money other) {
+    return _convertToThousands() <= other._convertToThousands();
+  }
+
+  bool operator >=(Money other) {
+    return _convertToThousands() >= other._convertToThousands();
+  }
+
   double _convertToThousands() {
     if (value == null) {
       throw ArgumentError('Value cannot be null');

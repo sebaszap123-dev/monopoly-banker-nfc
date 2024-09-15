@@ -240,7 +240,7 @@ class MonopolyElectronicBloc
   _payPlayersEvent(
       PayPlayersEvent event, Emitter<MonopolyElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
-    final resp = await BankerAlerts.chooseTransaction();
+    final resp = await BankerAlerts.chooseTransactionV1();
     if (resp != null) {
       switch (resp) {
         case PayTo.playerToPlayer:

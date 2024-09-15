@@ -16,7 +16,6 @@ class MonopolyCardV2 {
   late String number;
   late String colorHex;
   late String colorName;
-  String? displayName;
 
   MonopolyCardV2();
 
@@ -40,6 +39,9 @@ class MonopolyCardV2 {
       ..colorHex = defaultColor.toHex()
       ..number = defaultNumber
       ..colorName = colorName;
+  }
+  static List<MonopolyCardV2> get electronicPlayerCards {
+    return List.generate(6, (index) => MonopolyCardV2.cardForPlayer(index));
   }
 
   static MonopolyCardV2 fromColor(Color color, GameVersions version) {

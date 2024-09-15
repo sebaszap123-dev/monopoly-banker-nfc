@@ -49,7 +49,7 @@ class GameGuard extends AutoRouteGuard {
           return;
         }
         resolver.next(true);
-      case GameVersions.colima:
+      case GameVersions.electronicv2:
         // TODO: Handle this case.
         resolver.next(true);
     }
@@ -69,7 +69,7 @@ class GameGuard extends AutoRouteGuard {
           // TODO: Handle this case.
           resolver.redirect(const ElectronicGameRoute());
           break;
-        case GameVersions.colima:
+        case GameVersions.electronicv2:
           // TODO: Handle this case.
           resolver.next(false);
       }

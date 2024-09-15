@@ -23,13 +23,8 @@ const MonopolyCardV2Schema = Schema(
       name: r'colorName',
       type: IsarType.string,
     ),
-    r'displayName': PropertySchema(
-      id: 2,
-      name: r'displayName',
-      type: IsarType.string,
-    ),
     r'number': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'number',
       type: IsarType.string,
     )
@@ -48,12 +43,6 @@ int _monopolyCardV2EstimateSize(
   var bytesCount = offsets.last;
   bytesCount += 3 + object.colorHex.length * 3;
   bytesCount += 3 + object.colorName.length * 3;
-  {
-    final value = object.displayName;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
   bytesCount += 3 + object.number.length * 3;
   return bytesCount;
 }
@@ -66,8 +55,7 @@ void _monopolyCardV2Serialize(
 ) {
   writer.writeString(offsets[0], object.colorHex);
   writer.writeString(offsets[1], object.colorName);
-  writer.writeString(offsets[2], object.displayName);
-  writer.writeString(offsets[3], object.number);
+  writer.writeString(offsets[2], object.number);
 }
 
 MonopolyCardV2 _monopolyCardV2Deserialize(
@@ -79,8 +67,7 @@ MonopolyCardV2 _monopolyCardV2Deserialize(
   final object = MonopolyCardV2();
   object.colorHex = reader.readString(offsets[0]);
   object.colorName = reader.readString(offsets[1]);
-  object.displayName = reader.readStringOrNull(offsets[2]);
-  object.number = reader.readString(offsets[3]);
+  object.number = reader.readString(offsets[2]);
   return object;
 }
 
@@ -96,8 +83,6 @@ P _monopolyCardV2DeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readStringOrNull(offset)) as P;
-    case 3:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -373,160 +358,6 @@ extension MonopolyCardV2QueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'colorName',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'displayName',
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'displayName',
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'displayName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'displayName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'displayName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'displayName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'displayName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'displayName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'displayName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'displayName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'displayName',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyCardV2, MonopolyCardV2, QAfterFilterCondition>
-      displayNameIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'displayName',
         value: '',
       ));
     });

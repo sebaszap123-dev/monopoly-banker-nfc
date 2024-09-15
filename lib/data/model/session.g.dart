@@ -127,7 +127,7 @@ const _GameSessionsversionEnumValueMap = {
 const _GameSessionsversionValueEnumMap = {
   0: GameVersions.classic,
   1: GameVersions.electronic,
-  2: GameVersions.colima,
+  2: GameVersions.electronicv2,
 };
 
 Id _gameSessionsGetId(GameSessions object) {
