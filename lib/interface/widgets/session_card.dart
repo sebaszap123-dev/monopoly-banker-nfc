@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
-import 'package:monopoly_banker/data/model/eletronic_v1/game_session.dart';
-import 'package:monopoly_banker/data/service/banker_manager_service.dart';
+import 'package:monopoly_banker/data/database/electronic_database_v2.dart';
+import 'package:monopoly_banker/data/model/session.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 
 class SessionCard extends StatelessWidget {
@@ -11,7 +11,7 @@ class SessionCard extends StatelessWidget {
       required this.session,
       required this.hasMore,
       required this.deleteSession});
-  final GameSession session;
+  final GameSessions session;
   final bool hasMore;
   final void Function(int) deleteSession;
 
@@ -31,8 +31,8 @@ class SessionCard extends StatelessWidget {
           SizedBox(height: 5),
           ...session.players
               .map((player) => ListTile(
-                    title: Text(player.namePlayer ?? 'No name'),
-                    iconColor: player.color,
+                    title: Text(player.namePlayer),
+                    iconColor: player.card!.color,
                     leading: Icon(Icons.person),
                   ))
               .toList(),
@@ -55,11 +55,10 @@ class SessionCard extends StatelessWidget {
       return;
     }
     final response = await BankerAlerts.deleteSessionGame(id);
+    print(response);
     if (response) {
-      final deleted = await getIt<BankerManagerService>().deleteSession(id);
-      if (deleted) {
-        deleteSession(id);
-      }
+      getIt<ElectronicDatabaseV2>().deleteGameSession(session.id);
+      deleteSession(id);
     }
   }
 }

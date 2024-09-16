@@ -8,40 +8,36 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i7;
-import 'package:flutter/material.dart' as _i8;
+import 'package:auto_route/auto_route.dart' as _i6;
+import 'package:flutter/material.dart' as _i7;
 import 'package:monopoly_banker/config/utils/game_versions_support.dart'
-    as _i12;
-import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_player.dart'
-    as _i11;
-import 'package:monopoly_banker/data/model/player.dart' as _i9;
-import 'package:monopoly_banker/data/model/session.dart' as _i10;
+    as _i10;
+import 'package:monopoly_banker/data/model/player.dart' as _i8;
+import 'package:monopoly_banker/data/model/session.dart' as _i9;
 import 'package:monopoly_banker/interface/views/electronic_v2/end_game_v2.dart'
     as _i2;
 import 'package:monopoly_banker/interface/views/eletronic_game/eletronic_game_screen.dart'
     as _i1;
-import 'package:monopoly_banker/interface/views/eletronic_game/end_game.dart'
-    as _i3;
 import 'package:monopoly_banker/interface/views/eletronic_game/game_screen.dart'
-    as _i4;
+    as _i3;
 import 'package:monopoly_banker/interface/views/eletronic_game/session_games_screen.dart'
-    as _i5;
-import 'package:monopoly_banker/interface/views/home_screen.dart' as _i6;
+    as _i4;
+import 'package:monopoly_banker/interface/views/home_screen.dart' as _i5;
 
-abstract class $MonopolyRouter extends _i7.RootStackRouter {
+abstract class $MonopolyRouter extends _i6.RootStackRouter {
   $MonopolyRouter({super.navigatorKey});
 
   @override
-  final Map<String, _i7.PageFactory> pagesMap = {
+  final Map<String, _i6.PageFactory> pagesMap = {
     ElectronicGameRoute.name: (routeData) {
-      return _i7.AutoRoutePage<dynamic>(
+      return _i6.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const _i1.ElectronicGameScreen(),
       );
     },
     EndGameElectronicV2.name: (routeData) {
       final args = routeData.argsAs<EndGameElectronicV2Args>();
-      return _i7.AutoRoutePage<dynamic>(
+      return _i6.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: _i2.EndGameElectronicV2(
           key: args.key,
@@ -50,22 +46,11 @@ abstract class $MonopolyRouter extends _i7.RootStackRouter {
         ),
       );
     },
-    EndGameMonopolyX.name: (routeData) {
-      final args = routeData.argsAs<EndGameMonopolyXArgs>();
-      return _i7.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i3.EndGameMonopolyX(
-          key: args.key,
-          players: args.players,
-          sessionId: args.sessionId,
-        ),
-      );
-    },
     GameRoute.name: (routeData) {
       final args = routeData.argsAs<GameRouteArgs>();
-      return _i7.AutoRoutePage<dynamic>(
+      return _i6.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: _i4.GameScreen(
+        child: _i3.GameScreen(
           key: args.key,
           version: args.version,
           isNewGame: args.isNewGame,
@@ -74,18 +59,18 @@ abstract class $MonopolyRouter extends _i7.RootStackRouter {
     },
     GameSessionsRoute.name: (routeData) {
       final args = routeData.argsAs<GameSessionsRouteArgs>();
-      return _i7.AutoRoutePage<dynamic>(
+      return _i6.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: _i5.GameSessionsScreen(
+        child: _i4.GameSessionsScreen(
           key: args.key,
           version: args.version,
         ),
       );
     },
     HomeRoute.name: (routeData) {
-      return _i7.AutoRoutePage<dynamic>(
+      return _i6.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i6.HomeScreen(),
+        child: const _i5.HomeScreen(),
       );
     },
   };
@@ -93,8 +78,8 @@ abstract class $MonopolyRouter extends _i7.RootStackRouter {
 
 /// generated route for
 /// [_i1.ElectronicGameScreen]
-class ElectronicGameRoute extends _i7.PageRouteInfo<void> {
-  const ElectronicGameRoute({List<_i7.PageRouteInfo>? children})
+class ElectronicGameRoute extends _i6.PageRouteInfo<void> {
+  const ElectronicGameRoute({List<_i6.PageRouteInfo>? children})
       : super(
           ElectronicGameRoute.name,
           initialChildren: children,
@@ -102,17 +87,17 @@ class ElectronicGameRoute extends _i7.PageRouteInfo<void> {
 
   static const String name = 'ElectronicGameRoute';
 
-  static const _i7.PageInfo<void> page = _i7.PageInfo<void>(name);
+  static const _i6.PageInfo<void> page = _i6.PageInfo<void>(name);
 }
 
 /// generated route for
 /// [_i2.EndGameElectronicV2]
-class EndGameElectronicV2 extends _i7.PageRouteInfo<EndGameElectronicV2Args> {
+class EndGameElectronicV2 extends _i6.PageRouteInfo<EndGameElectronicV2Args> {
   EndGameElectronicV2({
-    _i8.Key? key,
-    required List<_i9.MonopolyPlayer> players,
-    required _i10.GameSessions session,
-    List<_i7.PageRouteInfo>? children,
+    _i7.Key? key,
+    required List<_i8.MonopolyPlayer> players,
+    required _i9.GameSessions session,
+    List<_i6.PageRouteInfo>? children,
   }) : super(
           EndGameElectronicV2.name,
           args: EndGameElectronicV2Args(
@@ -125,8 +110,8 @@ class EndGameElectronicV2 extends _i7.PageRouteInfo<EndGameElectronicV2Args> {
 
   static const String name = 'EndGameElectronicV2';
 
-  static const _i7.PageInfo<EndGameElectronicV2Args> page =
-      _i7.PageInfo<EndGameElectronicV2Args>(name);
+  static const _i6.PageInfo<EndGameElectronicV2Args> page =
+      _i6.PageInfo<EndGameElectronicV2Args>(name);
 }
 
 class EndGameElectronicV2Args {
@@ -136,11 +121,11 @@ class EndGameElectronicV2Args {
     required this.session,
   });
 
-  final _i8.Key? key;
+  final _i7.Key? key;
 
-  final List<_i9.MonopolyPlayer> players;
+  final List<_i8.MonopolyPlayer> players;
 
-  final _i10.GameSessions session;
+  final _i9.GameSessions session;
 
   @override
   String toString() {
@@ -149,56 +134,13 @@ class EndGameElectronicV2Args {
 }
 
 /// generated route for
-/// [_i3.EndGameMonopolyX]
-class EndGameMonopolyX extends _i7.PageRouteInfo<EndGameMonopolyXArgs> {
-  EndGameMonopolyX({
-    _i8.Key? key,
-    required List<_i11.MonopolyPlayerX> players,
-    required int sessionId,
-    List<_i7.PageRouteInfo>? children,
-  }) : super(
-          EndGameMonopolyX.name,
-          args: EndGameMonopolyXArgs(
-            key: key,
-            players: players,
-            sessionId: sessionId,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'EndGameMonopolyX';
-
-  static const _i7.PageInfo<EndGameMonopolyXArgs> page =
-      _i7.PageInfo<EndGameMonopolyXArgs>(name);
-}
-
-class EndGameMonopolyXArgs {
-  const EndGameMonopolyXArgs({
-    this.key,
-    required this.players,
-    required this.sessionId,
-  });
-
-  final _i8.Key? key;
-
-  final List<_i11.MonopolyPlayerX> players;
-
-  final int sessionId;
-
-  @override
-  String toString() {
-    return 'EndGameMonopolyXArgs{key: $key, players: $players, sessionId: $sessionId}';
-  }
-}
-
-/// generated route for
-/// [_i4.GameScreen]
-class GameRoute extends _i7.PageRouteInfo<GameRouteArgs> {
+/// [_i3.GameScreen]
+class GameRoute extends _i6.PageRouteInfo<GameRouteArgs> {
   GameRoute({
-    _i8.Key? key,
-    required _i12.GameVersions version,
+    _i7.Key? key,
+    required _i10.GameVersions version,
     bool isNewGame = false,
-    List<_i7.PageRouteInfo>? children,
+    List<_i6.PageRouteInfo>? children,
   }) : super(
           GameRoute.name,
           args: GameRouteArgs(
@@ -211,8 +153,8 @@ class GameRoute extends _i7.PageRouteInfo<GameRouteArgs> {
 
   static const String name = 'GameRoute';
 
-  static const _i7.PageInfo<GameRouteArgs> page =
-      _i7.PageInfo<GameRouteArgs>(name);
+  static const _i6.PageInfo<GameRouteArgs> page =
+      _i6.PageInfo<GameRouteArgs>(name);
 }
 
 class GameRouteArgs {
@@ -222,9 +164,9 @@ class GameRouteArgs {
     this.isNewGame = false,
   });
 
-  final _i8.Key? key;
+  final _i7.Key? key;
 
-  final _i12.GameVersions version;
+  final _i10.GameVersions version;
 
   final bool isNewGame;
 
@@ -235,12 +177,12 @@ class GameRouteArgs {
 }
 
 /// generated route for
-/// [_i5.GameSessionsScreen]
-class GameSessionsRoute extends _i7.PageRouteInfo<GameSessionsRouteArgs> {
+/// [_i4.GameSessionsScreen]
+class GameSessionsRoute extends _i6.PageRouteInfo<GameSessionsRouteArgs> {
   GameSessionsRoute({
-    _i8.Key? key,
-    required _i12.GameVersions version,
-    List<_i7.PageRouteInfo>? children,
+    _i7.Key? key,
+    required _i10.GameVersions version,
+    List<_i6.PageRouteInfo>? children,
   }) : super(
           GameSessionsRoute.name,
           args: GameSessionsRouteArgs(
@@ -252,8 +194,8 @@ class GameSessionsRoute extends _i7.PageRouteInfo<GameSessionsRouteArgs> {
 
   static const String name = 'GameSessionsRoute';
 
-  static const _i7.PageInfo<GameSessionsRouteArgs> page =
-      _i7.PageInfo<GameSessionsRouteArgs>(name);
+  static const _i6.PageInfo<GameSessionsRouteArgs> page =
+      _i6.PageInfo<GameSessionsRouteArgs>(name);
 }
 
 class GameSessionsRouteArgs {
@@ -262,9 +204,9 @@ class GameSessionsRouteArgs {
     required this.version,
   });
 
-  final _i8.Key? key;
+  final _i7.Key? key;
 
-  final _i12.GameVersions version;
+  final _i10.GameVersions version;
 
   @override
   String toString() {
@@ -273,9 +215,9 @@ class GameSessionsRouteArgs {
 }
 
 /// generated route for
-/// [_i6.HomeScreen]
-class HomeRoute extends _i7.PageRouteInfo<void> {
-  const HomeRoute({List<_i7.PageRouteInfo>? children})
+/// [_i5.HomeScreen]
+class HomeRoute extends _i6.PageRouteInfo<void> {
+  const HomeRoute({List<_i6.PageRouteInfo>? children})
       : super(
           HomeRoute.name,
           initialChildren: children,
@@ -283,5 +225,5 @@ class HomeRoute extends _i7.PageRouteInfo<void> {
 
   static const String name = 'HomeRoute';
 
-  static const _i7.PageInfo<void> page = _i7.PageInfo<void>(name);
+  static const _i6.PageInfo<void> page = _i6.PageInfo<void>(name);
 }

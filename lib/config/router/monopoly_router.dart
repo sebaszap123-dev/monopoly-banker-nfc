@@ -13,7 +13,6 @@ class MonopolyRouter extends $MonopolyRouter {
         AutoRoute(page: HomeRoute.page, initial: true),
         AutoRoute(page: GameRoute.page, guards: [GameGuard()]),
         AutoRoute(page: ElectronicGameRoute.page),
-        AutoRoute(page: EndGameMonopolyX.page),
         AutoRoute(page: EndGameElectronicV2.page),
         AutoRoute(page: GameSessionsRoute.page),
       ];

@@ -1,1 +1,1 @@
-enum GameVersions { classic, electronic, electronicv2 }
+enum GameVersions { classic, electronic }

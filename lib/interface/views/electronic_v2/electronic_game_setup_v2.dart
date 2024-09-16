@@ -25,7 +25,7 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetupV2> {
   Map<MonopolyCardV2, bool> cards = {};
   List<MonopolyPlayer> players = [];
   bool isLoading = true;
-  final GameVersions gameVersion = GameVersions.electronicv2;
+  final GameVersions gameVersion = GameVersions.electronic;
   _initCards() async {
     final resp = await CardsManagerService.getRegisteredCards();
     if (resp.isNotEmpty) {

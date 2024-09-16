@@ -250,11 +250,11 @@ class PropertyManager {
       CompanyService()
         ..title = "Compañía de electricidad"
         ..mortgage = Money(type: MoneyType.thousands, value: 750)
-        ..propertyGroup = PropertyType.servicios,
+        ..propertyGroup = PropertyType.services,
       CompanyService()
         ..title = "Compañía de agua"
         ..mortgage = Money(type: MoneyType.thousands, value: 750)
-        ..propertyGroup = PropertyType.servicios,
+        ..propertyGroup = PropertyType.services,
       RailWay()
         ..title = "Ferrocarril Pennsylvania"
         ..mortgage = Money(type: MoneyType.million, value: 1)

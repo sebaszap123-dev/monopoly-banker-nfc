@@ -53,26 +53,36 @@ const HouseSchema = CollectionSchema(
       type: IsarType.object,
       target: r'Money',
     ),
-    r'mortgage': PropertySchema(
+    r'houses': PropertySchema(
       id: 6,
+      name: r'houses',
+      type: IsarType.long,
+    ),
+    r'isMortgage': PropertySchema(
+      id: 7,
+      name: r'isMortgage',
+      type: IsarType.bool,
+    ),
+    r'mortgage': PropertySchema(
+      id: 8,
       name: r'mortgage',
       type: IsarType.object,
       target: r'Money',
     ),
     r'propertyGroup': PropertySchema(
-      id: 7,
+      id: 9,
       name: r'propertyGroup',
       type: IsarType.byte,
       enumMap: _HousepropertyGroupEnumValueMap,
     ),
     r'rent': PropertySchema(
-      id: 8,
+      id: 10,
       name: r'rent',
       type: IsarType.object,
       target: r'Money',
     ),
     r'title': PropertySchema(
-      id: 9,
+      id: 11,
       name: r'title',
       type: IsarType.string,
     )
@@ -174,20 +184,22 @@ void _houseSerialize(
     MoneySchema.serialize,
     object.houseCost,
   );
-  writer.writeObject<Money>(
-    offsets[6],
-    allOffsets,
-    MoneySchema.serialize,
-    object.mortgage,
-  );
-  writer.writeByte(offsets[7], object.propertyGroup.index);
+  writer.writeLong(offsets[6], object.houses);
+  writer.writeBool(offsets[7], object.isMortgage);
   writer.writeObject<Money>(
     offsets[8],
     allOffsets,
     MoneySchema.serialize,
+    object.mortgage,
+  );
+  writer.writeByte(offsets[9], object.propertyGroup.index);
+  writer.writeObject<Money>(
+    offsets[10],
+    allOffsets,
+    MoneySchema.serialize,
     object.rent,
   );
-  writer.writeString(offsets[9], object.title);
+  writer.writeString(offsets[11], object.title);
 }
 
 House _houseDeserialize(
@@ -233,23 +245,25 @@ House _houseDeserialize(
         allOffsets,
       ) ??
       Money();
+  object.houses = reader.readLong(offsets[6]);
   object.id = id;
+  object.isMortgage = reader.readBool(offsets[7]);
   object.mortgage = reader.readObjectOrNull<Money>(
-        offsets[6],
-        MoneySchema.deserialize,
-        allOffsets,
-      ) ??
-      Money();
-  object.propertyGroup =
-      _HousepropertyGroupValueEnumMap[reader.readByteOrNull(offsets[7])] ??
-          PropertyType.coffee;
-  object.rent = reader.readObjectOrNull<Money>(
         offsets[8],
         MoneySchema.deserialize,
         allOffsets,
       ) ??
       Money();
-  object.title = reader.readString(offsets[9]);
+  object.propertyGroup =
+      _HousepropertyGroupValueEnumMap[reader.readByteOrNull(offsets[9])] ??
+          PropertyType.coffee;
+  object.rent = reader.readObjectOrNull<Money>(
+        offsets[10],
+        MoneySchema.deserialize,
+        allOffsets,
+      ) ??
+      Money();
+  object.title = reader.readString(offsets[11]);
   return object;
 }
 
@@ -303,15 +317,9 @@ P _houseDeserializeProp<P>(
           ) ??
           Money()) as P;
     case 6:
-      return (reader.readObjectOrNull<Money>(
-            offset,
-            MoneySchema.deserialize,
-            allOffsets,
-          ) ??
-          Money()) as P;
+      return (reader.readLong(offset)) as P;
     case 7:
-      return (_HousepropertyGroupValueEnumMap[reader.readByteOrNull(offset)] ??
-          PropertyType.coffee) as P;
+      return (reader.readBool(offset)) as P;
     case 8:
       return (reader.readObjectOrNull<Money>(
             offset,
@@ -320,6 +328,16 @@ P _houseDeserializeProp<P>(
           ) ??
           Money()) as P;
     case 9:
+      return (_HousepropertyGroupValueEnumMap[reader.readByteOrNull(offset)] ??
+          PropertyType.coffee) as P;
+    case 10:
+      return (reader.readObjectOrNull<Money>(
+            offset,
+            MoneySchema.deserialize,
+            allOffsets,
+          ) ??
+          Money()) as P;
+    case 11:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -330,24 +348,24 @@ const _HousepropertyGroupEnumValueMap = {
   'coffee': 0,
   'skyBlue': 1,
   'magenta': 2,
-  'naranja': 3,
+  'orange': 3,
   'red': 4,
   'yellow': 5,
   'green': 6,
   'blue': 7,
-  'servicios': 8,
+  'services': 8,
   'ferro': 9,
 };
 const _HousepropertyGroupValueEnumMap = {
   0: PropertyType.coffee,
   1: PropertyType.skyBlue,
   2: PropertyType.magenta,
-  3: PropertyType.naranja,
+  3: PropertyType.orange,
   4: PropertyType.red,
   5: PropertyType.yellow,
   6: PropertyType.green,
   7: PropertyType.blue,
-  8: PropertyType.servicios,
+  8: PropertyType.services,
   9: PropertyType.ferro,
 };
 
@@ -482,6 +500,58 @@ extension HouseQueryWhere on QueryBuilder<House, House, QWhereClause> {
 }
 
 extension HouseQueryFilter on QueryBuilder<House, House, QFilterCondition> {
+  QueryBuilder<House, House, QAfterFilterCondition> housesEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'houses',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<House, House, QAfterFilterCondition> housesGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'houses',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<House, House, QAfterFilterCondition> housesLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'houses',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<House, House, QAfterFilterCondition> housesBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'houses',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<House, House, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -530,6 +600,16 @@ extension HouseQueryFilter on QueryBuilder<House, House, QFilterCondition> {
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<House, House, QAfterFilterCondition> isMortgageEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isMortgage',
+        value: value,
       ));
     });
   }
@@ -776,6 +856,30 @@ extension HouseQueryObject on QueryBuilder<House, House, QFilterCondition> {
 extension HouseQueryLinks on QueryBuilder<House, House, QFilterCondition> {}
 
 extension HouseQuerySortBy on QueryBuilder<House, House, QSortBy> {
+  QueryBuilder<House, House, QAfterSortBy> sortByHouses() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'houses', Sort.asc);
+    });
+  }
+
+  QueryBuilder<House, House, QAfterSortBy> sortByHousesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'houses', Sort.desc);
+    });
+  }
+
+  QueryBuilder<House, House, QAfterSortBy> sortByIsMortgage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<House, House, QAfterSortBy> sortByIsMortgageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.desc);
+    });
+  }
+
   QueryBuilder<House, House, QAfterSortBy> sortByPropertyGroup() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'propertyGroup', Sort.asc);
@@ -802,6 +906,18 @@ extension HouseQuerySortBy on QueryBuilder<House, House, QSortBy> {
 }
 
 extension HouseQuerySortThenBy on QueryBuilder<House, House, QSortThenBy> {
+  QueryBuilder<House, House, QAfterSortBy> thenByHouses() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'houses', Sort.asc);
+    });
+  }
+
+  QueryBuilder<House, House, QAfterSortBy> thenByHousesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'houses', Sort.desc);
+    });
+  }
+
   QueryBuilder<House, House, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -811,6 +927,18 @@ extension HouseQuerySortThenBy on QueryBuilder<House, House, QSortThenBy> {
   QueryBuilder<House, House, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<House, House, QAfterSortBy> thenByIsMortgage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<House, House, QAfterSortBy> thenByIsMortgageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.desc);
     });
   }
 
@@ -840,6 +968,18 @@ extension HouseQuerySortThenBy on QueryBuilder<House, House, QSortThenBy> {
 }
 
 extension HouseQueryWhereDistinct on QueryBuilder<House, House, QDistinct> {
+  QueryBuilder<House, House, QDistinct> distinctByHouses() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'houses');
+    });
+  }
+
+  QueryBuilder<House, House, QDistinct> distinctByIsMortgage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isMortgage');
+    });
+  }
+
   QueryBuilder<House, House, QDistinct> distinctByPropertyGroup() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'propertyGroup');
@@ -897,6 +1037,18 @@ extension HouseQueryProperty on QueryBuilder<House, House, QQueryProperty> {
     });
   }
 
+  QueryBuilder<House, int, QQueryOperations> housesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'houses');
+    });
+  }
+
+  QueryBuilder<House, bool, QQueryOperations> isMortgageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isMortgage');
+    });
+  }
+
   QueryBuilder<House, Money, QQueryOperations> mortgageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'mortgage');
@@ -933,25 +1085,30 @@ const CompanyServiceSchema = CollectionSchema(
   name: r'CompanyService',
   id: 8065321481123777007,
   properties: {
-    r'isRentMultipliedBy10': PropertySchema(
+    r'isMortgage': PropertySchema(
       id: 0,
+      name: r'isMortgage',
+      type: IsarType.bool,
+    ),
+    r'isRentMultipliedBy10': PropertySchema(
+      id: 1,
       name: r'isRentMultipliedBy10',
       type: IsarType.bool,
     ),
     r'mortgage': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'mortgage',
       type: IsarType.object,
       target: r'Money',
     ),
     r'propertyGroup': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'propertyGroup',
       type: IsarType.byte,
       enumMap: _CompanyServicepropertyGroupEnumValueMap,
     ),
     r'title': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'title',
       type: IsarType.string,
     )
@@ -1002,15 +1159,16 @@ void _companyServiceSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeBool(offsets[0], object.isRentMultipliedBy10);
+  writer.writeBool(offsets[0], object.isMortgage);
+  writer.writeBool(offsets[1], object.isRentMultipliedBy10);
   writer.writeObject<Money>(
-    offsets[1],
+    offsets[2],
     allOffsets,
     MoneySchema.serialize,
     object.mortgage,
   );
-  writer.writeByte(offsets[2], object.propertyGroup.index);
-  writer.writeString(offsets[3], object.title);
+  writer.writeByte(offsets[3], object.propertyGroup.index);
+  writer.writeString(offsets[4], object.title);
 }
 
 CompanyService _companyServiceDeserialize(
@@ -1021,17 +1179,18 @@ CompanyService _companyServiceDeserialize(
 ) {
   final object = CompanyService();
   object.id = id;
-  object.isRentMultipliedBy10 = reader.readBool(offsets[0]);
+  object.isMortgage = reader.readBool(offsets[0]);
+  object.isRentMultipliedBy10 = reader.readBool(offsets[1]);
   object.mortgage = reader.readObjectOrNull<Money>(
-        offsets[1],
+        offsets[2],
         MoneySchema.deserialize,
         allOffsets,
       ) ??
       Money();
   object.propertyGroup = _CompanyServicepropertyGroupValueEnumMap[
-          reader.readByteOrNull(offsets[2])] ??
+          reader.readByteOrNull(offsets[3])] ??
       PropertyType.coffee;
-  object.title = reader.readString(offsets[3]);
+  object.title = reader.readString(offsets[4]);
   return object;
 }
 
@@ -1045,17 +1204,19 @@ P _companyServiceDeserializeProp<P>(
     case 0:
       return (reader.readBool(offset)) as P;
     case 1:
+      return (reader.readBool(offset)) as P;
+    case 2:
       return (reader.readObjectOrNull<Money>(
             offset,
             MoneySchema.deserialize,
             allOffsets,
           ) ??
           Money()) as P;
-    case 2:
+    case 3:
       return (_CompanyServicepropertyGroupValueEnumMap[
               reader.readByteOrNull(offset)] ??
           PropertyType.coffee) as P;
-    case 3:
+    case 4:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1066,24 +1227,24 @@ const _CompanyServicepropertyGroupEnumValueMap = {
   'coffee': 0,
   'skyBlue': 1,
   'magenta': 2,
-  'naranja': 3,
+  'orange': 3,
   'red': 4,
   'yellow': 5,
   'green': 6,
   'blue': 7,
-  'servicios': 8,
+  'services': 8,
   'ferro': 9,
 };
 const _CompanyServicepropertyGroupValueEnumMap = {
   0: PropertyType.coffee,
   1: PropertyType.skyBlue,
   2: PropertyType.magenta,
-  3: PropertyType.naranja,
+  3: PropertyType.orange,
   4: PropertyType.red,
   5: PropertyType.yellow,
   6: PropertyType.green,
   7: PropertyType.blue,
-  8: PropertyType.servicios,
+  8: PropertyType.services,
   9: PropertyType.ferro,
 };
 
@@ -1279,6 +1440,16 @@ extension CompanyServiceQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<CompanyService, CompanyService, QAfterFilterCondition>
+      isMortgageEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isMortgage',
+        value: value,
       ));
     });
   }
@@ -1502,6 +1673,20 @@ extension CompanyServiceQueryLinks
 extension CompanyServiceQuerySortBy
     on QueryBuilder<CompanyService, CompanyService, QSortBy> {
   QueryBuilder<CompanyService, CompanyService, QAfterSortBy>
+      sortByIsMortgage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CompanyService, CompanyService, QAfterSortBy>
+      sortByIsMortgageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CompanyService, CompanyService, QAfterSortBy>
       sortByIsRentMultipliedBy10() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isRentMultipliedBy10', Sort.asc);
@@ -1557,6 +1742,20 @@ extension CompanyServiceQuerySortThenBy
   }
 
   QueryBuilder<CompanyService, CompanyService, QAfterSortBy>
+      thenByIsMortgage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CompanyService, CompanyService, QAfterSortBy>
+      thenByIsMortgageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CompanyService, CompanyService, QAfterSortBy>
       thenByIsRentMultipliedBy10() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isRentMultipliedBy10', Sort.asc);
@@ -1600,6 +1799,13 @@ extension CompanyServiceQuerySortThenBy
 extension CompanyServiceQueryWhereDistinct
     on QueryBuilder<CompanyService, CompanyService, QDistinct> {
   QueryBuilder<CompanyService, CompanyService, QDistinct>
+      distinctByIsMortgage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isMortgage');
+    });
+  }
+
+  QueryBuilder<CompanyService, CompanyService, QDistinct>
       distinctByIsRentMultipliedBy10() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isRentMultipliedBy10');
@@ -1626,6 +1832,12 @@ extension CompanyServiceQueryProperty
   QueryBuilder<CompanyService, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<CompanyService, bool, QQueryOperations> isMortgageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isMortgage');
     });
   }
 
@@ -1667,44 +1879,49 @@ const RailWaySchema = CollectionSchema(
   name: r'RailWay',
   id: -2879410480986986948,
   properties: {
-    r'mortgage': PropertySchema(
+    r'isMortgage': PropertySchema(
       id: 0,
+      name: r'isMortgage',
+      type: IsarType.bool,
+    ),
+    r'mortgage': PropertySchema(
+      id: 1,
       name: r'mortgage',
       type: IsarType.object,
       target: r'Money',
     ),
     r'own2': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'own2',
       type: IsarType.object,
       target: r'Money',
     ),
     r'own3': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'own3',
       type: IsarType.object,
       target: r'Money',
     ),
     r'own4': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'own4',
       type: IsarType.object,
       target: r'Money',
     ),
     r'propertyGroup': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'propertyGroup',
       type: IsarType.byte,
       enumMap: _RailWaypropertyGroupEnumValueMap,
     ),
     r'rent': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'rent',
       type: IsarType.object,
       target: r'Money',
     ),
     r'title': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'title',
       type: IsarType.string,
     )
@@ -1763,38 +1980,39 @@ void _railWaySerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
+  writer.writeBool(offsets[0], object.isMortgage);
   writer.writeObject<Money>(
-    offsets[0],
+    offsets[1],
     allOffsets,
     MoneySchema.serialize,
     object.mortgage,
   );
   writer.writeObject<Money>(
-    offsets[1],
+    offsets[2],
     allOffsets,
     MoneySchema.serialize,
     object.own2,
   );
   writer.writeObject<Money>(
-    offsets[2],
+    offsets[3],
     allOffsets,
     MoneySchema.serialize,
     object.own3,
   );
   writer.writeObject<Money>(
-    offsets[3],
+    offsets[4],
     allOffsets,
     MoneySchema.serialize,
     object.own4,
   );
-  writer.writeByte(offsets[4], object.propertyGroup.index);
+  writer.writeByte(offsets[5], object.propertyGroup.index);
   writer.writeObject<Money>(
-    offsets[5],
+    offsets[6],
     allOffsets,
     MoneySchema.serialize,
     object.rent,
   );
-  writer.writeString(offsets[6], object.title);
+  writer.writeString(offsets[7], object.title);
 }
 
 RailWay _railWayDeserialize(
@@ -1805,16 +2023,17 @@ RailWay _railWayDeserialize(
 ) {
   final object = RailWay();
   object.id = id;
+  object.isMortgage = reader.readBool(offsets[0]);
   object.mortgage = reader.readObjectOrNull<Money>(
-        offsets[0],
+        offsets[1],
         MoneySchema.deserialize,
         allOffsets,
       ) ??
       Money();
   object.propertyGroup =
-      _RailWaypropertyGroupValueEnumMap[reader.readByteOrNull(offsets[4])] ??
+      _RailWaypropertyGroupValueEnumMap[reader.readByteOrNull(offsets[5])] ??
           PropertyType.coffee;
-  object.title = reader.readString(offsets[6]);
+  object.title = reader.readString(offsets[7]);
   return object;
 }
 
@@ -1826,12 +2045,7 @@ P _railWayDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readObjectOrNull<Money>(
-            offset,
-            MoneySchema.deserialize,
-            allOffsets,
-          ) ??
-          Money()) as P;
+      return (reader.readBool(offset)) as P;
     case 1:
       return (reader.readObjectOrNull<Money>(
             offset,
@@ -1854,17 +2068,24 @@ P _railWayDeserializeProp<P>(
           ) ??
           Money()) as P;
     case 4:
-      return (_RailWaypropertyGroupValueEnumMap[
-              reader.readByteOrNull(offset)] ??
-          PropertyType.coffee) as P;
-    case 5:
       return (reader.readObjectOrNull<Money>(
             offset,
             MoneySchema.deserialize,
             allOffsets,
           ) ??
           Money()) as P;
+    case 5:
+      return (_RailWaypropertyGroupValueEnumMap[
+              reader.readByteOrNull(offset)] ??
+          PropertyType.coffee) as P;
     case 6:
+      return (reader.readObjectOrNull<Money>(
+            offset,
+            MoneySchema.deserialize,
+            allOffsets,
+          ) ??
+          Money()) as P;
+    case 7:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1875,24 +2096,24 @@ const _RailWaypropertyGroupEnumValueMap = {
   'coffee': 0,
   'skyBlue': 1,
   'magenta': 2,
-  'naranja': 3,
+  'orange': 3,
   'red': 4,
   'yellow': 5,
   'green': 6,
   'blue': 7,
-  'servicios': 8,
+  'services': 8,
   'ferro': 9,
 };
 const _RailWaypropertyGroupValueEnumMap = {
   0: PropertyType.coffee,
   1: PropertyType.skyBlue,
   2: PropertyType.magenta,
-  3: PropertyType.naranja,
+  3: PropertyType.orange,
   4: PropertyType.red,
   5: PropertyType.yellow,
   6: PropertyType.green,
   7: PropertyType.blue,
-  8: PropertyType.servicios,
+  8: PropertyType.services,
   9: PropertyType.ferro,
 };
 
@@ -2077,6 +2298,16 @@ extension RailWayQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> isMortgageEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isMortgage',
+        value: value,
       ));
     });
   }
@@ -2308,6 +2539,18 @@ extension RailWayQueryLinks
     on QueryBuilder<RailWay, RailWay, QFilterCondition> {}
 
 extension RailWayQuerySortBy on QueryBuilder<RailWay, RailWay, QSortBy> {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> sortByIsMortgage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> sortByIsMortgageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.desc);
+    });
+  }
+
   QueryBuilder<RailWay, RailWay, QAfterSortBy> sortByPropertyGroup() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'propertyGroup', Sort.asc);
@@ -2347,6 +2590,18 @@ extension RailWayQuerySortThenBy
     });
   }
 
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> thenByIsMortgage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> thenByIsMortgageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isMortgage', Sort.desc);
+    });
+  }
+
   QueryBuilder<RailWay, RailWay, QAfterSortBy> thenByPropertyGroup() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'propertyGroup', Sort.asc);
@@ -2374,6 +2629,12 @@ extension RailWayQuerySortThenBy
 
 extension RailWayQueryWhereDistinct
     on QueryBuilder<RailWay, RailWay, QDistinct> {
+  QueryBuilder<RailWay, RailWay, QDistinct> distinctByIsMortgage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isMortgage');
+    });
+  }
+
   QueryBuilder<RailWay, RailWay, QDistinct> distinctByPropertyGroup() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'propertyGroup');
@@ -2393,6 +2654,12 @@ extension RailWayQueryProperty
   QueryBuilder<RailWay, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<RailWay, bool, QQueryOperations> isMortgageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isMortgage');
     });
   }
 

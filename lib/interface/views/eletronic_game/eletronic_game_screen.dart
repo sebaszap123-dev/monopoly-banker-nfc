@@ -7,6 +7,7 @@ import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico_v2/banker_electronic_bloc_v2.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
+import 'package:monopoly_banker/interface/views/eletronic_game/widgets/property_card.dart';
 import 'package:monopoly_banker/interface/widgets/animated_icon_button.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_terminal.dart';
@@ -23,7 +24,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-
+  bool showProperties = false;
   void getCurrentUser() =>
       getIt<ElectronicGameV2Bloc>().add(UpdatePlayerEvent());
 
@@ -86,6 +87,12 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
         );
       },
     );
+  }
+
+  showCards() {
+    setState(() {
+      showProperties = !showProperties;
+    });
   }
 
   @override
@@ -172,13 +179,6 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                                               .toString(),
                                           style: statuscards),
                                       const SizedBox(width: 2.5),
-                                      Text('M',
-                                          style: GoogleFonts.raleway(
-                                            color: Colors.white,
-                                            fontSize: 22,
-                                            fontStyle: FontStyle.italic,
-                                            fontWeight: FontWeight.bold,
-                                          )),
                                     ],
                                   ),
                                 ),
@@ -202,14 +202,19 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                                             color: switch (
                                                 blocState.gameTransaction) {
                                               GameTransaction.none => null,
-                                              GameTransaction.salida =>
+                                              GameTransaction.exit =>
                                                 Colors.green,
                                               GameTransaction.add =>
                                                 Colors.green,
-                                              GameTransaction.substract =>
+                                              GameTransaction.subtract =>
                                                 Colors.red,
                                               GameTransaction.paying =>
                                                 Colors.amberAccent,
+                                              GameTransaction.buy_property =>
+                                                Colors.green,
+                                              GameTransaction
+                                                    .transfer_properties =>
+                                                Colors.green,
                                             },
                                             borderRadius: borderRadius,
                                           ),
@@ -234,18 +239,41 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                     ),
                   ),
                 )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    AnimatedIconButton(
-                      onPressed: getCurrentUser,
-                      colorsPlayers: [
-                        ...blocState.players.map((e) => e.card!.color)
-                      ],
+              : showProperties
+                  ? ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      itemCount: blocState.propertiesToSell.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final item = blocState.propertiesToSell[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 80),
+                          child: PropertyCard(
+                            property: item,
+                          ),
+                        );
+                      },
                     )
-                  ],
-                ),
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        AnimatedIconButton(
+                          onPressed: getCurrentUser,
+                          colorsPlayers: [
+                            ...blocState.players.map((e) => e.card!.color)
+                          ],
+                        ),
+                        MaterialButton(
+                          onPressed: showCards,
+                          child: Icon(
+                            Icons.house,
+                            size: 50,
+                            color: Colors.lightBlue,
+                          ),
+                        ),
+                      ],
+                    ),
           floatingActionButton: FloatingActionButton(
             heroTag: null,
             onPressed: () => _showTerminal(context),

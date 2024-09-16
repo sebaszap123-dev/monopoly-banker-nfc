@@ -23,12 +23,16 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
     on<RestoreGameEvent>(_restoreGameEvent);
     on<BackupGameEvent>(_backGameEvent);
     on<EndGameEvent>(_endGameEvent);
+    // User payments
     on<UpdatePlayerEvent>(_changeUserEvent);
     on<PassExitEvent>(_passExitEvent);
     on<FinishTurnPlayerEvent>(_finishTurnPlayer);
     on<AddPlayerMoneyEvent>(_addMoneyEvent);
     on<SubtractMoneyEvent>(_subtractMoneyEvent);
     on<PayPlayersEvent>(_payPlayersEvent);
+    // Properties
+    on<BuyProperty>(_buyProperty);
+    on<MortgageProperty>(_mortgageProperty);
   }
 
   _backGameEvent(BackupGameEvent event, Emitter<ElectronicState> emit) async {
@@ -152,7 +156,7 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
         return;
       }
       emit(state.copyWith(
-        player: player,
+        currentPlayer: player,
         status: GameStatus.transaction,
         gameTransaction: GameTransaction.none,
       ));
@@ -163,7 +167,7 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
 
   _finishTurnPlayer(_, Emitter<ElectronicState> emit) async {
     emit(state.copyWith(
-      player: null,
+      currentPlayer: null,
       status: GameStatus.playing,
       gameTransaction: GameTransaction.none,
     ));
@@ -175,12 +179,12 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
     }
     final uPlayer = state.currentPlayer!
       ..money = state.moneyPlayer! + event.money;
-    _updatePlayer(state.currentPlayer!, uPlayer);
+    _updatePlayerOldNew(state.currentPlayer!, uPlayer);
     emit(state.copyWith(
       status: GameStatus.transaction,
       gameTransaction: GameTransaction.add,
       moneyExchange: event.money,
-      player: uPlayer,
+      currentPlayer: uPlayer,
     ));
   }
 
@@ -203,12 +207,12 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
     }
     final subtract = event.money;
     final uPlayer = state.currentPlayer!..money = state.moneyPlayer! - subtract;
-    _updatePlayer(state.currentPlayer!, uPlayer);
+    _updatePlayerOldNew(state.currentPlayer!, uPlayer);
     emit(state.copyWith(
       status: GameStatus.transaction,
-      gameTransaction: GameTransaction.substract,
+      gameTransaction: GameTransaction.subtract,
       moneyExchange: event.money,
-      player: uPlayer,
+      currentPlayer: uPlayer,
     ));
   }
 
@@ -414,8 +418,8 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
     playerReceive.money += payMoney;
     playerPays.money = playerPays.money - payMoney;
 
-    _updatePlayer(playerPays, playerPays);
-    _updatePlayer(playerReceive, playerReceive);
+    _updatePlayerOldNew(playerPays, playerPays);
+    _updatePlayerOldNew(playerReceive, playerReceive);
     BankerAlerts.payedJ1toJ2V2(
       money: event.money,
       playerPays: playerPays.namePlayer,
@@ -427,10 +431,17 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
     ));
   }
 
-  void _updatePlayer(MonopolyPlayer old, MonopolyPlayer uplayer) {
+  void _updatePlayerOldNew(MonopolyPlayer old, MonopolyPlayer upPlayer) {
     final index = state.players.indexOf(old);
     final temp = List.of(state.players);
-    temp[index] = uplayer;
+    temp[index] = upPlayer;
+    emit(state.copyWith(players: temp));
+  }
+
+  void _updatePlayer(MonopolyPlayer player) {
+    final index = state.players.indexOf(player);
+    final temp = List.of(state.players);
+    temp[index] = player;
     emit(state.copyWith(players: temp));
   }
 
@@ -442,13 +453,49 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
     temp[index] = playerPassExit;
     return state.copyWith(
       players: temp,
-      player: playerPassExit,
+      currentPlayer: playerPassExit,
       status: GameStatus.transaction,
-      gameTransaction: GameTransaction.salida,
+      gameTransaction: GameTransaction.exit,
     );
   }
 
-  _endGameEvent(EndGameEvent state, Emitter<ElectronicState> emit) {
+  _endGameEvent(EndGameEvent event, Emitter<ElectronicState> emit) {
     emit(ElectronicState());
+  }
+
+  _buyProperty(BuyProperty event, Emitter<ElectronicState> emit) async {
+    emit(state.copyWith(
+      status: GameStatus.loading,
+      gameTransaction: GameTransaction.none,
+    ));
+    List<Property> properties = [...state.propertiesToSell];
+    properties.removeWhere((element) => element.title == event.property.title);
+    if (event.player.money < event.property.buyValue) {
+      BankerAlerts.customMessageAlertFail(
+          text: "No tienes dinero suficiente para pagarlo");
+      return;
+    }
+    final wasAdded = await getIt<ElectronicDatabaseV2>()
+        .addPropertyToPlayer(event.player, event.property);
+    if (wasAdded) {
+      emit(state.copyWith(
+        propertiesToSell: properties,
+        status: GameStatus.transaction,
+        gameTransaction: GameTransaction.buy_property,
+        currentPlayer: event.player,
+      ));
+    }
+  }
+
+  _mortgageProperty(
+      MortgageProperty event, Emitter<ElectronicState> emit) async {
+    emit(state.copyWith(
+      status: GameStatus.loading,
+    ));
+    await getIt<ElectronicDatabaseV2>()
+        .mortgagePropertyToPlayer(event.player, event.property);
+    _updatePlayer(event.player);
+    emit(state.copyWith(
+        status: GameStatus.transaction, currentPlayer: event.player));
   }
 }

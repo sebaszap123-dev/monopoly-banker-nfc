@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
-import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico_v2/banker_electronic_bloc_v2.dart';
+import 'package:monopoly_banker/data/model/money.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
 import 'package:monopoly_banker/interface/widgets/numeric_button.dart';
@@ -46,21 +47,22 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
 
   void _onTapC() => controller.clear();
 
-  String moneyValue = 'M';
-  MoneyValue currentType = MoneyValue.millon;
+  Money money = Money(type: MoneyType.thousands, value: 0);
 
-  void onTapSpecialButton(MoneyValue type) async {
+  MoneyActionSpecial currentType = MoneyActionSpecial.millon;
+
+  void onTapSpecialButton(MoneyActionSpecial type) async {
     switch (type) {
-      case MoneyValue.millon:
-        moneyValue = 'M';
+      case MoneyActionSpecial.millon:
+        money = money..type = MoneyType.million;
         break;
 
-      case MoneyValue.miles:
-        moneyValue = 'K';
+      case MoneyActionSpecial.miles:
+        money = money..type = MoneyType.thousands;
         break;
 
-      case MoneyValue.salida:
-        getIt<MonopolyElectronicBloc>().add(PassExitEvent());
+      case MoneyActionSpecial.salida:
+        getIt<ElectronicGameV2Bloc>().add(PassExitEvent());
         break;
     }
     currentType = type;
@@ -74,18 +76,18 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
     }
     switch (data) {
       case Transactions.add:
-        getIt<MonopolyElectronicBloc>().add(AddPlayerMoneyEvent(
-            type: currentType, money: double.parse(controller.text)));
+        getIt<ElectronicGameV2Bloc>().add(AddPlayerMoneyEvent(
+            money: money..value = double.parse(controller.text)));
         break;
 
       case Transactions.substract:
-        getIt<MonopolyElectronicBloc>().add(SubtractMoneyEvent(
-            type: currentType, money: double.parse(controller.text)));
+        getIt<ElectronicGameV2Bloc>().add(SubtractMoneyEvent(
+            money: money..value = double.parse(controller.text)));
         break;
 
       case Transactions.fromPlayers:
-        getIt<MonopolyElectronicBloc>()
-            .add(PayPlayersEvent(double.parse(controller.text), currentType));
+        getIt<ElectronicGameV2Bloc>()
+            .add(PayPlayersEvent(money..value = double.parse(controller.text)));
         break;
     }
     controller.clear();
@@ -130,10 +132,12 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                 ),
                 suffixIcon: Text(
-                  moneyValue,
+                  money.value.toString(),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.raleway(
-                    color: moneyValue == 'M' ? Colors.red : Colors.blue,
+                    color: money.type == MoneyType.million
+                        ? Colors.red
+                        : Colors.blue,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -154,7 +158,7 @@ class _MonopolyTerminalState extends State<MonopolyTerminal> {
                 mainAxisSpacing: 10,
               ),
               children: [
-                ...MoneyValue.values.map((e) => MonopolyTriggerButton(
+                ...MoneyActionSpecial.values.map((e) => MonopolyTriggerButton(
                       onTap: () => onTapSpecialButton(e),
                       type: e,
                     )),

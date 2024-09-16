@@ -5,7 +5,6 @@ import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/config/utils/widgets/read_card_nfc_dialog.dart';
 import 'package:monopoly_banker/config/utils/widgets/read_card_nfc_v2.dart';
-import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico_v2/banker_electronic_bloc_v2.dart';
 import 'package:monopoly_banker/data/model/electronic_v2/monopoly_cards_v2.dart';
 import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_cards.dart';
@@ -122,7 +121,7 @@ abstract class BankerAlerts {
 
   static void payedJ1toJ2({
     required double dinero,
-    required MoneyValue value,
+    required MoneyActionSpecial value,
     required String playerPays,
     required String playerReceive,
   }) {
@@ -157,7 +156,7 @@ abstract class BankerAlerts {
           Row(
             children: [
               Text(
-                "$dinero ${value == MoneyValue.millon ? 'M' : 'K'}",
+                "$dinero ${value == MoneyActionSpecial.millon ? 'M' : 'K'}",
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -249,75 +248,6 @@ abstract class BankerAlerts {
     );
   }
 
-  static void payedToGroups({
-    required double dinero,
-    required MoneyValue value,
-    required String jugador,
-    required PayTo payto,
-  }) {
-    ArtSweetAlert.show(
-      context: context,
-      artDialogArgs: ArtDialogArgs(
-        type: ArtSweetAlertType.success,
-        title: "¡Pago exitoso!",
-        customColumns: [
-          Row(
-            children: [
-              const Icon(
-                Icons.person,
-                color: Colors.blue,
-                size: 30,
-              ),
-              const SizedBox(width: 10),
-              Text(
-                payto == PayTo.playerToPlayers
-                    ? jugador
-                    : 'Todos los jugadores',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const Icon(
-            Icons.arrow_right_alt,
-            color: Colors.green,
-            size: 30,
-          ),
-          Row(
-            children: [
-              Text(
-                "$dinero ${value == MoneyValue.millon ? 'M' : 'K'}",
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Icon(
-                Icons.person,
-                color: Colors.orange,
-                size: 30,
-              ),
-              Text(
-                payto == PayTo.playerToPlayers
-                    ? 'Pagó a todos los jugadores!'
-                    : 'Pagaron a $jugador',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ],
-        confirmButtonText: "Aceptar",
-      ),
-    );
-  }
-
   static void payedToGroupsV2({
     required Money money,
     required String player,
@@ -338,7 +268,9 @@ abstract class BankerAlerts {
               ),
               const SizedBox(width: 10),
               Text(
-                payTo == PayTo.playerToPlayers ? player : 'Todos los jugadores',
+                payTo == PayToAction.playerToPlayers
+                    ? player
+                    : 'Todos los jugadores',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -368,7 +300,7 @@ abstract class BankerAlerts {
                 size: 30,
               ),
               Text(
-                payTo == PayTo.playerToPlayers
+                payTo == PayToAction.playerToPlayers
                     ? 'Pagó a todos los jugadores!'
                     : 'Pagaron a $player',
                 style: const TextStyle(
@@ -428,39 +360,18 @@ abstract class BankerAlerts {
         ));
   }
 
-  static Future<PayTo?> chooseTransactionV1() async {
-    return await ArtSweetAlert.show(
-        context: context,
-        artDialogArgs: ArtDialogArgs(
-            type: ArtSweetAlertType.question,
-            title: 'Choose a transaction',
-            customColumns: PayTo.values
-                .map((data) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: PayToButton(
-                        payTo: data,
-                        onTap: (PayTo value) =>
-                            Navigator.of(context).pop(value),
-                      ),
-                    ))
-                .toList(),
-            onConfirm: () {
-              Navigator.of(context).pop(null);
-            }));
-  }
-
   static Future<PayToAction?> chooseTransactionV2() async {
     return await ArtSweetAlert.show(
         context: context,
         artDialogArgs: ArtDialogArgs(
             type: ArtSweetAlertType.question,
             title: 'Choose a transaction',
-            customColumns: PayTo.values
+            customColumns: PayToAction.values
                 .map((data) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: PayToButton(
                         payTo: data,
-                        onTap: (PayTo value) =>
+                        onTap: (PayToAction value) =>
                             Navigator.of(context).pop(value),
                       ),
                     ))

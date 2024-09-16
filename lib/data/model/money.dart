@@ -78,7 +78,7 @@ class Money implements Comparable<Money> {
       return 'Invalid Money';
     }
     String suffix = type == MoneyType.million ? 'M' : 'k';
-    return '${value!.toStringAsFixed(1)} $suffix';
+    return '\$M ${value!.toStringAsFixed(1)} $suffix';
   }
 
   @override

@@ -53,3 +53,23 @@ class PayPlayersEvent extends ElectronicEvent {
 
   PayPlayersEvent(this.money);
 }
+
+class BuyProperty extends ElectronicEvent {
+  final Property property;
+  final MonopolyPlayer player;
+  BuyProperty(this.property, this.player);
+}
+
+class MortgageProperty extends ElectronicEvent {
+  final Property property;
+  final MonopolyPlayer player;
+  MortgageProperty(this.property, this.player);
+}
+
+class ChangeProperties extends ElectronicEvent {
+  final List<Property> properties;
+  final MonopolyPlayer playerReceiver;
+  final MonopolyPlayer playerGiving;
+
+  ChangeProperties(this.properties, this.playerReceiver, this.playerGiving);
+}

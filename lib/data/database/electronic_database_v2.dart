@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/model/player.dart';
 import 'package:monopoly_banker/data/model/property.dart';
@@ -50,7 +51,7 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
     session
       ..startTime = DateTime.now()
       ..updateTime = DateTime.now()
-      ..version = GameVersions.electronicv2
+      ..version = GameVersions.electronic
       ..playtime = 0;
 
     // Perform all write operations in one transaction
@@ -76,33 +77,131 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
   }
 
   @override
-  Future<void> setupProperties() async {
-    // TODO: RE-EVALUATE
-    // final properties = PropertyManager.getPredefinedProperties();
+  Future<GameSessions?> restoreSession(int session) async {
+    return await isar.gameSessions.get(session);
+  }
 
-    // // Filtramos las propiedades con whereType en lugar de where para obtener listas del tipo correcto
-    // final houses = properties.whereType<House>().toList();
-    // final companies = properties.whereType<CompanyService>().toList();
-    // final railway = properties.whereType<FerroService>().toList();
-
-    // await isar.writeTxn(() async {
-    //   final dbHouses = await isar.houses.where().count();
-    //   if (dbHouses == 0) {
-    //     await isar.houses.putAll(houses);
-    //   }
-    //   final dbCompanies = await isar.companyServices.where().count();
-    //   if (dbCompanies == 0) {
-    //     await isar.companyServices.putAll(companies);
-    //   }
-    //   final dbRailway = await isar.ferroServices.where().count();
-    //   if (dbRailway == 0) {
-    //     await isar.ferroServices.putAll(railway);
-    //   }
-    // });
+  Future<List<GameSessions>> getGameSessions() async {
+    return await isar.gameSessions.where().findAll();
   }
 
   @override
-  Future<GameSessions?> restoreSession(int session) async {
-    return await isar.gameSessions.get(session);
+  Future<int> countSessions() async {
+    return await isar.gameSessions.where().count();
+  }
+
+  @override
+  Future<bool> addPropertyToPlayer(
+      MonopolyPlayer player, Property property) async {
+    try {
+      await isar.writeTxn(() async {
+        if (property is House) {
+          await isar.houses.put(property);
+          player.houses.add(property);
+          await player.houses.save();
+        } else if (property is CompanyService) {
+          await isar.companyServices.put(property);
+          player.services.add(property);
+          await player.services.save();
+        } else if (property is RailWay) {
+          await isar.railWays.put(property);
+          player.railways.add(property);
+          await player.railways.save();
+        }
+
+        // Guarda los cambios del jugador
+        await isar.monopolyPlayers.put(player);
+      });
+      return true;
+    } catch (e) {
+      BankerAlerts.unhandledError(error: e.toString());
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> transferPropertiesPlayers(MonopolyPlayer playerToTransfer,
+      MonopolyPlayer proprietary, List<Property> properties) async {
+    try {
+      await isar.writeTxn(() async {
+        for (var property in properties) {
+          // Remover la propiedad del jugador propietario original
+          if (property is House) {
+            proprietary.houses.remove(property);
+            await proprietary.houses.save();
+          } else if (property is CompanyService) {
+            proprietary.services.remove(property);
+            await proprietary.services.save();
+          } else if (property is RailWay) {
+            proprietary.railways.remove(property);
+            await proprietary.railways.save();
+          }
+
+          // Agregar la propiedad al nuevo jugador
+          if (property is House) {
+            playerToTransfer.houses.add(property);
+            await playerToTransfer.houses.save();
+          } else if (property is CompanyService) {
+            playerToTransfer.services.add(property);
+            await playerToTransfer.services.save();
+          } else if (property is RailWay) {
+            playerToTransfer.railways.add(property);
+            await playerToTransfer.railways.save();
+          }
+        }
+
+        // Guardar ambos jugadores para persistir los cambios
+        await isar.monopolyPlayers.put(proprietary);
+        await isar.monopolyPlayers.put(playerToTransfer);
+      });
+      return true;
+    } catch (e) {
+      BankerAlerts.unhandledError(error: e.toString());
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> mortgagePropertyToPlayer(
+      MonopolyPlayer player, Property property,
+      {bool isMortgage = false}) async {
+    property.isMortgage = isMortgage;
+    try {
+      await isar.writeTxn(() async {
+        if (property is House) {
+          await isar.houses.put(property);
+          await player.houses.save();
+        } else if (property is CompanyService) {
+          await isar.companyServices.put(property);
+          await player.services.save();
+        } else if (property is RailWay) {
+          await isar.railWays.put(property);
+          await player.railways.save();
+        }
+
+        // Guarda los cambios del jugador
+        await isar.monopolyPlayers.put(player);
+      });
+      return true;
+    } catch (e) {
+      BankerAlerts.unhandledError(error: e.toString());
+      return false;
+    }
+  }
+
+  @override
+  Future<GameSessions?> lastSession() {
+    return isar.gameSessions.where().sortByPlaytimeDesc().findFirst();
+  }
+
+  @override
+  Future<void> deleteGameSession(int id) async {
+    await isar.writeTxn(() async {
+      final session = await isar.gameSessions.get(id);
+      if (session == null) return;
+      await session.players.filter().deleteAll();
+      await session.players.save();
+      await isar.gameSessions.delete(session.id);
+    });
   }
 }

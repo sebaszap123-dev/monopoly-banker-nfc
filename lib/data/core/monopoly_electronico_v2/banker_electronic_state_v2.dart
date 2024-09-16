@@ -2,7 +2,15 @@ part of 'banker_electronic_bloc_v2.dart';
 
 enum GameStatus { setup, loading, endgame, playing, transaction, backup }
 
-enum GameTransaction { none, salida, add, substract, paying }
+enum GameTransaction {
+  none,
+  exit,
+  add,
+  subtract,
+  paying,
+  buy_property,
+  transfer_properties,
+}
 
 /// P1-P2 [int] P1 PAGA A P2
 /// P1-P'S el P1 paga a todos los demas
@@ -20,7 +28,7 @@ class ElectronicState extends Equatable {
     this.status = GameStatus.setup,
     this.currentPlayer,
     this.gameTransaction = GameTransaction.none,
-    this.fromPlayer,
+    // this.fromPlayer,
     this.gameSession,
     this.moneyExchange,
     // MoneyType moneyValue = MoneyType.million,
@@ -29,7 +37,7 @@ class ElectronicState extends Equatable {
   final List<MonopolyPlayer> players;
   final List<Property> propertiesToSell;
   final MonopolyPlayer? currentPlayer;
-  final MonopolyPlayer? fromPlayer;
+  // final MonopolyPlayer? fromPlayer;
   final GameTransaction gameTransaction;
   final Money? moneyExchange;
   final GameSessions? gameSession;
@@ -40,8 +48,8 @@ class ElectronicState extends Equatable {
     GameStatus? status,
     List<MonopolyCardV2>? cards,
     List<MonopolyPlayer>? players,
-    MonopolyPlayer? player,
-    MonopolyPlayer? fromPlayer,
+    MonopolyPlayer? currentPlayer,
+    // MonopolyPlayer? fromPlayer,
     GameTransaction? gameTransaction,
     Money? moneyExchange,
     List<Property>? propertiesToSell,
@@ -51,9 +59,9 @@ class ElectronicState extends Equatable {
       gameSession: gameSession ?? this.gameSession,
       status: status ?? this.status,
       players: players ?? this.players,
-      currentPlayer: player,
+      currentPlayer: currentPlayer,
       gameTransaction: gameTransaction ?? this.gameTransaction,
-      fromPlayer: fromPlayer,
+      // fromPlayer: fromPlayer,
       propertiesToSell: propertiesToSell ?? this.propertiesToSell,
     );
   }
@@ -63,7 +71,7 @@ class ElectronicState extends Equatable {
         status,
         players,
         currentPlayer,
-        fromPlayer,
+        // fromPlayer,
         gameTransaction,
         propertiesToSell,
       ];
@@ -81,13 +89,17 @@ class ElectronicState extends Equatable {
     switch (gameTransaction) {
       case GameTransaction.none:
         return '';
-      case GameTransaction.salida:
+      case GameTransaction.exit:
         return '+ 2 M';
       case GameTransaction.add:
-      case GameTransaction.substract:
+      case GameTransaction.subtract:
         return moneyExchange.toString();
       case GameTransaction.paying:
         return 'Paying to player';
+      case GameTransaction.buy_property:
+        return 'Se compro la propiedad';
+      case GameTransaction.transfer_properties:
+        return 'Se transfirió la(s) propiedad(es)';
     }
   }
 

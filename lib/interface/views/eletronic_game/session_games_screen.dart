@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
-import 'package:monopoly_banker/data/model/eletronic_v1/game_session.dart';
-import 'package:monopoly_banker/data/service/banker_manager_service.dart';
+import 'package:monopoly_banker/data/database/electronic_database_v2.dart';
+import 'package:monopoly_banker/data/model/session.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/session_card.dart';
 
@@ -20,21 +20,16 @@ class GameSessionsScreen extends StatefulWidget {
 }
 
 class _GameSessionsScreenState extends State<GameSessionsScreen> {
-  late StreamController<List<GameSession>> _streamController;
+  late StreamController<List<GameSessions>> _streamController;
 
   bool disposed = false;
-
-  void deleteSession(List<GameSession> sessions, int id) async {
-    sessions.removeWhere((session) => session.id == id);
-    _streamController.add(sessions);
-  }
 
   @override
   void initState() {
     super.initState();
-    _streamController = StreamController<List<GameSession>>();
-    getIt<BankerManagerService>()
-        .getGameSessions(widget.version)
+    _streamController = StreamController<List<GameSessions>>();
+    getIt<ElectronicDatabaseV2>()
+        .getGameSessions()
         .then((value) => _streamController.add(value));
   }
 
