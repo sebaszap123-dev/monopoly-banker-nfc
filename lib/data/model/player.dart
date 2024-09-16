@@ -10,11 +10,17 @@ class MonopolyPlayer {
   Id id = Isar.autoIncrement;
   MonopolyCardV2? card;
   late Money money;
-  late int sessionId;
   String? name;
   // late GameVersions version;
   @ignore
   String get namePlayer {
     return this.name ?? 'Jugador $id';
+  }
+
+  static MonopolyPlayer fromCard(MonopolyCardV2 card, String player) {
+    return MonopolyPlayer()
+      ..money = Money(type: MoneyType.million, value: 15)
+      ..card = card
+      ..name = player;
   }
 }

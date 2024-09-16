@@ -2,10 +2,14 @@
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
+import 'package:monopoly_banker/data/database/electronic_database_v2.dart';
 import 'package:monopoly_banker/data/model/electronic_v2/monopoly_cards_v2.dart';
 import 'package:monopoly_banker/data/model/money.dart';
 import 'package:monopoly_banker/data/model/player.dart';
+import 'package:monopoly_banker/data/service_locator.dart';
 
 part 'banker_electronic_event_v2.dart';
 part 'banker_electronic_state_v2.dart';
@@ -29,8 +33,6 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
       if (state.status == GameStatus.backup) return;
       // await getIt<BankerManagerService>().backupPlayers(state.players);
       BankerAlerts.unhandledError(error: "No implementado aun");
-      BankerAlerts.unhandledError(error: "No implementado aun");
-      ;
       // return;
     }
     if (state.gameSessionId == null) {
@@ -38,7 +40,6 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
           'No session id, why you can play if no session is created?');
     }
     BankerAlerts.unhandledError(error: "No implementado aun");
-    ;
 
     // emit(state.copyWith(status: GameStatus.loading));
     // await getIt<BankerManagerService>().backupPlayers(state.players);
@@ -55,7 +56,6 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
       RestoreGameEvent event, Emitter<ElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
     BankerAlerts.unhandledError(error: "No implementado aun");
-    ;
 
     // final session =
     //     await getIt<BankerManagerService>().getGameSession(event.sessionId);
@@ -77,33 +77,31 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
   }
 
   _startGameEvent(StartGameEvent event, Emitter<ElectronicState> emit) async {
-    // TODO: IMPLEMENT
-    BankerAlerts.unhandledError(error: "No implementado aun");
-    ;
-    // try {
-    //   emit(state.copyWith(status: GameStatus.loading));
-//
-    //   final session = await getIt<BankerManagerService>()
-    //       .createGameSessions(event.version, event.players);
-    //   await Future.delayed(const Duration(milliseconds: 900));
-    //   if (session.players.isEmpty) {
-    //     throw 'Error players not found after make session';
-    //   }
-    //   emit(state.copyWith(
-    //     gameSessionId: session.id,
-    //     players: session.players,
-    //     status: GameStatus.playing,
-    //     gameTransaction: GameTransaction.none,
-    //   ));
-    // } catch (e) {
-    //   BankerAlerts.unhandledError(error: e.toString());
-    // }
+    try {
+      emit(state.copyWith(status: GameStatus.loading));
+
+      final session =
+          await getIt<ElectronicDatabaseV2>().createSession(event.players);
+      await Future.delayed(const Duration(milliseconds: 900));
+      if (session.players.isEmpty) {
+        throw 'Error players not found after make session';
+      }
+      emit(state.copyWith(
+        gameSessionId: session.id,
+        players: session.players.toList(),
+        status: GameStatus.playing,
+        gameTransaction: GameTransaction.none,
+      ));
+      // TODO: CHANGE WITH ANOTHER VIEW
+      getIt<RouterCubit>().state.push(const ElectronicGameRoute());
+    } catch (e) {
+      BankerAlerts.unhandledError(error: e.toString());
+    }
   }
 
   _changeUserEvent(
       UpdatePlayerEvent event, Emitter<ElectronicState> emit) async {
     BankerAlerts.unhandledError(error: "No implementado aun");
-    ;
 
     // final resp = await BankerAlerts.readNfcDataCard();
     // try {

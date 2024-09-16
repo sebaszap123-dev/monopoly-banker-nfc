@@ -1,11 +1,12 @@
 import 'package:isar/isar.dart';
+import 'package:monopoly_banker/config/utils/game_versions_support.dart';
 import 'package:monopoly_banker/data/model/player.dart';
 import 'package:monopoly_banker/data/model/session.dart';
 import 'package:monopoly_banker/data/repository/eletronic_repository_v2.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
-  late Isar db;
+  late Isar isar;
 
   ElectronicDatabaseV2();
 
@@ -16,12 +17,59 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
   @override
   Future<void> openIsarDB() async {
     final dir = await getApplicationDocumentsDirectory();
-    db = await Isar.open(
+    isar = await Isar.open(
       [
         MonopolyPlayerSchema,
         GameSessionsSchema,
       ],
       directory: dir.path,
     );
+  }
+
+  @override
+  Future<void> backupSession(
+      List<MonopolyPlayer> players, GameSessions session) async {
+    // TODO: VERIFICAR SI SE ACTUALIZA YA ASI LA SESSION
+    _savePlayers(players);
+    // TODO: PUEDE SERVIR SI NO SE ESTA GUARDANDO COMO DEBE
+    // session.players.save();
+    await isar.writeTxn(() async {
+      return await isar.gameSessions.put(session);
+    });
+  }
+
+  @override
+  Future<GameSessions> createSession(List<MonopolyPlayer> players) async {
+    // Save the players to the database
+    await _savePlayers(players);
+
+    // SESSION
+    final session = GameSessions();
+    session
+      ..startTime = DateTime.now()
+      ..updateTime = DateTime.now()
+      ..version = GameVersions.electronicv2
+      ..playtime = 0;
+
+    // Perform all write operations in one transaction
+    await isar.writeTxn<void>(() async {
+      final id = await isar.gameSessions.put(session);
+      print(session);
+
+      // Add the players to the session
+      session.players.addAll(players);
+
+      // Save the session with updated players
+      await session.players.save();
+    });
+
+    // Return the session
+    return session;
+  }
+
+  Future<List<int>> _savePlayers(List<MonopolyPlayer> players) async {
+    return await isar.writeTxn(() async {
+      return await isar.monopolyPlayers.putAll(players);
+    });
   }
 }

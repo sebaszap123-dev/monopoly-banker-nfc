@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
-import 'package:monopoly_banker/data/core/monopoly_electronico/banker_electronic_bloc.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico_v2/banker_electronic_bloc_v2.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/animated_icon_button.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
@@ -25,10 +25,10 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
   late Animation<double> _animation;
 
   void getCurrentUser() =>
-      getIt<MonopolyElectronicBloc>().add(UpdatePlayerEvent());
+      getIt<ElectronicGameV2Bloc>().add(UpdatePlayerEvent());
 
   void finishTurn() =>
-      getIt<MonopolyElectronicBloc>().add(FinishTurnPlayerEvent());
+      getIt<ElectronicGameV2Bloc>().add(FinishTurnPlayerEvent());
 
   final TextStyle statuscards = GoogleFonts.robotoMono(
     color: Colors.white,
@@ -60,8 +60,8 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
     super.dispose();
     _controller.stop();
     _controller.dispose();
-    if (getIt<MonopolyElectronicBloc>().state.status != GameStatus.backup) {
-      getIt<MonopolyElectronicBloc>().add(BackupGameEvent(appPaused: true));
+    if (getIt<ElectronicGameV2Bloc>().state.status != GameStatus.backup) {
+      getIt<ElectronicGameV2Bloc>().add(BackupGameEvent(appPaused: true));
     }
   }
 
@@ -90,7 +90,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<MonopolyElectronicBloc, MonopolyElectronicState>(
+    return BlocBuilder<ElectronicGameV2Bloc, ElectronicState>(
       builder: (context, blocState) {
         if (blocState.status == GameStatus.loading) {
           return Scaffold(
@@ -105,7 +105,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios),
-              onPressed: () => getIt<MonopolyElectronicBloc>()
+              onPressed: () => getIt<ElectronicGameV2Bloc>()
                   .add(BackupGameEvent(appPaused: false)),
             ),
             actions: [
@@ -113,7 +113,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                   onPressed: () async {
                     final end = await BankerAlerts.endGame();
                     if (end) {
-                      getIt<RouterCubit>().state.push(EndGameMonopolyX(
+                      getIt<RouterCubit>().state.push(EndGameElectronicV2(
                           players: blocState.players,
                           sessionId: blocState.gameSessionId!));
                     }
@@ -137,9 +137,9 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                     child: Column(
                       children: [
                         MonopolyCreditCard(
-                          color: blocState.currentPlayer!.color,
+                          color: blocState.currentPlayer!.card!.color,
                           onTap: finishTurn,
-                          cardNumber: blocState.currentPlayer!.number,
+                          cardNumber: blocState.currentPlayer!.card!.number,
                           displayName: blocState.currentPlayer!.namePlayer,
                           transactions:
                               blocState.status == GameStatus.transaction,
@@ -169,7 +169,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                                       const SizedBox(width: 10),
                                       Text(
                                           blocState.currentPlayer!.money
-                                              .toStringAsFixed(2),
+                                              .toString(),
                                           style: statuscards),
                                       const SizedBox(width: 2.5),
                                       Text('M',
@@ -184,8 +184,8 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                                 ),
                               ),
                               const Spacer(flex: 1),
-                              BlocSelector<MonopolyElectronicBloc,
-                                  MonopolyElectronicState, GameTransaction>(
+                              BlocSelector<ElectronicGameV2Bloc,
+                                  ElectronicState, GameTransaction>(
                                 selector: (playerTransactionState) {
                                   return playerTransactionState.gameTransaction;
                                 },
@@ -240,7 +240,9 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                   children: [
                     AnimatedIconButton(
                       onPressed: getCurrentUser,
-                      colorsPlayers: [...blocState.players.map((e) => e.color)],
+                      colorsPlayers: [
+                        ...blocState.players.map((e) => e.card!.color)
+                      ],
                     )
                   ],
                 ),

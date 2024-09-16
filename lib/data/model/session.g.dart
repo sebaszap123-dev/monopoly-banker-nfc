@@ -122,7 +122,7 @@ P _gameSessionsDeserializeProp<P>(
 const _GameSessionsversionEnumValueMap = {
   'classic': 0,
   'electronic': 1,
-  'colima': 2,
+  'electronicv2': 2,
 };
 const _GameSessionsversionValueEnumMap = {
   0: GameVersions.classic,

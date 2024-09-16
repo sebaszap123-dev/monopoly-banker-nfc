@@ -49,48 +49,46 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetupV2> {
   }
 
   void deleteCard(MonopolyCardV2 card) async {
-    throw UnimplementedError();
-    // final resp = await getIt<BankerManagerService>().deleteMonopolyCard(card);
-    // if (resp != 0) {
-    //   cards.remove(card);
-    // }
-    // setState(() {});
+    final resp = await CardsManagerService.removeCard(card);
+    print(resp);
+    if (resp) {
+      cards.remove(card);
+    }
+    setState(() {});
   }
 
   void onTapCard(MapEntry<MonopolyCardV2, bool> entry) async {
-    throw UnimplementedError();
+    final matchingPlayers = players
+        .where((player) => player.card!.number == entry.key.number)
+        .toList();
+    final action = matchingPlayers.isNotEmpty
+        ? await BankerAlerts.showAddPlayerAlert(
+            oldName: matchingPlayers[0].namePlayer)
+        : await BankerAlerts.showAddPlayerAlert();
 
-    // final matchingPlayers = players
-    //     .where((player) => player.card!.number == entry.key.number)
-    //     .toList();
-    // final action = matchingPlayers.isNotEmpty
-    //     ? await BankerAlerts.showAddPlayerAlert(
-    //         oldName: matchingPlayers[0].namePlayer)
-    //     : await BankerAlerts.showAddPlayerAlert();
+    if (action.key == CardManagerStatus.cancel) return;
 
-    // if (action.key == CardManagerStatus.cancel) return;
+    if (action.key == CardManagerStatus.delete) {
+      deleteCard(entry.key);
+      return;
+    }
 
-    // if (action.key == CardManagerStatus.delete) {
-    //   deleteCard(entry.key);
-    //   return;
-    // }
+    final playerName = action.value;
+    if (playerName != null) {
+      if (matchingPlayers.isNotEmpty) {
+        final index = players.indexOf(matchingPlayers[0]);
+        players[index] = matchingPlayers[0]..name = playerName;
+      } else {
+        players.add(MonopolyPlayer.fromCard(entry.key, playerName));
+      }
+      cards.remove(entry.key);
+      final updatedCard = entry.key..displayName = playerName;
+      cards[updatedCard] = true;
+    } else {
+      cards[entry.key] = !entry.value;
+    }
 
-    // final playerName = action.value;
-    // if (playerName != null) {
-    //   if (matchingPlayers.isNotEmpty) {
-    //     final index = players.indexOf(matchingPlayers[0]);
-    //     players[index] = matchingPlayers[0]..name = playerName;
-    //   } else {
-    //     players.add(MonopolyPlayer.fromCard(entry.key, playerName));
-    //   }
-    //   cards.remove(entry.key);
-    //   final updatedCard = entry.key.copyWith(displayName: playerName);
-    //   cards[updatedCard] = true;
-    // } else {
-    //   cards[entry.key] = !entry.value;
-    // }
-
-    // setState(() {});
+    setState(() {});
   }
 
   bool get _maxPlayers {
@@ -130,9 +128,6 @@ class _ElectronicGameSetupState extends State<ElectronicGameSetupV2> {
       return;
     }
     getIt<ElectronicGameV2Bloc>().add(StartGameEvent(players));
-    BankerAlerts.unhandledError(
-        error: "No implemented yet go to a game v2", myContext: context);
-    getIt<RouterCubit>().state.push(const ElectronicGameRoute());
   }
 
   @override

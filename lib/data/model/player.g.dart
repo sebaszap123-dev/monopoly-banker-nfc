@@ -33,11 +33,6 @@ const MonopolyPlayerSchema = CollectionSchema(
       id: 2,
       name: r'name',
       type: IsarType.string,
-    ),
-    r'sessionId': PropertySchema(
-      id: 3,
-      name: r'sessionId',
-      type: IsarType.long,
     )
   },
   estimateSize: _monopolyPlayerEstimateSize,
@@ -101,7 +96,6 @@ void _monopolyPlayerSerialize(
     object.money,
   );
   writer.writeString(offsets[2], object.name);
-  writer.writeLong(offsets[3], object.sessionId);
 }
 
 MonopolyPlayer _monopolyPlayerDeserialize(
@@ -124,7 +118,6 @@ MonopolyPlayer _monopolyPlayerDeserialize(
       ) ??
       Money();
   object.name = reader.readStringOrNull(offsets[2]);
-  object.sessionId = reader.readLong(offsets[3]);
   return object;
 }
 
@@ -150,8 +143,6 @@ P _monopolyPlayerDeserializeProp<P>(
           Money()) as P;
     case 2:
       return (reader.readStringOrNull(offset)) as P;
-    case 3:
-      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -479,62 +470,6 @@ extension MonopolyPlayerQueryFilter
       ));
     });
   }
-
-  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
-      sessionIdEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'sessionId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
-      sessionIdGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'sessionId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
-      sessionIdLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'sessionId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
-      sessionIdBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'sessionId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
 }
 
 extension MonopolyPlayerQueryObject
@@ -570,19 +505,6 @@ extension MonopolyPlayerQuerySortBy
       return query.addSortBy(r'name', Sort.desc);
     });
   }
-
-  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterSortBy> sortBySessionId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sessionId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterSortBy>
-      sortBySessionIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sessionId', Sort.desc);
-    });
-  }
 }
 
 extension MonopolyPlayerQuerySortThenBy
@@ -610,19 +532,6 @@ extension MonopolyPlayerQuerySortThenBy
       return query.addSortBy(r'name', Sort.desc);
     });
   }
-
-  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterSortBy> thenBySessionId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sessionId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterSortBy>
-      thenBySessionIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sessionId', Sort.desc);
-    });
-  }
 }
 
 extension MonopolyPlayerQueryWhereDistinct
@@ -631,13 +540,6 @@ extension MonopolyPlayerQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QDistinct>
-      distinctBySessionId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'sessionId');
     });
   }
 }
@@ -666,12 +568,6 @@ extension MonopolyPlayerQueryProperty
   QueryBuilder<MonopolyPlayer, String?, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
-    });
-  }
-
-  QueryBuilder<MonopolyPlayer, int, QQueryOperations> sessionIdProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'sessionId');
     });
   }
 }

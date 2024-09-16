@@ -8,7 +8,7 @@ enum MoneyType {
 }
 
 @embedded
-class Money {
+class Money implements Comparable<Money> {
   @Enumerated(EnumType.name)
   MoneyType? type;
   double? value;
@@ -79,5 +79,19 @@ class Money {
     }
     String suffix = type == MoneyType.million ? 'M' : 'k';
     return '${value!.toStringAsFixed(1)} $suffix';
+  }
+
+  @override
+  int compareTo(Money other) {
+    double thisValue = _convertToThousands();
+    double otherValue = other._convertToThousands();
+
+    if (thisValue < otherValue) {
+      return -1;
+    } else if (thisValue > otherValue) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
 }

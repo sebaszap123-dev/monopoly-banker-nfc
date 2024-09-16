@@ -9,12 +9,12 @@ class ElectronicPreferenceV2 {
     prefs = await SharedPreferences.getInstance();
   }
 
-  Future<void> cardAdd(String number) async {
-    await prefs.setBool(number, true);
+  Future<bool> cardAdd(String number) async {
+    return await prefs.setBool(number, true);
   }
 
-  Future<void> cardRemove(String number) async {
-    await prefs.setBool(number, false);
+  Future<bool> cardRemove(String number) async {
+    return await prefs.setBool(number, false);
   }
 
   Future<bool> checkRedCard() async {

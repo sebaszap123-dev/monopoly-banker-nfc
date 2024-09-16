@@ -46,4 +46,8 @@ class CardsManagerService {
   static Future<void> addCard(MonopolyCardV2 card) async {
     await getIt<ElectronicPreferenceV2>().cardAdd(card.number);
   }
+
+  static Future<bool> removeCard(MonopolyCardV2 card) async {
+    return await getIt<ElectronicPreferenceV2>().cardRemove(card.number);
+  }
 }
