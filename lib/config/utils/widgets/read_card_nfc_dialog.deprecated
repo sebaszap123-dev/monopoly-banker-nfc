@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_cards.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';
 import 'package:nfc_manager/nfc_manager.dart';
@@ -13,7 +12,6 @@ class ReadCardNfc extends StatefulWidget {
 }
 
 class _ReadCardNfcState extends State<ReadCardNfc> {
-  MonopolyCard? cardPlayer;
   bool hasError = false;
   String error = '';
   bool hasData = false;
@@ -37,13 +35,7 @@ class _ReadCardNfcState extends State<ReadCardNfc> {
           final ndef = Ndef.from(tag);
           if (ndef != null) {
             final cachedMessage = ndef.cachedMessage;
-            if (cachedMessage != null) {
-              final resp = MonopolyCard.fromNdefMessage(cachedMessage);
-              setState(() {
-                cardPlayer = resp;
-                hasData = true;
-              });
-            }
+            if (cachedMessage != null) {}
           } else {
             setState(() {
               hasError = true;
@@ -89,13 +81,10 @@ class _ReadCardNfcState extends State<ReadCardNfc> {
           ),
         ],
         if (!hasError && hasData) ...[
-          Text(
-              'Tarjeta leída: ${cardPlayer?.number}'), // Mostrar la información de la tarjeta leída
           ElevatedButton(
             onPressed: () async {
               await getIt<NfcManager>().stopSession();
               // ignore: use_build_context_synchronously
-              Navigator.of(context).pop(cardPlayer);
             },
             child: const Text('Aceptar'),
           ),

@@ -56,20 +56,17 @@ class PayPlayersEvent extends ElectronicEvent {
 
 class BuyProperty extends ElectronicEvent {
   final Property property;
-  final MonopolyPlayer player;
-  BuyProperty(this.property, this.player);
+  BuyProperty(this.property);
 }
 
 class MortgageProperty extends ElectronicEvent {
   final Property property;
-  final MonopolyPlayer player;
-  MortgageProperty(this.property, this.player);
+  MortgageProperty(this.property);
 }
 
+/// Hacer intercambio, usar el bank alert para identificar las tarjetas
 class ChangeProperties extends ElectronicEvent {
   final List<Property> properties;
-  final MonopolyPlayer playerReceiver;
-  final MonopolyPlayer playerGiving;
 
-  ChangeProperties(this.properties, this.playerReceiver, this.playerGiving);
+  ChangeProperties(this.properties);
 }

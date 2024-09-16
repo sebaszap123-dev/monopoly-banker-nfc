@@ -77,8 +77,44 @@ class Money implements Comparable<Money> {
     if (value == null || type == null) {
       return 'Invalid Money';
     }
+
+    // Convertir el valor a miles para trabajar con ambos valores.
+    double valueInThousands = _convertToThousands();
+
+    // Calcular millones y miles
+    int millions =
+        (valueInThousands ~/ 1000).toInt(); // Parte entera de millones
+    int thousands = (valueInThousands % 1000).toInt(); // Parte entera de miles
+
+    String result = '';
+
+    // Si hay millones, los mostramos
+    if (millions > 0) {
+      result += '${millions}M';
+    }
+
+    // Si hay miles, los mostramos
+    if (thousands > 0) {
+      if (millions > 0) {
+        result += ' ';
+      }
+      result += '${thousands}K';
+    }
+
+    // Si no hay miles, pero el valor es menor a mil, lo mostramos en miles.
+    if (millions == 0 && thousands == 0) {
+      result += '${valueInThousands.toStringAsFixed(1)}K';
+    }
+
+    return result;
+  }
+
+  String toStringFixed() {
+    if (value == null || type == null) {
+      return 'Invalid Money';
+    }
     String suffix = type == MoneyType.million ? 'M' : 'k';
-    return '\$M ${value!.toStringAsFixed(1)} $suffix';
+    return '${value!.toStringAsFixed(1)} $suffix';
   }
 
   @override

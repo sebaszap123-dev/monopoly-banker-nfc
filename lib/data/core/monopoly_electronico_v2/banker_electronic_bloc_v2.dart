@@ -464,38 +464,59 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
   }
 
   _buyProperty(BuyProperty event, Emitter<ElectronicState> emit) async {
-    emit(state.copyWith(
-      status: GameStatus.loading,
-      gameTransaction: GameTransaction.none,
-    ));
-    List<Property> properties = [...state.propertiesToSell];
-    properties.removeWhere((element) => element.title == event.property.title);
-    if (event.player.money < event.property.buyValue) {
-      BankerAlerts.customMessageAlertFail(
-          text: "No tienes dinero suficiente para pagarlo");
-      return;
-    }
-    final wasAdded = await getIt<ElectronicDatabaseV2>()
-        .addPropertyToPlayer(event.player, event.property);
-    if (wasAdded) {
+    try {
+      final resp = await BankerAlerts.readNfcDataCardV2();
+      if (resp == null) return;
+      final player = state.playerFromCard(resp);
+      if (player == null) return;
       emit(state.copyWith(
-        propertiesToSell: properties,
-        status: GameStatus.transaction,
-        gameTransaction: GameTransaction.buy_property,
-        currentPlayer: event.player,
+        status: GameStatus.loading,
+        gameTransaction: GameTransaction.none,
       ));
+      List<Property> properties = [...state.propertiesToSell];
+      properties
+          .removeWhere((element) => element.title == event.property.title);
+      if (player.money < event.property.buyValue) {
+        BankerAlerts.customMessageAlertFail(
+            text: "No tienes dinero suficiente para pagarlo");
+        emit(state.copyWith(
+          status: GameStatus.playing,
+          gameTransaction: GameTransaction.none,
+        ));
+        return;
+      }
+      final wasAdded = await getIt<ElectronicDatabaseV2>()
+          .addPropertyToPlayer(player, event.property);
+      if (wasAdded) {
+        emit(state.copyWith(
+          propertiesToSell: properties,
+          status: GameStatus.transaction,
+          gameTransaction: GameTransaction.buy_property,
+          currentPlayer: player,
+        ));
+        return;
+      }
+      emit(state.copyWith(
+        status: GameStatus.playing,
+        gameTransaction: GameTransaction.none,
+      ));
+    } catch (e) {
+      rethrow;
     }
   }
 
   _mortgageProperty(
       MortgageProperty event, Emitter<ElectronicState> emit) async {
+    final resp = await BankerAlerts.readNfcDataCardV2();
+    if (resp == null) return;
+    final player = state.playerFromCard(resp);
+    if (player == null) return;
     emit(state.copyWith(
       status: GameStatus.loading,
     ));
     await getIt<ElectronicDatabaseV2>()
-        .mortgagePropertyToPlayer(event.player, event.property);
-    _updatePlayer(event.player);
-    emit(state.copyWith(
-        status: GameStatus.transaction, currentPlayer: event.player));
+        .mortgagePropertyToPlayer(player, event.property);
+    _updatePlayer(player);
+    emit(state.copyWith(status: GameStatus.transaction, currentPlayer: player));
   }
 }

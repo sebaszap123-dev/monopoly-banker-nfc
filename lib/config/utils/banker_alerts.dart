@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
-import 'package:monopoly_banker/config/utils/widgets/read_card_nfc_dialog.dart';
 import 'package:monopoly_banker/config/utils/widgets/read_card_nfc_v2.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico_v2/banker_electronic_bloc_v2.dart';
 import 'package:monopoly_banker/data/model/electronic_v2/monopoly_cards_v2.dart';
-import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_cards.dart';
 import 'package:monopoly_banker/data/model/money.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
@@ -592,21 +590,6 @@ abstract class BankerAlerts {
       // El usuario confirma la acción
       return MapEntry(CardManagerStatus.name, playerNameController.text);
     }
-  }
-
-  static Future<MonopolyCard?> readNfcDataCard({String? customText}) async {
-    return await showDialog<MonopolyCard?>(
-        context: context,
-        builder: (context) {
-          return Dialog(
-            backgroundColor: Colors.white,
-            child: SizedBox(
-                height: 300,
-                child: ReadCardNfc(
-                  customText: customText,
-                )),
-          );
-        });
   }
 
   static Future<MonopolyCardV2?> readNfcDataCardV2({String? customText}) async {
