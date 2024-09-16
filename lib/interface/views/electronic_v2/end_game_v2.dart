@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/data/core/monopoly_electronico_v2/banker_electronic_bloc_v2.dart';
 import 'package:monopoly_banker/data/model/player.dart';
+import 'package:monopoly_banker/data/model/session.dart';
 import 'package:monopoly_banker/data/service/banker_manager_service.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
@@ -10,9 +11,9 @@ import 'package:monopoly_banker/interface/widgets/monopoly_credit_card.dart';
 @RoutePage()
 class EndGameElectronicV2 extends StatefulWidget {
   const EndGameElectronicV2(
-      {super.key, required this.players, required this.sessionId});
+      {super.key, required this.players, required this.session});
   final List<MonopolyPlayer> players;
-  final int sessionId;
+  final GameSessions session;
   @override
   State<EndGameElectronicV2> createState() => _EndGameElectronicV2State();
 }
@@ -28,7 +29,7 @@ class _EndGameElectronicV2State extends State<EndGameElectronicV2> {
 
   void goHome() async {
     sessionDeleted =
-        await getIt<BankerManagerService>().deleteSession(widget.sessionId);
+        await getIt<BankerManagerService>().deleteSession(widget.session.id);
     getIt<ElectronicGameV2Bloc>().add(EndGameEvent());
     getIt<RouterCubit>().goHome();
   }
@@ -37,7 +38,7 @@ class _EndGameElectronicV2State extends State<EndGameElectronicV2> {
   void dispose() {
     super.dispose();
     if (!sessionDeleted) {
-      getIt<BankerManagerService>().deleteSession(widget.sessionId);
+      getIt<BankerManagerService>().deleteSession(widget.session.id);
       getIt<ElectronicGameV2Bloc>().add(EndGameEvent());
       getIt<RouterCubit>().goHome();
     }

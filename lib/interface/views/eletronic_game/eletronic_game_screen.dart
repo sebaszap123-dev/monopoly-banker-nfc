@@ -115,7 +115,7 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                     if (end) {
                       getIt<RouterCubit>().state.push(EndGameElectronicV2(
                           players: blocState.players,
-                          sessionId: blocState.gameSessionId!));
+                          session: blocState.gameSession!));
                     }
                   },
                   child: Container(

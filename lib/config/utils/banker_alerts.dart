@@ -555,28 +555,6 @@ abstract class BankerAlerts {
     );
   }
 
-  static Future<void> insufficientFundsPlayersXV2({
-    required Map<String, Money> players,
-  }) async {
-    String message = 'Estos jugadores no tienen saldo suficiente para pagar:\n';
-    players.forEach((playerName, money) {
-      message += '$playerName le faltan ${money.toString()}';
-    });
-
-    await ArtSweetAlert.show(
-      context: context,
-      artDialogArgs: ArtDialogArgs(
-        type: ArtSweetAlertType.warning,
-        title: 'Hey!',
-        confirmButtonText: 'Okay',
-        text: message,
-        onConfirm: () {
-          Navigator.of(context).pop();
-        },
-      ),
-    );
-  }
-
   static Future<void> insufficientFundsPlayersV2({
     required Map<String, Money> players,
   }) async {

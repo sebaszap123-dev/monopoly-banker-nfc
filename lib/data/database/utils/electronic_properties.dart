@@ -249,22 +249,28 @@ class PropertyManager {
         ..houseCost = Money(type: MoneyType.million, value: 2),
       CompanyService()
         ..title = "Compañía de electricidad"
-        ..mortgage = Money(type: MoneyType.thousands, value: 750),
+        ..mortgage = Money(type: MoneyType.thousands, value: 750)
+        ..propertyGroup = PropertyType.servicios,
       CompanyService()
         ..title = "Compañía de agua"
-        ..mortgage = Money(type: MoneyType.thousands, value: 750),
+        ..mortgage = Money(type: MoneyType.thousands, value: 750)
+        ..propertyGroup = PropertyType.servicios,
       FerroService()
         ..title = "Ferrocarril Pennsylvania"
-        ..mortgage = Money(type: MoneyType.million, value: 1),
+        ..mortgage = Money(type: MoneyType.million, value: 1)
+        ..propertyGroup = PropertyType.ferro,
       FerroService()
         ..title = "Ferrocarril Reading"
-        ..mortgage = Money(type: MoneyType.million, value: 1),
+        ..mortgage = Money(type: MoneyType.million, value: 1)
+        ..propertyGroup = PropertyType.ferro,
       FerroService()
         ..title = "Ferrocarril B. & O."
-        ..mortgage = Money(type: MoneyType.million, value: 1),
+        ..mortgage = Money(type: MoneyType.million, value: 1)
+        ..propertyGroup = PropertyType.ferro,
       FerroService()
         ..title = "Ferrocarril vía rapida."
-        ..mortgage = Money(type: MoneyType.million, value: 1),
+        ..mortgage = Money(type: MoneyType.million, value: 1)
+        ..propertyGroup = PropertyType.ferro,
     ];
   }
 }

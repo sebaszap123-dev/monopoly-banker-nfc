@@ -11,10 +11,11 @@
 import 'package:auto_route/auto_route.dart' as _i7;
 import 'package:flutter/material.dart' as _i8;
 import 'package:monopoly_banker/config/utils/game_versions_support.dart'
-    as _i11;
+    as _i12;
 import 'package:monopoly_banker/data/model/eletronic_v1/monopoly_player.dart'
-    as _i10;
+    as _i11;
 import 'package:monopoly_banker/data/model/player.dart' as _i9;
+import 'package:monopoly_banker/data/model/session.dart' as _i10;
 import 'package:monopoly_banker/interface/views/electronic_v2/end_game_v2.dart'
     as _i2;
 import 'package:monopoly_banker/interface/views/eletronic_game/eletronic_game_screen.dart'
@@ -45,7 +46,7 @@ abstract class $MonopolyRouter extends _i7.RootStackRouter {
         child: _i2.EndGameElectronicV2(
           key: args.key,
           players: args.players,
-          sessionId: args.sessionId,
+          session: args.session,
         ),
       );
     },
@@ -110,14 +111,14 @@ class EndGameElectronicV2 extends _i7.PageRouteInfo<EndGameElectronicV2Args> {
   EndGameElectronicV2({
     _i8.Key? key,
     required List<_i9.MonopolyPlayer> players,
-    required int sessionId,
+    required _i10.GameSessions session,
     List<_i7.PageRouteInfo>? children,
   }) : super(
           EndGameElectronicV2.name,
           args: EndGameElectronicV2Args(
             key: key,
             players: players,
-            sessionId: sessionId,
+            session: session,
           ),
           initialChildren: children,
         );
@@ -132,18 +133,18 @@ class EndGameElectronicV2Args {
   const EndGameElectronicV2Args({
     this.key,
     required this.players,
-    required this.sessionId,
+    required this.session,
   });
 
   final _i8.Key? key;
 
   final List<_i9.MonopolyPlayer> players;
 
-  final int sessionId;
+  final _i10.GameSessions session;
 
   @override
   String toString() {
-    return 'EndGameElectronicV2Args{key: $key, players: $players, sessionId: $sessionId}';
+    return 'EndGameElectronicV2Args{key: $key, players: $players, session: $session}';
   }
 }
 
@@ -152,7 +153,7 @@ class EndGameElectronicV2Args {
 class EndGameMonopolyX extends _i7.PageRouteInfo<EndGameMonopolyXArgs> {
   EndGameMonopolyX({
     _i8.Key? key,
-    required List<_i10.MonopolyPlayerX> players,
+    required List<_i11.MonopolyPlayerX> players,
     required int sessionId,
     List<_i7.PageRouteInfo>? children,
   }) : super(
@@ -180,7 +181,7 @@ class EndGameMonopolyXArgs {
 
   final _i8.Key? key;
 
-  final List<_i10.MonopolyPlayerX> players;
+  final List<_i11.MonopolyPlayerX> players;
 
   final int sessionId;
 
@@ -195,7 +196,7 @@ class EndGameMonopolyXArgs {
 class GameRoute extends _i7.PageRouteInfo<GameRouteArgs> {
   GameRoute({
     _i8.Key? key,
-    required _i11.GameVersions version,
+    required _i12.GameVersions version,
     bool isNewGame = false,
     List<_i7.PageRouteInfo>? children,
   }) : super(
@@ -223,7 +224,7 @@ class GameRouteArgs {
 
   final _i8.Key? key;
 
-  final _i11.GameVersions version;
+  final _i12.GameVersions version;
 
   final bool isNewGame;
 
@@ -238,7 +239,7 @@ class GameRouteArgs {
 class GameSessionsRoute extends _i7.PageRouteInfo<GameSessionsRouteArgs> {
   GameSessionsRoute({
     _i8.Key? key,
-    required _i11.GameVersions version,
+    required _i12.GameVersions version,
     List<_i7.PageRouteInfo>? children,
   }) : super(
           GameSessionsRoute.name,
@@ -263,7 +264,7 @@ class GameSessionsRouteArgs {
 
   final _i8.Key? key;
 
-  final _i11.GameVersions version;
+  final _i12.GameVersions version;
 
   @override
   String toString() {

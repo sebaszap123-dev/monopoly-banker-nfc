@@ -1,6 +1,8 @@
 import 'package:isar/isar.dart';
 import 'package:monopoly_banker/config/utils/game_versions_support.dart';
+import 'package:monopoly_banker/data/database/utils/electronic_properties.dart';
 import 'package:monopoly_banker/data/model/player.dart';
+import 'package:monopoly_banker/data/model/property.dart';
 import 'package:monopoly_banker/data/model/session.dart';
 import 'package:monopoly_banker/data/repository/eletronic_repository_v2.dart';
 import 'package:path_provider/path_provider.dart';
@@ -21,6 +23,9 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
       [
         MonopolyPlayerSchema,
         GameSessionsSchema,
+        HouseSchema,
+        FerroServiceSchema,
+        CompanyServiceSchema,
       ],
       directory: dir.path,
     );
@@ -29,12 +34,10 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
   @override
   Future<void> backupSession(
       List<MonopolyPlayer> players, GameSessions session) async {
-    // TODO: VERIFICAR SI SE ACTUALIZA YA ASI LA SESSION
-    _savePlayers(players);
-    // TODO: PUEDE SERVIR SI NO SE ESTA GUARDANDO COMO DEBE
-    // session.players.save();
+    await _savePlayers(players);
     await isar.writeTxn(() async {
-      return await isar.gameSessions.put(session);
+      await isar.gameSessions.put(session);
+      await session.players.save();
     });
   }
 
@@ -53,7 +56,7 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
 
     // Perform all write operations in one transaction
     await isar.writeTxn<void>(() async {
-      final id = await isar.gameSessions.put(session);
+      await isar.gameSessions.put(session);
       print(session);
 
       // Add the players to the session
@@ -70,6 +73,31 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
   Future<List<int>> _savePlayers(List<MonopolyPlayer> players) async {
     return await isar.writeTxn(() async {
       return await isar.monopolyPlayers.putAll(players);
+    });
+  }
+
+  @override
+  Future<void> setupProperties() async {
+    final properties = PropertyManager.getPredefinedProperties();
+
+    // Filtramos las propiedades con whereType en lugar de where para obtener listas del tipo correcto
+    final houses = properties.whereType<House>().toList();
+    final companies = properties.whereType<CompanyService>().toList();
+    final railway = properties.whereType<FerroService>().toList();
+
+    await isar.writeTxn(() async {
+      final dbHouses = await isar.houses.where().count();
+      if (dbHouses == 0) {
+        await isar.houses.putAll(houses);
+      }
+      final dbCompanies = await isar.companyServices.where().count();
+      if (dbCompanies == 0) {
+        await isar.companyServices.putAll(companies);
+      }
+      final dbRailway = await isar.ferroServices.where().count();
+      if (dbRailway == 0) {
+        await isar.ferroServices.putAll(railway);
+      }
     });
   }
 }

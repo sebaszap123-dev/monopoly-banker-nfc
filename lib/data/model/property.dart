@@ -19,6 +19,7 @@ abstract class Property {
   Id id = Isar.autoIncrement;
   @enumerated
   late PropertyType propertyGroup;
+  @Index()
   late String title;
 
   late Money mortgage;
@@ -44,7 +45,8 @@ class House extends Property {
 
 @collection
 class CompanyService extends Property {
-  late bool isRentMultipliedBy10;
+  // TODO ESTO VA EN EL LIST TYPE de los property como extension
+  bool isRentMultipliedBy10 = false;
 
   Money rent(int diceNumber) {
     final baseRent =

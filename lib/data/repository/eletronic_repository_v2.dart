@@ -6,4 +6,5 @@ abstract class ElectronicRepositoryV2 {
   Future<GameSessions> createSession(List<MonopolyPlayer> players);
   Future<void> backupSession(
       List<MonopolyPlayer> players, GameSessions session);
+  Future<void> setupProperties();
 }

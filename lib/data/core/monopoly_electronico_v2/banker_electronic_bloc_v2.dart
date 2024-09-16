@@ -9,6 +9,7 @@ import 'package:monopoly_banker/data/database/electronic_database_v2.dart';
 import 'package:monopoly_banker/data/model/electronic_v2/monopoly_cards_v2.dart';
 import 'package:monopoly_banker/data/model/money.dart';
 import 'package:monopoly_banker/data/model/player.dart';
+import 'package:monopoly_banker/data/model/session.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 
 part 'banker_electronic_event_v2.dart';
@@ -29,34 +30,32 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
   }
 
   _backGameEvent(BackupGameEvent event, Emitter<ElectronicState> emit) async {
-    if (event.appPaused) {
-      if (state.status == GameStatus.backup) return;
-      // await getIt<BankerManagerService>().backupPlayers(state.players);
-      BankerAlerts.unhandledError(error: "No implementado aun");
-      // return;
-    }
-    if (state.gameSessionId == null) {
+    if (state.gameSession == null) {
       throw Exception(
           'No session id, why you can play if no session is created?');
     }
-    BankerAlerts.unhandledError(error: "No implementado aun");
+    if (event.appPaused) {
+      if (state.status == GameStatus.backup) return;
+      await getIt<ElectronicDatabaseV2>()
+          .backupSession(state.players, state.gameSession!);
+      return;
+    }
 
-    // emit(state.copyWith(status: GameStatus.loading));
-    // await getIt<BankerManagerService>().backupPlayers(state.players);
-    // await getIt<BankerManagerService>().updateSession(state.gameSessionId!);
-    // emit(state.copyWith(status: GameStatus.backup));
-    // try {
-    //   getIt<RouterCubit>().state.replace(const HomeRoute());
-    // } catch (e) {
-    //   rethrow;
-    // }
+    emit(state.copyWith(status: GameStatus.loading));
+    await getIt<ElectronicDatabaseV2>()
+        .backupSession(state.players, state.gameSession!);
+    emit(state.copyWith(status: GameStatus.backup));
+    try {
+      getIt<RouterCubit>().state.replace(const HomeRoute());
+    } catch (e) {
+      rethrow;
+    }
   }
 
   _restoreGameEvent(
       RestoreGameEvent event, Emitter<ElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
-    BankerAlerts.unhandledError(error: "No implementado aun");
-
+    throw UnimplementedError("Unable to restore ");
     // final session =
     //     await getIt<BankerManagerService>().getGameSession(event.sessionId);
     // if (session.players.isEmpty) {
@@ -80,6 +79,7 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
     try {
       emit(state.copyWith(status: GameStatus.loading));
 
+      await getIt<ElectronicDatabaseV2>().setupProperties();
       final session =
           await getIt<ElectronicDatabaseV2>().createSession(event.players);
       await Future.delayed(const Duration(milliseconds: 900));
@@ -87,44 +87,42 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
         throw 'Error players not found after make session';
       }
       emit(state.copyWith(
-        gameSessionId: session.id,
+        gameSession: session,
         players: session.players.toList(),
         status: GameStatus.playing,
         gameTransaction: GameTransaction.none,
       ));
-      // TODO: CHANGE WITH ANOTHER VIEW
       getIt<RouterCubit>().state.push(const ElectronicGameRoute());
     } catch (e) {
-      BankerAlerts.unhandledError(error: e.toString());
+      rethrow;
+      // BankerAlerts.unhandledError(error: e.toString());
     }
   }
 
   _changeUserEvent(
       UpdatePlayerEvent event, Emitter<ElectronicState> emit) async {
-    BankerAlerts.unhandledError(error: "No implementado aun");
-
-    // final resp = await BankerAlerts.readNfcDataCard();
-    // try {
-    //   if (resp == null) {
-    //     return;
-    //   }
-    //   final player = state.playerFromCard(resp);
-    //   if (player == null) {
-    //     BankerAlerts.unhandledError(error: 'No player found in this sesion');
-    //     emit(state.copyWith(
-    //       status: GameStatus.playing,
-    //       gameTransaction: GameTransaction.none,
-    //     ));
-    //     return;
-    //   }
-    //   emit(state.copyWith(
-    //     player: player,
-    //     status: GameStatus.transaction,
-    //     gameTransaction: GameTransaction.none,
-    //   ));
-    // } catch (e) {
-    //   BankerAlerts.unhandledError(error: e.toString());
-    // }
+    final resp = await BankerAlerts.readNfcDataCardV2();
+    try {
+      if (resp == null) {
+        return;
+      }
+      final player = state.playerFromCard(resp);
+      if (player == null) {
+        BankerAlerts.unhandledError(error: 'No player found in this sesion');
+        emit(state.copyWith(
+          status: GameStatus.playing,
+          gameTransaction: GameTransaction.none,
+        ));
+        return;
+      }
+      emit(state.copyWith(
+        player: player,
+        status: GameStatus.transaction,
+        gameTransaction: GameTransaction.none,
+      ));
+    } catch (e) {
+      BankerAlerts.unhandledError(error: e.toString());
+    }
   }
 
   _finishTurnPlayer(_, Emitter<ElectronicState> emit) async {
@@ -233,7 +231,7 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
   }
 
   _p1ToPlayers(PayPlayersEvent event, PayToAction payTo) async {
-    final card1 = await BankerAlerts.readNfcDataCard(
+    final card1 = await BankerAlerts.readNfcDataCardV2(
         customText: 'Este jugador paga a los demas');
 
     if (card1 == null) {
@@ -285,7 +283,7 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
   }
 
   _playersToP1(PayPlayersEvent event, PayToAction payTo) async {
-    final card = await BankerAlerts.readNfcDataCard(
+    final card = await BankerAlerts.readNfcDataCardV2(
         customText: 'Este jugador recibirá dinero de todos los demás');
 
     if (card == null) {
@@ -315,7 +313,7 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
         }
       }
       if (cantPay.isNotEmpty) {
-        await BankerAlerts.insufficientFundsPlayersXV2(players: cantPay);
+        await BankerAlerts.insufficientFundsPlayersV2(players: cantPay);
         emit(state.copyWith(
           status: GameStatus.playing,
           gameTransaction: GameTransaction.paying,
@@ -343,10 +341,10 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
   }
 
   _p1ToP2(PayPlayersEvent event) async {
-    final card1 = await BankerAlerts.readNfcDataCard(
+    final card1 = await BankerAlerts.readNfcDataCardV2(
         customText: '¿Listo para pagar? Inserta tu tarjeta');
     await Future.delayed(const Duration(milliseconds: 900));
-    final card2 = await BankerAlerts.readNfcDataCard(
+    final card2 = await BankerAlerts.readNfcDataCardV2(
       customText: 'Recibe tu dinero! Inserta tu tarjeta',
     );
 
@@ -368,7 +366,7 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
 
     if (playerPays.money < payMoney) {
       final insufficientMoney = event.money - playerPays.money;
-      BankerAlerts.insufficientFundsPlayersXV2(
+      BankerAlerts.insufficientFundsPlayersV2(
           players: {playerPays.namePlayer: insufficientMoney});
       emit(state.copyWith(
         gameTransaction: GameTransaction.paying,

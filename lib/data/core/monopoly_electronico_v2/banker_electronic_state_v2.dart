@@ -21,7 +21,7 @@ class ElectronicState extends Equatable {
     this.currentPlayer,
     this.gameTransaction = GameTransaction.none,
     this.fromPlayer,
-    this.gameSessionId,
+    this.gameSession,
     this.moneyExchange,
     // MoneyType moneyValue = MoneyType.million,
   });
@@ -32,11 +32,11 @@ class ElectronicState extends Equatable {
   final MonopolyPlayer? fromPlayer;
   final GameTransaction gameTransaction;
   final Money? moneyExchange;
-  final int? gameSessionId;
+  final GameSessions? gameSession;
 
   /// Copy method to create a new instance with the updated values
   ElectronicState copyWith({
-    int? gameSessionId,
+    GameSessions? gameSession,
     GameStatus? status,
     List<MonopolyCardV2>? cards,
     List<MonopolyPlayer>? players,
@@ -47,7 +47,7 @@ class ElectronicState extends Equatable {
   }) {
     return ElectronicState(
       moneyExchange: moneyExchange ?? this.moneyExchange,
-      gameSessionId: gameSessionId ?? this.gameSessionId,
+      gameSession: gameSession ?? this.gameSession,
       status: status ?? this.status,
       cards: cards ?? this.cards,
       players: players ?? this.players,
