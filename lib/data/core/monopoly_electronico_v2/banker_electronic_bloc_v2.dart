@@ -6,9 +6,11 @@ import 'package:monopoly_banker/config/router/monopoly_router.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/data/database/electronic_database_v2.dart';
+import 'package:monopoly_banker/data/database/utils/electronic_properties.dart';
 import 'package:monopoly_banker/data/model/electronic_v2/monopoly_cards_v2.dart';
 import 'package:monopoly_banker/data/model/money.dart';
 import 'package:monopoly_banker/data/model/player.dart';
+import 'package:monopoly_banker/data/model/property.dart';
 import 'package:monopoly_banker/data/model/session.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 
@@ -55,42 +57,76 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
   _restoreGameEvent(
       RestoreGameEvent event, Emitter<ElectronicState> emit) async {
     emit(state.copyWith(status: GameStatus.loading));
-    throw UnimplementedError("Unable to restore ");
-    // final session =
-    //     await getIt<BankerManagerService>().getGameSession(event.sessionId);
-    // if (session.players.isEmpty) {
-    //   BankerAlerts.unhandledError(error: 'No players of the last session');
-    //   emit(state.copyWith(
-    //     players: [],
-    //     status: GameStatus.endgame,
-    //     gameTransaction: GameTransaction.none,
-    //   ));
-    //   return;
-    // }
-    // emit(state.copyWith(
-    //   gameSessionId: event.sessionId,
-    //   players: session.players,
-    //   status: GameStatus.playing,
-    //   gameTransaction: GameTransaction.none,
-    // ));
+    // throw UnimplementedError("Unable to restore ");
+    final session =
+        await getIt<ElectronicDatabaseV2>().restoreSession(event.sessionId);
+    if (session == null) {
+      BankerAlerts.customMessageAlertFail(
+          text: "No se encontró la sesión por favor prueba otra vez.");
+      return;
+    }
+    if (session.players.isEmpty) {
+      BankerAlerts.unhandledError(error: 'No players of the last session');
+      emit(state.copyWith(
+        players: [],
+        status: GameStatus.setup,
+        gameTransaction: GameTransaction.none,
+      ));
+      return;
+    }
+
+    final properties = await PropertyManager.getPredefinedProperties();
+    final players = session.players.toList();
+
+    // Obtener las listas de propiedades de cada jugador
+    final houses = players.expand((player) => player.houses.toList()).toList();
+    final services =
+        players.expand((player) => player.services.toList()).toList();
+    final railways =
+        players.expand((player) => player.railways.toList()).toList();
+
+    // Remover casas que ya existen en los jugadores
+    properties.removeWhere((property) =>
+        property is House &&
+        houses.any((house) => house.title == property.title));
+
+    // Remover servicios que ya existen en los jugadores
+    properties.removeWhere((property) =>
+        property is CompanyService &&
+        services.any((service) => service.title == property.title));
+
+    // Remover ferrocarriles que ya existen en los jugadores
+    properties.removeWhere((property) =>
+        property is RailWay &&
+        railways.any((railway) => railway.title == property.title));
+
+    emit(state.copyWith(
+      gameSession: session,
+      players: players,
+      propertiesToSell: properties,
+      status: GameStatus.playing,
+      gameTransaction: GameTransaction.none,
+    ));
   }
 
   _startGameEvent(StartGameEvent event, Emitter<ElectronicState> emit) async {
     try {
       emit(state.copyWith(status: GameStatus.loading));
-
-      await getIt<ElectronicDatabaseV2>().setupProperties();
       final session =
           await getIt<ElectronicDatabaseV2>().createSession(event.players);
       await Future.delayed(const Duration(milliseconds: 900));
       if (session.players.isEmpty) {
         throw 'Error players not found after make session';
       }
+
+      final properties = await PropertyManager.getPredefinedProperties();
+
       emit(state.copyWith(
         gameSession: session,
         players: session.players.toList(),
         status: GameStatus.playing,
         gameTransaction: GameTransaction.none,
+        propertiesToSell: properties,
       ));
       getIt<RouterCubit>().state.push(const ElectronicGameRoute());
     } catch (e) {

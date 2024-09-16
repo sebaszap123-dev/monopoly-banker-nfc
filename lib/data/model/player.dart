@@ -2,6 +2,7 @@ import 'package:isar/isar.dart';
 import 'package:monopoly_banker/data/model/electronic_v2/monopoly_cards_v2.dart';
 
 import 'package:monopoly_banker/data/model/money.dart';
+import 'package:monopoly_banker/data/model/property.dart';
 
 part 'player.g.dart';
 
@@ -11,7 +12,11 @@ class MonopolyPlayer {
   MonopolyCardV2? card;
   late Money money;
   String? name;
-  // late GameVersions version;
+
+  final houses = IsarLinks<House>();
+  final services = IsarLinks<CompanyService>();
+  final railways = IsarLinks<RailWay>();
+
   @ignore
   String get namePlayer {
     return this.name ?? 'Jugador $id';

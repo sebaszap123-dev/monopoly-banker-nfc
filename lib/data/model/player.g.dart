@@ -41,7 +41,26 @@ const MonopolyPlayerSchema = CollectionSchema(
   deserializeProp: _monopolyPlayerDeserializeProp,
   idName: r'id',
   indexes: {},
-  links: {},
+  links: {
+    r'houses': LinkSchema(
+      id: -2829006424917851982,
+      name: r'houses',
+      target: r'House',
+      single: false,
+    ),
+    r'services': LinkSchema(
+      id: -7299397816333744861,
+      name: r'services',
+      target: r'CompanyService',
+      single: false,
+    ),
+    r'railways': LinkSchema(
+      id: 3891478909261479859,
+      name: r'railways',
+      target: r'RailWay',
+      single: false,
+    )
+  },
   embeddedSchemas: {
     r'MonopolyCardV2': MonopolyCardV2Schema,
     r'Money': MoneySchema
@@ -153,12 +172,16 @@ Id _monopolyPlayerGetId(MonopolyPlayer object) {
 }
 
 List<IsarLinkBase<dynamic>> _monopolyPlayerGetLinks(MonopolyPlayer object) {
-  return [];
+  return [object.houses, object.services, object.railways];
 }
 
 void _monopolyPlayerAttach(
     IsarCollection<dynamic> col, Id id, MonopolyPlayer object) {
   object.id = id;
+  object.houses.attach(col, col.isar.collection<House>(), r'houses', id);
+  object.services
+      .attach(col, col.isar.collection<CompanyService>(), r'services', id);
+  object.railways.attach(col, col.isar.collection<RailWay>(), r'railways', id);
 }
 
 extension MonopolyPlayerQueryWhereSort
@@ -490,7 +513,190 @@ extension MonopolyPlayerQueryObject
 }
 
 extension MonopolyPlayerQueryLinks
-    on QueryBuilder<MonopolyPlayer, MonopolyPlayer, QFilterCondition> {}
+    on QueryBuilder<MonopolyPlayer, MonopolyPlayer, QFilterCondition> {
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition> houses(
+      FilterQuery<House> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'houses');
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      housesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'houses', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      housesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'houses', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      housesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'houses', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      housesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'houses', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      housesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'houses', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      housesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'houses', lower, includeLower, upper, includeUpper);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition> services(
+      FilterQuery<CompanyService> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'services');
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      servicesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'services', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      servicesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'services', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      servicesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'services', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      servicesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'services', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      servicesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'services', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      servicesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'services', lower, includeLower, upper, includeUpper);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition> railways(
+      FilterQuery<RailWay> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'railways');
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      railwaysLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'railways', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      railwaysIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'railways', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      railwaysIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'railways', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      railwaysLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'railways', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      railwaysLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'railways', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<MonopolyPlayer, MonopolyPlayer, QAfterFilterCondition>
+      railwaysLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'railways', lower, includeLower, upper, includeUpper);
+    });
+  }
+}
 
 extension MonopolyPlayerQuerySortBy
     on QueryBuilder<MonopolyPlayer, MonopolyPlayer, QSortBy> {

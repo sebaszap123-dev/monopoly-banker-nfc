@@ -15,8 +15,8 @@ enum PayToAction {
 
 class ElectronicState extends Equatable {
   const ElectronicState({
-    this.cards = const [],
     this.players = const [],
+    this.propertiesToSell = const [],
     this.status = GameStatus.setup,
     this.currentPlayer,
     this.gameTransaction = GameTransaction.none,
@@ -26,8 +26,8 @@ class ElectronicState extends Equatable {
     // MoneyType moneyValue = MoneyType.million,
   });
   final GameStatus status;
-  final List<MonopolyCardV2> cards;
   final List<MonopolyPlayer> players;
+  final List<Property> propertiesToSell;
   final MonopolyPlayer? currentPlayer;
   final MonopolyPlayer? fromPlayer;
   final GameTransaction gameTransaction;
@@ -44,27 +44,28 @@ class ElectronicState extends Equatable {
     MonopolyPlayer? fromPlayer,
     GameTransaction? gameTransaction,
     Money? moneyExchange,
+    List<Property>? propertiesToSell,
   }) {
     return ElectronicState(
       moneyExchange: moneyExchange ?? this.moneyExchange,
       gameSession: gameSession ?? this.gameSession,
       status: status ?? this.status,
-      cards: cards ?? this.cards,
       players: players ?? this.players,
       currentPlayer: player,
       gameTransaction: gameTransaction ?? this.gameTransaction,
       fromPlayer: fromPlayer,
+      propertiesToSell: propertiesToSell ?? this.propertiesToSell,
     );
   }
 
   @override
   List<Object?> get props => [
         status,
-        cards,
         players,
         currentPlayer,
         fromPlayer,
         gameTransaction,
+        propertiesToSell,
       ];
 
   MonopolyPlayer? playerFromCard(MonopolyCardV2 card) {

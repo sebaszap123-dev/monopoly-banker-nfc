@@ -255,19 +255,19 @@ class PropertyManager {
         ..title = "Compañía de agua"
         ..mortgage = Money(type: MoneyType.thousands, value: 750)
         ..propertyGroup = PropertyType.servicios,
-      FerroService()
+      RailWay()
         ..title = "Ferrocarril Pennsylvania"
         ..mortgage = Money(type: MoneyType.million, value: 1)
         ..propertyGroup = PropertyType.ferro,
-      FerroService()
+      RailWay()
         ..title = "Ferrocarril Reading"
         ..mortgage = Money(type: MoneyType.million, value: 1)
         ..propertyGroup = PropertyType.ferro,
-      FerroService()
+      RailWay()
         ..title = "Ferrocarril B. & O."
         ..mortgage = Money(type: MoneyType.million, value: 1)
         ..propertyGroup = PropertyType.ferro,
-      FerroService()
+      RailWay()
         ..title = "Ferrocarril vía rapida."
         ..mortgage = Money(type: MoneyType.million, value: 1)
         ..propertyGroup = PropertyType.ferro,

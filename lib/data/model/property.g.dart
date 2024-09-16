@@ -1659,13 +1659,13 @@ extension CompanyServiceQueryProperty
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetFerroServiceCollection on Isar {
-  IsarCollection<FerroService> get ferroServices => this.collection();
+extension GetRailWayCollection on Isar {
+  IsarCollection<RailWay> get railWays => this.collection();
 }
 
-const FerroServiceSchema = CollectionSchema(
-  name: r'FerroService',
-  id: 6657810247282657024,
+const RailWaySchema = CollectionSchema(
+  name: r'RailWay',
+  id: -2879410480986986948,
   properties: {
     r'mortgage': PropertySchema(
       id: 0,
@@ -1695,7 +1695,7 @@ const FerroServiceSchema = CollectionSchema(
       id: 4,
       name: r'propertyGroup',
       type: IsarType.byte,
-      enumMap: _FerroServicepropertyGroupEnumValueMap,
+      enumMap: _RailWaypropertyGroupEnumValueMap,
     ),
     r'rent': PropertySchema(
       id: 5,
@@ -1709,10 +1709,10 @@ const FerroServiceSchema = CollectionSchema(
       type: IsarType.string,
     )
   },
-  estimateSize: _ferroServiceEstimateSize,
-  serialize: _ferroServiceSerialize,
-  deserialize: _ferroServiceDeserialize,
-  deserializeProp: _ferroServiceDeserializeProp,
+  estimateSize: _railWayEstimateSize,
+  serialize: _railWaySerialize,
+  deserialize: _railWayDeserialize,
+  deserializeProp: _railWayDeserializeProp,
   idName: r'id',
   indexes: {
     r'title': IndexSchema(
@@ -1731,14 +1731,14 @@ const FerroServiceSchema = CollectionSchema(
   },
   links: {},
   embeddedSchemas: {r'Money': MoneySchema},
-  getId: _ferroServiceGetId,
-  getLinks: _ferroServiceGetLinks,
-  attach: _ferroServiceAttach,
+  getId: _railWayGetId,
+  getLinks: _railWayGetLinks,
+  attach: _railWayAttach,
   version: '3.1.0+1',
 );
 
-int _ferroServiceEstimateSize(
-  FerroService object,
+int _railWayEstimateSize(
+  RailWay object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -1757,8 +1757,8 @@ int _ferroServiceEstimateSize(
   return bytesCount;
 }
 
-void _ferroServiceSerialize(
-  FerroService object,
+void _railWaySerialize(
+  RailWay object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
@@ -1797,13 +1797,13 @@ void _ferroServiceSerialize(
   writer.writeString(offsets[6], object.title);
 }
 
-FerroService _ferroServiceDeserialize(
+RailWay _railWayDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = FerroService();
+  final object = RailWay();
   object.id = id;
   object.mortgage = reader.readObjectOrNull<Money>(
         offsets[0],
@@ -1811,14 +1811,14 @@ FerroService _ferroServiceDeserialize(
         allOffsets,
       ) ??
       Money();
-  object.propertyGroup = _FerroServicepropertyGroupValueEnumMap[
-          reader.readByteOrNull(offsets[4])] ??
-      PropertyType.coffee;
+  object.propertyGroup =
+      _RailWaypropertyGroupValueEnumMap[reader.readByteOrNull(offsets[4])] ??
+          PropertyType.coffee;
   object.title = reader.readString(offsets[6]);
   return object;
 }
 
-P _ferroServiceDeserializeProp<P>(
+P _railWayDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -1854,7 +1854,7 @@ P _ferroServiceDeserializeProp<P>(
           ) ??
           Money()) as P;
     case 4:
-      return (_FerroServicepropertyGroupValueEnumMap[
+      return (_RailWaypropertyGroupValueEnumMap[
               reader.readByteOrNull(offset)] ??
           PropertyType.coffee) as P;
     case 5:
@@ -1871,7 +1871,7 @@ P _ferroServiceDeserializeProp<P>(
   }
 }
 
-const _FerroServicepropertyGroupEnumValueMap = {
+const _RailWaypropertyGroupEnumValueMap = {
   'coffee': 0,
   'skyBlue': 1,
   'magenta': 2,
@@ -1883,7 +1883,7 @@ const _FerroServicepropertyGroupEnumValueMap = {
   'servicios': 8,
   'ferro': 9,
 };
-const _FerroServicepropertyGroupValueEnumMap = {
+const _RailWaypropertyGroupValueEnumMap = {
   0: PropertyType.coffee,
   1: PropertyType.skyBlue,
   2: PropertyType.magenta,
@@ -1896,31 +1896,28 @@ const _FerroServicepropertyGroupValueEnumMap = {
   9: PropertyType.ferro,
 };
 
-Id _ferroServiceGetId(FerroService object) {
+Id _railWayGetId(RailWay object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _ferroServiceGetLinks(FerroService object) {
+List<IsarLinkBase<dynamic>> _railWayGetLinks(RailWay object) {
   return [];
 }
 
-void _ferroServiceAttach(
-    IsarCollection<dynamic> col, Id id, FerroService object) {
+void _railWayAttach(IsarCollection<dynamic> col, Id id, RailWay object) {
   object.id = id;
 }
 
-extension FerroServiceQueryWhereSort
-    on QueryBuilder<FerroService, FerroService, QWhere> {
-  QueryBuilder<FerroService, FerroService, QAfterWhere> anyId() {
+extension RailWayQueryWhereSort on QueryBuilder<RailWay, RailWay, QWhere> {
+  QueryBuilder<RailWay, RailWay, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension FerroServiceQueryWhere
-    on QueryBuilder<FerroService, FerroService, QWhereClause> {
-  QueryBuilder<FerroService, FerroService, QAfterWhereClause> idEqualTo(Id id) {
+extension RailWayQueryWhere on QueryBuilder<RailWay, RailWay, QWhereClause> {
+  QueryBuilder<RailWay, RailWay, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -1929,8 +1926,7 @@ extension FerroServiceQueryWhere
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterWhereClause> idNotEqualTo(
-      Id id) {
+  QueryBuilder<RailWay, RailWay, QAfterWhereClause> idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -1952,8 +1948,7 @@ extension FerroServiceQueryWhere
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterWhereClause> idGreaterThan(
-      Id id,
+  QueryBuilder<RailWay, RailWay, QAfterWhereClause> idGreaterThan(Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -1962,7 +1957,7 @@ extension FerroServiceQueryWhere
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterWhereClause> idLessThan(Id id,
+  QueryBuilder<RailWay, RailWay, QAfterWhereClause> idLessThan(Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -1971,7 +1966,7 @@ extension FerroServiceQueryWhere
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterWhereClause> idBetween(
+  QueryBuilder<RailWay, RailWay, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -1987,8 +1982,7 @@ extension FerroServiceQueryWhere
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterWhereClause> titleEqualTo(
-      String title) {
+  QueryBuilder<RailWay, RailWay, QAfterWhereClause> titleEqualTo(String title) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'title',
@@ -1997,7 +1991,7 @@ extension FerroServiceQueryWhere
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterWhereClause> titleNotEqualTo(
+  QueryBuilder<RailWay, RailWay, QAfterWhereClause> titleNotEqualTo(
       String title) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
@@ -2033,10 +2027,9 @@ extension FerroServiceQueryWhere
   }
 }
 
-extension FerroServiceQueryFilter
-    on QueryBuilder<FerroService, FerroService, QFilterCondition> {
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> idEqualTo(
-      Id value) {
+extension RailWayQueryFilter
+    on QueryBuilder<RailWay, RailWay, QFilterCondition> {
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -2045,7 +2038,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> idGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -2058,7 +2051,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> idLessThan(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> idLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -2071,7 +2064,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> idBetween(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -2088,8 +2081,8 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition>
-      propertyGroupEqualTo(PropertyType value) {
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> propertyGroupEqualTo(
+      PropertyType value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'propertyGroup',
@@ -2098,7 +2091,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition>
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition>
       propertyGroupGreaterThan(
     PropertyType value, {
     bool include = false,
@@ -2112,8 +2105,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition>
-      propertyGroupLessThan(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> propertyGroupLessThan(
     PropertyType value, {
     bool include = false,
   }) {
@@ -2126,8 +2118,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition>
-      propertyGroupBetween(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> propertyGroupBetween(
     PropertyType lower,
     PropertyType upper, {
     bool includeLower = true,
@@ -2144,7 +2135,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> titleEqualTo(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> titleEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2157,8 +2148,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition>
-      titleGreaterThan(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> titleGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -2173,7 +2163,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> titleLessThan(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> titleLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -2188,7 +2178,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> titleBetween(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> titleBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -2207,8 +2197,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition>
-      titleStartsWith(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> titleStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2221,7 +2210,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> titleEndsWith(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> titleEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2234,7 +2223,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> titleContains(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> titleContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2246,7 +2235,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> titleMatches(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> titleMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2258,8 +2247,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition>
-      titleIsEmpty() {
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> titleIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'title',
@@ -2268,8 +2256,7 @@ extension FerroServiceQueryFilter
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition>
-      titleIsNotEmpty() {
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> titleIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'title',
@@ -2279,37 +2266,37 @@ extension FerroServiceQueryFilter
   }
 }
 
-extension FerroServiceQueryObject
-    on QueryBuilder<FerroService, FerroService, QFilterCondition> {
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> mortgage(
+extension RailWayQueryObject
+    on QueryBuilder<RailWay, RailWay, QFilterCondition> {
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> mortgage(
       FilterQuery<Money> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'mortgage');
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> own2(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> own2(
       FilterQuery<Money> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'own2');
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> own3(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> own3(
       FilterQuery<Money> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'own3');
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> own4(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> own4(
       FilterQuery<Money> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'own4');
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterFilterCondition> rent(
+  QueryBuilder<RailWay, RailWay, QAfterFilterCondition> rent(
       FilterQuery<Money> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'rent');
@@ -2317,87 +2304,83 @@ extension FerroServiceQueryObject
   }
 }
 
-extension FerroServiceQueryLinks
-    on QueryBuilder<FerroService, FerroService, QFilterCondition> {}
+extension RailWayQueryLinks
+    on QueryBuilder<RailWay, RailWay, QFilterCondition> {}
 
-extension FerroServiceQuerySortBy
-    on QueryBuilder<FerroService, FerroService, QSortBy> {
-  QueryBuilder<FerroService, FerroService, QAfterSortBy> sortByPropertyGroup() {
+extension RailWayQuerySortBy on QueryBuilder<RailWay, RailWay, QSortBy> {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> sortByPropertyGroup() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'propertyGroup', Sort.asc);
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterSortBy>
-      sortByPropertyGroupDesc() {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> sortByPropertyGroupDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'propertyGroup', Sort.desc);
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterSortBy> sortByTitle() {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> sortByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterSortBy> sortByTitleDesc() {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> sortByTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.desc);
     });
   }
 }
 
-extension FerroServiceQuerySortThenBy
-    on QueryBuilder<FerroService, FerroService, QSortThenBy> {
-  QueryBuilder<FerroService, FerroService, QAfterSortBy> thenById() {
+extension RailWayQuerySortThenBy
+    on QueryBuilder<RailWay, RailWay, QSortThenBy> {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterSortBy> thenByPropertyGroup() {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> thenByPropertyGroup() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'propertyGroup', Sort.asc);
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterSortBy>
-      thenByPropertyGroupDesc() {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> thenByPropertyGroupDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'propertyGroup', Sort.desc);
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterSortBy> thenByTitle() {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> thenByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QAfterSortBy> thenByTitleDesc() {
+  QueryBuilder<RailWay, RailWay, QAfterSortBy> thenByTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.desc);
     });
   }
 }
 
-extension FerroServiceQueryWhereDistinct
-    on QueryBuilder<FerroService, FerroService, QDistinct> {
-  QueryBuilder<FerroService, FerroService, QDistinct>
-      distinctByPropertyGroup() {
+extension RailWayQueryWhereDistinct
+    on QueryBuilder<RailWay, RailWay, QDistinct> {
+  QueryBuilder<RailWay, RailWay, QDistinct> distinctByPropertyGroup() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'propertyGroup');
     });
   }
 
-  QueryBuilder<FerroService, FerroService, QDistinct> distinctByTitle(
+  QueryBuilder<RailWay, RailWay, QDistinct> distinctByTitle(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'title', caseSensitive: caseSensitive);
@@ -2405,52 +2388,52 @@ extension FerroServiceQueryWhereDistinct
   }
 }
 
-extension FerroServiceQueryProperty
-    on QueryBuilder<FerroService, FerroService, QQueryProperty> {
-  QueryBuilder<FerroService, int, QQueryOperations> idProperty() {
+extension RailWayQueryProperty
+    on QueryBuilder<RailWay, RailWay, QQueryProperty> {
+  QueryBuilder<RailWay, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<FerroService, Money, QQueryOperations> mortgageProperty() {
+  QueryBuilder<RailWay, Money, QQueryOperations> mortgageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'mortgage');
     });
   }
 
-  QueryBuilder<FerroService, Money, QQueryOperations> own2Property() {
+  QueryBuilder<RailWay, Money, QQueryOperations> own2Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'own2');
     });
   }
 
-  QueryBuilder<FerroService, Money, QQueryOperations> own3Property() {
+  QueryBuilder<RailWay, Money, QQueryOperations> own3Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'own3');
     });
   }
 
-  QueryBuilder<FerroService, Money, QQueryOperations> own4Property() {
+  QueryBuilder<RailWay, Money, QQueryOperations> own4Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'own4');
     });
   }
 
-  QueryBuilder<FerroService, PropertyType, QQueryOperations>
+  QueryBuilder<RailWay, PropertyType, QQueryOperations>
       propertyGroupProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'propertyGroup');
     });
   }
 
-  QueryBuilder<FerroService, Money, QQueryOperations> rentProperty() {
+  QueryBuilder<RailWay, Money, QQueryOperations> rentProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'rent');
     });
   }
 
-  QueryBuilder<FerroService, String, QQueryOperations> titleProperty() {
+  QueryBuilder<RailWay, String, QQueryOperations> titleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'title');
     });
