@@ -76,6 +76,12 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
     });
   }
 
+  // Future<void> updatePlayer(MonopolyPlayer player) async {
+  //   await isar.writeTxn(() async {
+  //     await isar.monopolyPlayers.put(player);
+  //   });
+  // }
+
   @override
   Future<GameSessions?> restoreSession(int session) async {
     return await isar.gameSessions.get(session);
@@ -163,9 +169,10 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
 
   @override
   Future<bool> mortgagePropertyToPlayer(
-      MonopolyPlayer player, Property property,
-      {bool isMortgage = false}) async {
-    property.isMortgage = isMortgage;
+    MonopolyPlayer player,
+    Property property,
+  ) async {
+    property.isMortgage = !property.isMortgage;
     try {
       await isar.writeTxn(() async {
         if (property is House) {

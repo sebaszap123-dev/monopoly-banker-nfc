@@ -25,28 +25,7 @@ class ElectronicGameScreen extends StatefulWidget {
 
 class _ElectronicGameScreenState extends State<ElectronicGameScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
   bool showProperties = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _animation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +54,6 @@ class _ElectronicGameScreenState extends State<ElectronicGameScreen>
                   isTransactionInProgress:
                       blocState.status == GameStatus.transaction,
                   transactionMessage: blocState.messageTransaction,
-                  controller: _controller,
-                  animation: _animation,
                   maxWidth: MediaQuery.of(context).size.width,
                   gameTransaction: blocState.gameTransaction,
                 )

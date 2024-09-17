@@ -10,8 +10,7 @@ abstract class ElectronicRepositoryV2 {
   Future<void> restoreSession(int session);
   Future<void> addPropertyToPlayer(MonopolyPlayer player, Property property);
   Future<void> mortgagePropertyToPlayer(
-      MonopolyPlayer player, Property property,
-      {bool isMortgage = true});
+      MonopolyPlayer player, Property property);
   Future<void> transferPropertiesPlayers(MonopolyPlayer playerToTransfer,
       MonopolyPlayer proprietary, List<Property> properties);
   Future<int> countSessions();

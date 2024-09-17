@@ -11,20 +11,18 @@ class TransactionScreen extends StatelessWidget {
   final MonopolyPlayer currentPlayer;
   final bool isTransactionInProgress;
   final String transactionMessage;
-  final AnimationController controller;
-  final Animation<double> animation;
   final double maxWidth;
   final GameTransaction gameTransaction;
-  const TransactionScreen({
+  TransactionScreen({
     super.key,
     required this.currentPlayer,
     required this.isTransactionInProgress,
     required this.transactionMessage,
-    required this.controller,
-    required this.animation,
     required this.maxWidth,
     required this.gameTransaction,
-  });
+  }) {
+    print(isTransactionInProgress);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,46 +53,37 @@ class TransactionScreen extends StatelessWidget {
               width: double.infinity, // Ajusta el ancho al máximo disponible
               child: Row(
                 children: [
-                  Flexible(
-                    flex: 8,
-                    child: Container(
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Money:',
+                            style: GoogleFonts.roboto(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 10),
+                        Text(currentPlayer.money.toString(),
+                            style: statusCards),
+                      ],
+                    ),
+                  ),
+                  Spacer(flex: 1),
+                  if (isTransactionInProgress) ...[
+                    Container(
+                      width: 100,
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: getTransactionColor(gameTransaction),
                         borderRadius:
                             const BorderRadius.all(Radius.circular(12)),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Money:',
-                              style: GoogleFonts.roboto(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold)),
-                          const SizedBox(width: 10),
-                          Text(currentPlayer.money.toString(),
-                              style: statusCards),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const Spacer(flex: 1),
-                  if (isTransactionInProgress) ...[
-                    Flexible(
-                      flex: 6,
-                      child: FadeTransition(
-                        opacity: animation,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: getTransactionColor(gameTransaction),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(12)),
-                          ),
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          child: Text(transactionMessage, style: statusCards),
-                        ),
-                      ),
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: Text(transactionMessage, style: statusCards),
                     ),
                   ],
                 ],
@@ -104,13 +93,11 @@ class TransactionScreen extends StatelessWidget {
             ...properties(currentPlayer).map(
               (element) => Padding(
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 60),
-                child: Flexible(
-                  child: PropertyCard(
-                    property: element,
-                    isOwnedByUser: true,
-                    onBuy: () => getIt<ElectronicGameV2Bloc>()
-                        .add(MortgageProperty(element)),
-                  ),
+                child: PropertyCard(
+                  property: element,
+                  isOwnedByUser: true,
+                  onMortgage: () => getIt<ElectronicGameV2Bloc>()
+                      .add(MortgageProperty(element)),
                 ),
               ),
             )

@@ -79,7 +79,8 @@ class PropertyCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Hipotecar'),
+                    child: Text(
+                        property.isMortgage ? 'Deshipotecar' : 'Hipotecar'),
                   )
                 else
                   Column(

@@ -465,9 +465,7 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
 
   _buyProperty(BuyProperty event, Emitter<ElectronicState> emit) async {
     try {
-      final resp = await BankerAlerts.readNfcDataCardV2();
-      if (resp == null) return;
-      final player = state.playerFromCard(resp);
+      final player = await _obtainPlayer;
       if (player == null) return;
       emit(state.copyWith(
         status: GameStatus.loading,
@@ -488,6 +486,8 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
       final wasAdded = await getIt<ElectronicDatabaseV2>()
           .addPropertyToPlayer(player, event.property);
       if (wasAdded) {
+        player.money = player.money - event.property.buyValue;
+        _updatePlayer(player);
         emit(state.copyWith(
           propertiesToSell: properties,
           status: GameStatus.transaction,
@@ -507,16 +507,67 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
 
   _mortgageProperty(
       MortgageProperty event, Emitter<ElectronicState> emit) async {
-    final resp = await BankerAlerts.readNfcDataCardV2();
-    if (resp == null) return;
-    final player = state.playerFromCard(resp);
+    final player = await _obtainPlayer;
     if (player == null) return;
-    emit(state.copyWith(
-      status: GameStatus.loading,
-    ));
+    // Emitir estado de carga
+    emit(state.copyWith(status: GameStatus.loading));
+
+    final isMortgage = event.property.isMortgage;
+    final mortgageAmount = event.property.mortgage;
+    // Levantar la hipoteca
+    final demortgage = mortgageAmount * 1.1;
+    final playerHasEnoughMoney = player.money > demortgage;
+
+    if (isMortgage && playerHasEnoughMoney) {
+      // Levantar la hipoteca
+      await _processMortgage(
+          player, event.property, demortgage, MortgageAction.up);
+    } else if (!isMortgage) {
+      // Hipotecar la propiedad
+      await _processMortgage(
+          player, event.property, mortgageAmount, MortgageAction.down);
+    }
+  }
+
+  Future<MonopolyPlayer?> get _obtainPlayer async {
+    MonopolyPlayer? player;
+    if (state.currentPlayer == null) {
+      final resp = await BankerAlerts.readNfcDataCardV2();
+      if (resp == null) return null;
+      player = state.playerFromCard(resp);
+      if (player == null) return null;
+    }
+    return state.currentPlayer;
+  }
+
+  Future<void> _processMortgage(
+    MonopolyPlayer player,
+    Property property,
+    Money mortgageAmount,
+    MortgageAction action,
+  ) async {
     await getIt<ElectronicDatabaseV2>()
-        .mortgagePropertyToPlayer(player, event.property);
+        .mortgagePropertyToPlayer(player, property);
+
+    // Actualizar el dinero del jugador
+    switch (action) {
+      case MortgageAction.up:
+        player.money -= mortgageAmount;
+      case MortgageAction.down:
+        player.money += mortgageAmount;
+    }
     _updatePlayer(player);
-    emit(state.copyWith(status: GameStatus.transaction, currentPlayer: player));
+
+    // Emitir estado de transacción
+    emit(state.copyWith(
+      status: GameStatus.transaction,
+      currentPlayer: player,
+      gameTransaction: action == MortgageAction.up
+          ? GameTransaction.subtract
+          : GameTransaction.add,
+      moneyExchange: mortgageAmount,
+    ));
   }
 }
+
+enum MortgageAction { up, down }
