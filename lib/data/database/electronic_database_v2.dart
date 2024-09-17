@@ -35,6 +35,7 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
   Future<void> backupSession(
       List<MonopolyPlayer> players, GameSessions session) async {
     await _savePlayers(players);
+    session.updatePlayTime();
     await isar.writeTxn(() async {
       await isar.gameSessions.put(session);
       await session.players.save();
@@ -49,8 +50,8 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
     // SESSION
     final session = GameSessions();
     session
-      ..startTime = DateTime.now()
-      ..updateTime = DateTime.now()
+      ..createdAt = DateTime.now()
+      ..updateAt = DateTime.now()
       ..version = GameVersions.electronic
       ..playtime = 0;
 
@@ -84,11 +85,17 @@ class ElectronicDatabaseV2 extends ElectronicRepositoryV2 {
 
   @override
   Future<GameSessions?> restoreSession(int session) async {
-    return await isar.gameSessions.get(session);
+    final restoredSession = await isar.gameSessions.get(session);
+    restoredSession?.restored();
+    return restoredSession;
   }
 
   Future<List<GameSessions>> getGameSessions() async {
     return await isar.gameSessions.where().findAll();
+  }
+
+  Future<GameSessions?> getGameSession(int id) async {
+    return await isar.gameSessions.get(id);
   }
 
   @override

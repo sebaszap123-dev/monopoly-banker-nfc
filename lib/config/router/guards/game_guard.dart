@@ -23,33 +23,6 @@ class GameGuard extends AutoRouteGuard {
         // final classic =
         //     await getIt<MonopolyGamesStorage>().hasCurrentGamesClassic;
         resolver.next(true);
-      // case GameVersions.electronic:
-      //   final countSessions = await getIt<BankerManagerService>()
-      //       .getCountGameSession(args.version);
-      //   if (countSessions >= 1) {
-      //     final action = await BankerAlerts.recoveryLastSession(
-      //         countSessions, args.version);
-      //     if (action == null) {
-      //       resolver.next(false);
-      //       return;
-      //     }
-      //     switch (action) {
-      //       case RecoveryAction.last:
-      //         _handleLastSessionGame(resolver, args.version);
-      //         break;
-      //       case RecoveryAction.menu:
-      //         final sessions = await getIt<BankerManagerService>()
-      //             .getGameSessions(args.version);
-      //         if (sessions.isEmpty) {
-      //           resolver.next(false);
-      //           return;
-      //         }
-      //         resolver.redirect(GameSessionsRoute(version: args.version));
-      //         break;
-      //     }
-      //     return;
-      //   }
-      //   resolver.next(true);
       case GameVersions.electronic:
         final countSessions =
             await getIt<ElectronicDatabaseV2>().countSessions();
@@ -75,30 +48,6 @@ class GameGuard extends AutoRouteGuard {
         resolver.next(false);
     }
   }
-
-  // void _handleLastSessionGame(
-  //     NavigationResolver resolver, GameVersions version) async {
-  //   final id = await getIt<BankerManagerService>().getLastSession(version);
-  //   if (id != -1) {
-  //     getIt<MonopolyElectronicBloc>().add(RestoreGameEvent(sessionId: id));
-  //     switch (version) {
-  //       case GameVersions.classic:
-  //         // TODO: Handle this case.
-  //         resolver.next(false);
-  //         break;
-  //       case GameVersions.electronic:
-  //         // TODO: Handle this case.
-  //         resolver.redirect(const ElectronicGameRoute());
-  //         break;
-  //       case GameVersions.electronicv2:
-  //         // TODO: Handle this case.
-  //         resolver.next(false);
-  //     }
-  //     return;
-  //   }
-  //   resolver.next(false);
-  //   return;
-  // }
 
   void _handleLastSessionGameV2(
       NavigationResolver resolver, GameVersions version) async {

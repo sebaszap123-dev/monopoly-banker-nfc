@@ -17,23 +17,28 @@ const GameSessionsSchema = CollectionSchema(
   name: r'GameSessions',
   id: 4801948484918931928,
   properties: {
-    r'playtime': PropertySchema(
+    r'createdAt': PropertySchema(
       id: 0,
+      name: r'createdAt',
+      type: IsarType.dateTime,
+    ),
+    r'playtime': PropertySchema(
+      id: 1,
       name: r'playtime',
       type: IsarType.long,
     ),
-    r'startTime': PropertySchema(
-      id: 1,
-      name: r'startTime',
+    r'restoredAt': PropertySchema(
+      id: 2,
+      name: r'restoredAt',
       type: IsarType.dateTime,
     ),
-    r'updateTime': PropertySchema(
-      id: 2,
-      name: r'updateTime',
+    r'updateAt': PropertySchema(
+      id: 3,
+      name: r'updateAt',
       type: IsarType.dateTime,
     ),
     r'version': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'version',
       type: IsarType.byte,
       enumMap: _GameSessionsversionEnumValueMap,
@@ -75,10 +80,11 @@ void _gameSessionsSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeLong(offsets[0], object.playtime);
-  writer.writeDateTime(offsets[1], object.startTime);
-  writer.writeDateTime(offsets[2], object.updateTime);
-  writer.writeByte(offsets[3], object.version.index);
+  writer.writeDateTime(offsets[0], object.createdAt);
+  writer.writeLong(offsets[1], object.playtime);
+  writer.writeDateTime(offsets[2], object.restoredAt);
+  writer.writeDateTime(offsets[3], object.updateAt);
+  writer.writeByte(offsets[4], object.version.index);
 }
 
 GameSessions _gameSessionsDeserialize(
@@ -88,12 +94,13 @@ GameSessions _gameSessionsDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = GameSessions();
+  object.createdAt = reader.readDateTime(offsets[0]);
   object.id = id;
-  object.playtime = reader.readLong(offsets[0]);
-  object.startTime = reader.readDateTime(offsets[1]);
-  object.updateTime = reader.readDateTime(offsets[2]);
+  object.playtime = reader.readLong(offsets[1]);
+  object.restoredAt = reader.readDateTimeOrNull(offsets[2]);
+  object.updateAt = reader.readDateTime(offsets[3]);
   object.version =
-      _GameSessionsversionValueEnumMap[reader.readByteOrNull(offsets[3])] ??
+      _GameSessionsversionValueEnumMap[reader.readByteOrNull(offsets[4])] ??
           GameVersions.classic;
   return object;
 }
@@ -106,12 +113,14 @@ P _gameSessionsDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 1:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 2:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 3:
+      return (reader.readDateTime(offset)) as P;
+    case 4:
       return (_GameSessionsversionValueEnumMap[reader.readByteOrNull(offset)] ??
           GameVersions.classic) as P;
     default:
@@ -224,6 +233,62 @@ extension GameSessionsQueryWhere
 
 extension GameSessionsQueryFilter
     on QueryBuilder<GameSessions, GameSessions, QFilterCondition> {
+  QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
+      createdAtEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'createdAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
+      createdAtGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'createdAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
+      createdAtLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'createdAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
+      createdAtBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'createdAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -334,53 +399,71 @@ extension GameSessionsQueryFilter
   }
 
   QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
-      startTimeEqualTo(DateTime value) {
+      restoredAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'restoredAt',
+      ));
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
+      restoredAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'restoredAt',
+      ));
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
+      restoredAtEqualTo(DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'startTime',
+        property: r'restoredAt',
         value: value,
       ));
     });
   }
 
   QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
-      startTimeGreaterThan(
-    DateTime value, {
+      restoredAtGreaterThan(
+    DateTime? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'startTime',
+        property: r'restoredAt',
         value: value,
       ));
     });
   }
 
   QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
-      startTimeLessThan(
-    DateTime value, {
+      restoredAtLessThan(
+    DateTime? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'startTime',
+        property: r'restoredAt',
         value: value,
       ));
     });
   }
 
   QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
-      startTimeBetween(
-    DateTime lower,
-    DateTime upper, {
+      restoredAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'startTime',
+        property: r'restoredAt',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -390,45 +473,45 @@ extension GameSessionsQueryFilter
   }
 
   QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
-      updateTimeEqualTo(DateTime value) {
+      updateAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'updateTime',
+        property: r'updateAt',
         value: value,
       ));
     });
   }
 
   QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
-      updateTimeGreaterThan(
+      updateAtGreaterThan(
     DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'updateTime',
+        property: r'updateAt',
         value: value,
       ));
     });
   }
 
   QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
-      updateTimeLessThan(
+      updateAtLessThan(
     DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'updateTime',
+        property: r'updateAt',
         value: value,
       ));
     });
   }
 
   QueryBuilder<GameSessions, GameSessions, QAfterFilterCondition>
-      updateTimeBetween(
+      updateAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
@@ -436,7 +519,7 @@ extension GameSessionsQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'updateTime',
+        property: r'updateAt',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -571,6 +654,18 @@ extension GameSessionsQueryLinks
 
 extension GameSessionsQuerySortBy
     on QueryBuilder<GameSessions, GameSessions, QSortBy> {
+  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> sortByCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'createdAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> sortByCreatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<GameSessions, GameSessions, QAfterSortBy> sortByPlaytime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'playtime', Sort.asc);
@@ -583,28 +678,28 @@ extension GameSessionsQuerySortBy
     });
   }
 
-  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> sortByStartTime() {
+  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> sortByRestoredAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'startTime', Sort.asc);
-    });
-  }
-
-  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> sortByStartTimeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'startTime', Sort.desc);
-    });
-  }
-
-  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> sortByUpdateTime() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'updateTime', Sort.asc);
+      return query.addSortBy(r'restoredAt', Sort.asc);
     });
   }
 
   QueryBuilder<GameSessions, GameSessions, QAfterSortBy>
-      sortByUpdateTimeDesc() {
+      sortByRestoredAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'updateTime', Sort.desc);
+      return query.addSortBy(r'restoredAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> sortByUpdateAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updateAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> sortByUpdateAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updateAt', Sort.desc);
     });
   }
 
@@ -623,6 +718,18 @@ extension GameSessionsQuerySortBy
 
 extension GameSessionsQuerySortThenBy
     on QueryBuilder<GameSessions, GameSessions, QSortThenBy> {
+  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> thenByCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'createdAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> thenByCreatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<GameSessions, GameSessions, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -647,28 +754,28 @@ extension GameSessionsQuerySortThenBy
     });
   }
 
-  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> thenByStartTime() {
+  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> thenByRestoredAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'startTime', Sort.asc);
-    });
-  }
-
-  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> thenByStartTimeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'startTime', Sort.desc);
-    });
-  }
-
-  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> thenByUpdateTime() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'updateTime', Sort.asc);
+      return query.addSortBy(r'restoredAt', Sort.asc);
     });
   }
 
   QueryBuilder<GameSessions, GameSessions, QAfterSortBy>
-      thenByUpdateTimeDesc() {
+      thenByRestoredAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'updateTime', Sort.desc);
+      return query.addSortBy(r'restoredAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> thenByUpdateAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updateAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GameSessions, GameSessions, QAfterSortBy> thenByUpdateAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updateAt', Sort.desc);
     });
   }
 
@@ -687,21 +794,27 @@ extension GameSessionsQuerySortThenBy
 
 extension GameSessionsQueryWhereDistinct
     on QueryBuilder<GameSessions, GameSessions, QDistinct> {
+  QueryBuilder<GameSessions, GameSessions, QDistinct> distinctByCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'createdAt');
+    });
+  }
+
   QueryBuilder<GameSessions, GameSessions, QDistinct> distinctByPlaytime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'playtime');
     });
   }
 
-  QueryBuilder<GameSessions, GameSessions, QDistinct> distinctByStartTime() {
+  QueryBuilder<GameSessions, GameSessions, QDistinct> distinctByRestoredAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'startTime');
+      return query.addDistinctBy(r'restoredAt');
     });
   }
 
-  QueryBuilder<GameSessions, GameSessions, QDistinct> distinctByUpdateTime() {
+  QueryBuilder<GameSessions, GameSessions, QDistinct> distinctByUpdateAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'updateTime');
+      return query.addDistinctBy(r'updateAt');
     });
   }
 
@@ -720,21 +833,27 @@ extension GameSessionsQueryProperty
     });
   }
 
+  QueryBuilder<GameSessions, DateTime, QQueryOperations> createdAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'createdAt');
+    });
+  }
+
   QueryBuilder<GameSessions, int, QQueryOperations> playtimeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'playtime');
     });
   }
 
-  QueryBuilder<GameSessions, DateTime, QQueryOperations> startTimeProperty() {
+  QueryBuilder<GameSessions, DateTime?, QQueryOperations> restoredAtProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'startTime');
+      return query.addPropertyName(r'restoredAt');
     });
   }
 
-  QueryBuilder<GameSessions, DateTime, QQueryOperations> updateTimeProperty() {
+  QueryBuilder<GameSessions, DateTime, QQueryOperations> updateAtProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'updateTime');
+      return query.addPropertyName(r'updateAt');
     });
   }
 

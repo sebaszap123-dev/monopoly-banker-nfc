@@ -130,4 +130,8 @@ class Money implements Comparable<Money> {
       return 0;
     }
   }
+
+  static Money zero() {
+    return Money(type: MoneyType.thousands, value: 0);
+  }
 }

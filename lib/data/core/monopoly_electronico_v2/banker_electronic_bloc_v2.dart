@@ -33,6 +33,7 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
     // Properties
     on<BuyProperty>(_buyProperty);
     on<MortgageProperty>(_mortgageProperty);
+    on<ChangeProperties>(_exchangeProperties);
   }
 
   _backGameEvent(BackupGameEvent event, Emitter<ElectronicState> emit) async {
@@ -51,11 +52,12 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
     await getIt<ElectronicDatabaseV2>()
         .backupSession(state.players, state.gameSession!);
     emit(state.copyWith(status: GameStatus.backup));
-    try {
+    if (event.exitGame) {
+      emit(ElectronicState());
       getIt<RouterCubit>().state.replace(const HomeRoute());
-    } catch (e) {
-      rethrow;
+      return;
     }
+    BankerAlerts.customMessageAlertSuccess(text: "Se guardo el juego");
   }
 
   _restoreGameEvent(
@@ -535,10 +537,19 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
       final resp = await BankerAlerts.readNfcDataCardV2();
       if (resp == null) return null;
       player = state.playerFromCard(resp);
-      if (player == null) return null;
+      return player;
     }
     return state.currentPlayer;
   }
+
+  // Future<MonopolyPlayer?> get _readPlayer async {
+  //   MonopolyPlayer? player;
+  //   final resp = await BankerAlerts.readNfcDataCardV2();
+  //   if (resp == null) return null;
+  //   player = state.playerFromCard(resp);
+  //   if (player == null) return null;
+  //   return player;
+  // }
 
   Future<void> _processMortgage(
     MonopolyPlayer player,
@@ -567,6 +578,82 @@ class ElectronicGameV2Bloc extends Bloc<ElectronicEvent, ElectronicState> {
           : GameTransaction.add,
       moneyExchange: mortgageAmount,
     ));
+  }
+
+  _exchangeProperties(
+      ChangeProperties event, Emitter<ElectronicState> emit) async {
+    if (event.status == TransferTransaction.selectingPlayer1) {
+      emit(state.copyWith(
+        status: GameStatus.transaction,
+        gameTransaction: GameTransaction.transfer_properties,
+      ));
+    }
+    if (event.status == TransferTransaction.transactionSuccess) {
+      if (event.player1 == null || event.player2 == null) {
+        throw Exception("Players cant be null in Transfers");
+      }
+      if (event.propertiesPlayer1.isEmpty && event.moneyPlayer1 == null) {
+        throw Exception(
+            "${event.player1!.namePlayer} need to transfer something");
+      }
+      if (event.propertiesPlayer2.isEmpty && event.moneyPlayer2 == null) {
+        throw Exception(
+            "${event.player2!.namePlayer} need to transfer something");
+      }
+
+      if (event.propertiesPlayer1.isNotEmpty) {
+        try {
+          await getIt<ElectronicDatabaseV2>().transferPropertiesPlayers(
+              event.player2!, event.player1!, event.propertiesPlayer1);
+          _updatePlayer(event.player1!);
+          _updatePlayer(event.player2!);
+        } catch (e) {
+          rethrow;
+        }
+      }
+      if (event.propertiesPlayer2.isNotEmpty) {
+        try {
+          await getIt<ElectronicDatabaseV2>().transferPropertiesPlayers(
+              event.player1!, event.player2!, event.propertiesPlayer2);
+          _updatePlayer(event.player1!);
+          _updatePlayer(event.player2!);
+        } catch (e) {
+          rethrow;
+        }
+      }
+      if (event.moneyPlayer1 != null) {
+        try {
+          event.player1!.money -= event.moneyPlayer1!;
+          event.player2!.money += event.moneyPlayer1!;
+          _updatePlayer(event.player1!);
+          _updatePlayer(event.player2!);
+        } catch (e) {
+          rethrow;
+        }
+      }
+      if (event.moneyPlayer2 != null) {
+        try {
+          event.player1!.money += event.moneyPlayer2!;
+          event.player2!.money -= event.moneyPlayer2!;
+          _updatePlayer(event.player1!);
+          _updatePlayer(event.player2!);
+        } catch (e) {
+          rethrow;
+        }
+      }
+      emit(state.copyWith(
+        status: GameStatus.playing,
+        gameTransaction: GameTransaction.none,
+      ));
+      BankerAlerts.customMessageAlertSuccess(text: "Trato exitoso!");
+    }
+    if (event.status == TransferTransaction.transactionError ||
+        event.status == TransferTransaction.transactionCancel) {
+      emit(state.copyWith(
+        status: GameStatus.playing,
+        gameTransaction: GameTransaction.none,
+      ));
+    }
   }
 }
 

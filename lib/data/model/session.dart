@@ -10,17 +10,30 @@ class GameSessions {
   @enumerated
   late GameVersions version;
 
-  late DateTime startTime;
-  late DateTime updateTime;
+  late DateTime createdAt;
+  DateTime? restoredAt;
+  late DateTime updateAt;
 
   late int playtime;
   final players = IsarLinks<MonopolyPlayer>();
 
   @ignore
   Duration get playtimeDuration {
-    final now = DateTime.now();
-    final difference = now.difference(updateTime);
-    playtime = playtime + difference.inMilliseconds;
-    return Duration(milliseconds: playtime);
+    // Optimización: Calcula la duración directamente sin crear variables intermedias.
+    return Duration(
+        milliseconds:
+            playtime + DateTime.now().difference(updateAt).inMilliseconds);
+  }
+
+  void updatePlayTime() {
+    updateAt = DateTime.now();
+    // Optimización: Usa un solo cálculo de diferencia.
+    final difference =
+        restoredAt?.difference(updateAt) ?? createdAt.difference(updateAt);
+    playtime += difference.inMilliseconds.abs();
+  }
+
+  void restored() {
+    restoredAt = DateTime.now();
   }
 }

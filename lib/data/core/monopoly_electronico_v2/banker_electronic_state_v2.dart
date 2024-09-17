@@ -12,6 +12,16 @@ enum GameTransaction {
   transfer_properties,
 }
 
+enum TransferTransaction {
+  selectingPlayer1,
+  selectingPlayer2,
+  summary,
+  executingTransaction,
+  transactionSuccess,
+  transactionError,
+  transactionCancel,
+}
+
 /// P1-P2 [int] P1 PAGA A P2
 /// P1-P'S el P1 paga a todos los demas
 /// P'S-P1 Los players le pagan al player en cuestión (tarjetas especiales)

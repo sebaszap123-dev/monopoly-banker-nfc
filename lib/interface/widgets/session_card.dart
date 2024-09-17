@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
 import 'package:monopoly_banker/config/utils/banker_alerts.dart';
 import 'package:monopoly_banker/config/utils/extensions.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico_v2/banker_electronic_bloc_v2.dart';
 import 'package:monopoly_banker/data/database/electronic_database_v2.dart';
 import 'package:monopoly_banker/data/model/session.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
@@ -42,7 +45,17 @@ class SessionCard extends StatelessWidget {
                 onPressed: () => alertDeletionOfSession(session.id),
                 icon: Icon(Icons.delete),
                 color: Colors.red,
-              )
+              ),
+              IconButton(
+                onPressed: () async {
+                  getIt<ElectronicGameV2Bloc>()
+                      .add(RestoreGameEvent(sessionId: session.id));
+                  getIt<RouterCubit>().state.push(const ElectronicGameRoute());
+                  return;
+                },
+                icon: Icon(Icons.restore),
+                color: Colors.green,
+              ),
             ],
           )
         ],

@@ -18,7 +18,8 @@ class RestoreGameEvent extends ElectronicEvent {
 
 class BackupGameEvent extends ElectronicEvent {
   final bool appPaused;
-  BackupGameEvent({required this.appPaused});
+  final bool exitGame;
+  BackupGameEvent({required this.appPaused, this.exitGame = true});
 }
 
 class EndGameEvent extends ElectronicEvent {
@@ -66,7 +67,21 @@ class MortgageProperty extends ElectronicEvent {
 
 /// Hacer intercambio, usar el bank alert para identificar las tarjetas
 class ChangeProperties extends ElectronicEvent {
-  final List<Property> properties;
+  final MonopolyPlayer? player1;
+  final MonopolyPlayer? player2;
+  final List<Property> propertiesPlayer1;
+  final List<Property> propertiesPlayer2;
+  final Money? moneyPlayer1;
+  final Money? moneyPlayer2;
+  final TransferTransaction status;
 
-  ChangeProperties(this.properties);
+  ChangeProperties({
+    this.player1,
+    this.player2,
+    this.status = TransferTransaction.selectingPlayer1,
+    this.propertiesPlayer1 = const [],
+    this.propertiesPlayer2 = const [],
+    this.moneyPlayer1,
+    this.moneyPlayer2,
+  });
 }
