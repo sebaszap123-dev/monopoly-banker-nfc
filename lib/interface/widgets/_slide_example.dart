@@ -17,14 +17,13 @@ class ExampleCardSlidable extends StatelessWidget {
 
         // A pane can dismiss the Slidable.
         // ESTO BASICAMENTE EJECUTA UNA ACCION AL DESAPARECER EL WIDGET
-        // TODO: CAMBIAR
+
         dismissible: DismissiblePane(onDismissed: () => print('ola')),
 
         // All actions are defined in the children parameter.
         children: [
           // A SlidableAction can have an icon and/or a label.
           SlidableAction(
-            // TODO: CAMBIAR
             onPressed: (context) => print('deleted'),
             backgroundColor: Color(0xFFFE4A49),
             foregroundColor: Colors.white,
@@ -40,7 +39,6 @@ class ExampleCardSlidable extends StatelessWidget {
           ),
         ],
       ),
-      // TODO: CAMBIAR
       // The end action pane is the one at the right or the bottom side.
       endActionPane: const ActionPane(
         motion: ScrollMotion(),

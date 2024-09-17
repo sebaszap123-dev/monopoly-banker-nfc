@@ -46,9 +46,21 @@ class ElectronicGameBody extends StatelessWidget {
                 getIt<ElectronicGameV2Bloc>().add(UpdatePlayerEvent()),
             colorsPlayers: blocState.players.map((e) => e.card!.color).toList(),
           ),
-          MaterialButton(
-            onPressed: () => onToggleProperties(!showProperties),
-            child: const Icon(Icons.house, size: 50, color: Colors.lightBlue),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              MaterialButton(
+                onPressed: () => onToggleProperties(!showProperties),
+                child:
+                    const Icon(Icons.house, size: 50, color: Colors.lightBlue),
+              ),
+              MaterialButton(
+                onPressed: () =>
+                    getIt<ElectronicGameV2Bloc>().add(ChangeProperties()),
+                child: const Icon(Icons.change_circle,
+                    size: 50, color: Colors.orange),
+              ),
+            ],
           ),
         ],
       );

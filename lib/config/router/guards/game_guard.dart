@@ -20,8 +20,6 @@ class GameGuard extends AutoRouteGuard {
     switch (args.version) {
       case GameVersions.classic:
         // TODO: Handle this case
-        // final classic =
-        //     await getIt<MonopolyGamesStorage>().hasCurrentGamesClassic;
         resolver.next(true);
       case GameVersions.electronic:
         final countSessions =
