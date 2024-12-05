@@ -1,18 +1,24 @@
 import 'package:art_sweetalert/art_sweetalert.dart';
 import 'package:flutter/material.dart';
 import 'package:monopoly_banker/config/router/monopoly_router.dart';
-import 'package:monopoly_banker/data/core/monopoly_electronico/monopoly_electronico_bloc.dart';
-import 'package:monopoly_banker/data/model/monopoly_cards.dart';
+import 'package:monopoly_banker/config/router/monopoly_router.gr.dart';
+import 'package:monopoly_banker/config/utils/game_versions_support.dart';
+import 'package:monopoly_banker/config/utils/widgets/read_card_nfc_v2.dart';
+import 'package:monopoly_banker/data/core/monopoly_electronico_v2/banker_electronic_bloc_v2.dart';
+import 'package:monopoly_banker/data/model/electronic_v2/monopoly_cards_v2.dart';
+import 'package:monopoly_banker/data/model/money.dart';
 import 'package:monopoly_banker/data/service_locator.dart';
 import 'package:monopoly_banker/interface/widgets/monopoly_trigger_button.dart';
-import 'package:monopoly_banker/interface/widgets/nfc_loading_animation.dart';
 import 'package:monopoly_banker/interface/widgets/pay_to_button.dart';
-import 'package:nfc_manager/nfc_manager.dart';
+
+enum CardManagerStatus { delete, cancel, name }
+
+enum RecoveryAction { last, menu }
 
 abstract class BankerAlerts {
   static BuildContext context = getIt<RouterCubit>().context;
-  static unhandleErros({String? error, BuildContext? myContext}) {
-    ArtSweetAlert.show(
+  static unhandledError({String? error, BuildContext? myContext}) async {
+    await ArtSweetAlert.show(
       context: myContext ?? context,
       artDialogArgs: ArtDialogArgs(
         type: ArtSweetAlertType.info,
@@ -22,9 +28,10 @@ abstract class BankerAlerts {
             'We encountered an error while processing your request:\n$error\nPlease try again later or contact support for assistance.',
       ),
     );
+    getIt<RouterCubit>().state.push(HomeRoute());
   }
 
-  static noCardReaded({required int count}) {
+  static noCardReader({required int count}) {
     ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
@@ -36,21 +43,83 @@ abstract class BankerAlerts {
     );
   }
 
+  static invalidCardNumber() {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.info,
+        title: 'Sucedio un error al leer tu tarjeta',
+        confirmButtonText: 'Okay',
+        text:
+            'Parece que contiene un numero invalido para este juego, intenta de nuevo.',
+      ),
+    );
+  }
+
+  static noPlayersSelected() {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.warning,
+        title: 'You need to select al least two players to play',
+        confirmButtonText: 'Okay',
+        text: 'Please selected to players in order to play the game.',
+      ),
+    );
+  }
+
+  static noCardSelected() {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.warning,
+        title: 'You need to select one card based on the color',
+        confirmButtonText: 'Okay',
+        text: 'Please selected one card to pair with NFC.',
+      ),
+    );
+  }
+
   static void showSuccessDeletedPlayers(int deletedUsersCount) {
+    String message = 'Deleted $deletedUsersCount users.';
+    if (deletedUsersCount == 0) {
+      message = 'No session players to deleted';
+    }
     ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
         type: ArtSweetAlertType.success,
         title: 'Success!',
         confirmButtonText: 'Okay',
-        text: 'Deleted $deletedUsersCount users.',
+        text: message,
       ),
     );
   }
 
+  static Future<bool> deleteSessionGame(int deletedUsersCount) async {
+    final ArtDialogResponse? resp = await ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.question,
+        // title: 'You are going to delete your game!',
+        title: '¿Estas seguro de eliminar esta sesión?',
+        confirmButtonText: 'Estoy seguro',
+        showCancelBtn: true,
+        text:
+            'Si borras esta sesión los datos de los jugadores y todo lo relacionado será borrado',
+      ),
+    );
+
+    if (resp != null && resp.isTapConfirmButton) {
+      return true;
+    }
+
+    return false;
+  }
+
   static void payedJ1toJ2({
     required double dinero,
-    required MoneyValue value,
+    required MoneyActionSpecial value,
     required String playerPays,
     required String playerReceive,
   }) {
@@ -85,7 +154,7 @@ abstract class BankerAlerts {
           Row(
             children: [
               Text(
-                "$dinero ${value == MoneyValue.millon ? 'M' : 'K'}",
+                "$dinero ${value == MoneyActionSpecial.millon ? 'M' : 'K'}",
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -113,11 +182,10 @@ abstract class BankerAlerts {
     );
   }
 
-  static void payedToGroups({
-    required double dinero,
-    required MoneyValue value,
-    required String jugador,
-    required PayTo payto,
+  static void payedJ1toJ2V2({
+    required Money money,
+    required String playerPays,
+    required String playerReceive,
   }) {
     ArtSweetAlert.show(
       context: context,
@@ -134,8 +202,72 @@ abstract class BankerAlerts {
               ),
               const SizedBox(width: 10),
               Text(
-                payto == PayTo.playerToPlayers
-                    ? jugador
+                playerPays,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const Icon(
+            Icons.arrow_right_alt,
+            color: Colors.green,
+            size: 30,
+          ),
+          Row(
+            children: [
+              Text(
+                money.toString(),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(
+                Icons.person,
+                color: Colors.orange,
+                size: 30,
+              ),
+              Text(
+                playerReceive,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+        confirmButtonText: "Aceptar",
+      ),
+    );
+  }
+
+  static void payedToGroupsV2({
+    required Money money,
+    required String player,
+    required PayToAction payTo,
+  }) {
+    ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.success,
+        title: "¡Pago exitoso!",
+        customColumns: [
+          Row(
+            children: [
+              const Icon(
+                Icons.person,
+                color: Colors.blue,
+                size: 30,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                payTo == PayToAction.playerToPlayers
+                    ? player
                     : 'Todos los jugadores',
                 style: const TextStyle(
                   fontSize: 18,
@@ -152,7 +284,7 @@ abstract class BankerAlerts {
           Row(
             children: [
               Text(
-                "$dinero ${value == MoneyValue.millon ? 'M' : 'K'}",
+                money.toString(),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -166,9 +298,9 @@ abstract class BankerAlerts {
                 size: 30,
               ),
               Text(
-                payto == PayTo.playerToPlayers
+                payTo == PayToAction.playerToPlayers
                     ? 'Pagó a todos los jugadores!'
-                    : 'Pagaron a $jugador',
+                    : 'Pagaron a $player',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -203,7 +335,7 @@ abstract class BankerAlerts {
     );
   }
 
-  static void noMoneyToSubstract({required double amount}) {
+  static void noMoneyToSubtract({required double amount}) {
     ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
@@ -226,18 +358,18 @@ abstract class BankerAlerts {
         ));
   }
 
-  static Future<PayTo?> chooseTransaction() async {
+  static Future<PayToAction?> chooseTransactionV2() async {
     return await ArtSweetAlert.show(
         context: context,
         artDialogArgs: ArtDialogArgs(
             type: ArtSweetAlertType.question,
             title: 'Choose a transaction',
-            customColumns: PayTo.values
+            customColumns: PayToAction.values
                 .map((data) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: PayToButton(
                         payTo: data,
-                        onTap: (PayTo value) =>
+                        onTap: (PayToAction value) =>
                             Navigator.of(context).pop(value),
                       ),
                     ))
@@ -322,7 +454,7 @@ abstract class BankerAlerts {
       context: context,
       artDialogArgs: ArtDialogArgs(
         type: ArtSweetAlertType.warning,
-        title: 'Error',
+        title: 'Hey!',
         confirmButtonText: 'Okay',
         text: message,
         onConfirm: () {
@@ -332,157 +464,146 @@ abstract class BankerAlerts {
     );
   }
 
-  static Future<String?> showAddPlayerAlert({String? oldName}) async {
+  static Future<void> insufficientFundsPlayersV2({
+    required Map<String, Money> players,
+  }) async {
+    String message = 'Estos jugadores no tienen saldo suficiente para pagar:\n';
+    players.forEach((playerName, money) {
+      message += '$playerName le faltan ${money.toString()}';
+    });
+
+    await ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.warning,
+        title: 'Hey!',
+        confirmButtonText: 'Okay',
+        text: message,
+        onConfirm: () {
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+
+  static Future<RecoveryAction?> recoveryLastSession(
+      int sessions, GameVersions version) async {
+    final ArtDialogResponse? resp = await ArtSweetAlert.show(
+      context: context,
+      artDialogArgs: ArtDialogArgs(
+        type: ArtSweetAlertType.question,
+        title: 'Recuperar última sesión',
+        text: '¿Deseas recuperar tu última sesión?',
+        customColumns: sessions == 1
+            ? [
+                MaterialButton(
+                  onPressed: () => getIt<RouterCubit>()
+                      .state
+                      .popAndPush(GameRoute(version: version, isNewGame: true)),
+                  child: SizedBox(
+                    width: 150,
+                    child: Card(
+                      color: Colors.green,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'New game',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              ]
+            : null,
+        showCancelBtn: sessions > 1,
+        confirmButtonText: 'Recuperar',
+        cancelButtonText: 'Ver mis sesiones',
+        cancelButtonColor: Colors.lightGreen,
+      ),
+    );
+    if (resp == null) {
+      return null;
+    }
+    if (resp.isTapConfirmButton) {
+      return RecoveryAction.last;
+    } else if (resp.isTapCancelButton) {
+      return RecoveryAction.menu;
+    }
+    return null;
+  }
+
+  static Future<MapEntry<CardManagerStatus, String?>> showAddPlayerAlert({
+    String? oldName,
+  }) async {
     final TextEditingController playerNameController =
         TextEditingController(text: oldName);
 
     final ArtDialogResponse? resp = await ArtSweetAlert.show(
       context: context,
       artDialogArgs: ArtDialogArgs(
+        dialogMainAxisSize: MainAxisSize.max,
         type: ArtSweetAlertType.question,
-        title: oldName != null ? 'Edit Player' : 'Add Player',
+        title: 'Card manager',
         confirmButtonText: 'Accept',
+        denyButtonColor: Colors.red,
+        denyButtonText: 'Delete',
         customColumns: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: TextField(
               controller: playerNameController,
               decoration: InputDecoration(
-                labelText: 'Player Name',
+                labelText: oldName ?? 'Player Name',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 40)
+          const SizedBox(height: 40),
         ],
         showCancelBtn: true,
       ),
     );
 
-    if (resp == null || !resp.isTapConfirmButton) {
-      // El usuario cancela la acción o cierra la alerta
-      return null;
+    if (resp == null) {
+      // El usuario cierra la alerta
+      return const MapEntry(CardManagerStatus.cancel, null);
+    }
+    if (resp.isTapCancelButton) {
+      // El usuario cancela la acción
+      return const MapEntry(CardManagerStatus.cancel, null);
+    } else if (resp.isTapDenyButton) {
+      // El usuario elige eliminar la tarjeta
+      return const MapEntry(CardManagerStatus.delete, null);
     } else {
       // El usuario confirma la acción
-      return playerNameController.text;
+      return MapEntry(CardManagerStatus.name, playerNameController.text);
     }
   }
 
-  static Future<MonopolyCard?> readNfcDataCard({String? customText}) async {
-    return await showDialog<MonopolyCard?>(
+  static Future<MonopolyCardV2?> readNfcDataCardV2({String? customText}) async {
+    return await showDialog<MonopolyCardV2?>(
         context: context,
         builder: (context) {
           return Dialog(
             backgroundColor: Colors.white,
             child: SizedBox(
                 height: 300,
-                child: ReadCardNfc(
+                child: ReadCardNfcV2(
                   customText: customText,
                 )),
           );
         });
-  }
-}
-
-class ReadCardNfc extends StatefulWidget {
-  const ReadCardNfc({Key? key, this.customText}) : super(key: key);
-  final String? customText;
-
-  @override
-  State<ReadCardNfc> createState() => _ReadCardNfcState();
-}
-
-class _ReadCardNfcState extends State<ReadCardNfc> {
-  MonopolyCard? cardPlayer;
-  bool hasError = false;
-  String error = '';
-  bool hasData = false;
-
-  @override
-  void initState() {
-    super.initState();
-    initSesion();
-  }
-
-  Future<void> initSesion() async {
-    try {
-      await getIt<NfcManager>().startSession(onError: (nfcError) async {
-        setState(() {
-          hasError = true;
-          error = nfcError.message;
-        });
-      }, onDiscovered: (tag) async {
-        if (hasData && !hasError) return;
-        if (tag.data.containsKey('ndef')) {
-          final ndef = Ndef.from(tag);
-          if (ndef != null) {
-            final cachedMessage = ndef.cachedMessage;
-            if (cachedMessage != null) {
-              final resp = MonopolyCard.fromNdefMessage(cachedMessage);
-              setState(() {
-                cardPlayer = resp;
-                hasData = true;
-              });
-            }
-          } else {
-            setState(() {
-              hasError = true;
-              error = 'Try again please';
-            });
-          }
-        }
-      });
-    } catch (e) {
-      setState(() {
-        hasError = true;
-        error = 'Error: $e';
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    getIt<NfcManager>().stopSession();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!hasError && !hasData) {
-      return NfcLoadingAnimation(
-        customText: widget.customText,
-      );
-    }
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        const SizedBox(height: 15),
-        if (hasError) ...[
-          Text(error),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                hasError = false;
-              });
-            },
-            child: const Text('Reintentar'),
-          ),
-        ],
-        if (!hasError && hasData) ...[
-          Text(
-              'Tarjeta leída: ${cardPlayer?.number}'), // Mostrar la información de la tarjeta leída
-          ElevatedButton(
-            onPressed: () async {
-              await getIt<NfcManager>().stopSession();
-              // ignore: use_build_context_synchronously
-              Navigator.of(context).pop(cardPlayer);
-            },
-            child: const Text('Aceptar'),
-          ),
-        ],
-      ],
-    );
   }
 }

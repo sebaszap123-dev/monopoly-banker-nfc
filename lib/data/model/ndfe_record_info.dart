@@ -38,7 +38,7 @@ class NdefRecordInfo {
             '(${record0.record.type.toHexString()}) ${record0.record.payload.toHexString()}',
       );
     }
-    throw UnimplementedError();
+    throw UnimplementedError("NFC");
   }
 }
 

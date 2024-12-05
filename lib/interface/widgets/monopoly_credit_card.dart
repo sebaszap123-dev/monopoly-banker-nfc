@@ -4,7 +4,6 @@ import 'package:monopoly_banker/config/utils/banker_images.dart';
 class MonopolyCreditCard extends StatelessWidget {
   const MonopolyCreditCard({
     super.key,
-    this.cardHeight = 250,
     this.isSelected = false,
     required this.color,
     required this.onTap,
@@ -13,7 +12,6 @@ class MonopolyCreditCard extends StatelessWidget {
     this.transactions = false,
   });
 
-  final double cardHeight;
   final bool isSelected;
   final String cardNumber;
   final String? displayName;
@@ -25,8 +23,7 @@ class MonopolyCreditCard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: ConstrainedBox(
-        constraints:
-            BoxConstraints(maxHeight: cardHeight, minHeight: cardHeight),
+        constraints: BoxConstraints(maxHeight: 250, minHeight: 250),
         child: Card(
           clipBehavior: Clip.hardEdge,
           elevation: 2,

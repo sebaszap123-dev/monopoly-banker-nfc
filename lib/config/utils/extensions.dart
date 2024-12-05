@@ -1,5 +1,7 @@
 import 'dart:typed_data';
-import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:monopoly_banker/data/model/property.dart';
 
 extension IntExtension on int {
   String toHexString() {
@@ -49,5 +51,32 @@ extension CreditCardValidation on String {
       return false;
     }
     return true;
+  }
+}
+
+extension GetColorBasedOnType on PropertyType {
+  Color get color {
+    switch (this) {
+      case PropertyType.coffee:
+        return Colors.brown;
+      case PropertyType.skyBlue:
+        return '#87CEEB'.toColor();
+      case PropertyType.magenta:
+        return '#800080'.toColor();
+      case PropertyType.orange:
+        return Colors.orange;
+      case PropertyType.red:
+        return '#DC143C'.toColor();
+      case PropertyType.yellow:
+        return '#FFD700'.toColor();
+      case PropertyType.green:
+        return '#228B22'.toColor();
+      case PropertyType.blue:
+        return '#4169E1'.toColor();
+      case PropertyType.services:
+        return Colors.white;
+      case PropertyType.ferro:
+        return Colors.white;
+    }
   }
 }

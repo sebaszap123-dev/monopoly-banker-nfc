@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:monopoly_banker/config/utils/default_colors.dart';
+import 'package:monopoly_banker/config/utils/default_cards.dart';
 
 class AnimatedIconButton extends StatefulWidget {
   final VoidCallback onPressed;
@@ -18,7 +18,9 @@ class AnimatedIconButtonState extends State<AnimatedIconButton> {
   List<Color> _colors = [];
   @override
   void initState() {
-    _colors = widget.colorsPlayers ?? defaultColors;
+    _colors = (widget.colorsPlayers == null || widget.colorsPlayers!.isNotEmpty
+        ? widget.colorsPlayers
+        : defaultColors)!;
     _currentColorIndex = 0;
 
     _startTimer();

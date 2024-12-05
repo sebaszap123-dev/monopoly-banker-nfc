@@ -30,7 +30,6 @@ class BaseButton extends StatelessWidget {
       elevation: 5,
       child: InkWell(
         splashColor: Colors.blue.shade100,
-        // TODO-FEATURE: PLAY A SOUND WITH JUST_AUDIO FLUTTER PACKAGE
         onTap: onTap,
         child: FittedBox(
           child: icon ??
