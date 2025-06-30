@@ -18,46 +18,6 @@ import 'package:monopoly_banker/interface/views/game/end_game.dart' as _i2;
 import 'package:monopoly_banker/interface/views/game/game_screen.dart' as _i3;
 import 'package:monopoly_banker/interface/views/home_screen.dart' as _i4;
 
-abstract class $MonopolyRouter extends _i5.RootStackRouter {
-  $MonopolyRouter({super.navigatorKey});
-
-  @override
-  final Map<String, _i5.PageFactory> pagesMap = {
-    ElectronicGameRoute.name: (routeData) {
-      return _i5.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const _i1.ElectronicGameScreen(),
-      );
-    },
-    EndGameMonopolyX.name: (routeData) {
-      final args = routeData.argsAs<EndGameMonopolyXArgs>();
-      return _i5.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i2.EndGameMonopolyX(
-          key: args.key,
-          players: args.players,
-        ),
-      );
-    },
-    GameRoute.name: (routeData) {
-      final args = routeData.argsAs<GameRouteArgs>();
-      return _i5.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i3.GameScreen(
-          key: args.key,
-          version: args.version,
-        ),
-      );
-    },
-    HomeRoute.name: (routeData) {
-      return _i5.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const _i4.HomeScreen(),
-      );
-    },
-  };
-}
-
 /// generated route for
 /// [_i1.ElectronicGameScreen]
 class ElectronicGameRoute extends _i5.PageRouteInfo<void> {
@@ -69,7 +29,12 @@ class ElectronicGameRoute extends _i5.PageRouteInfo<void> {
 
   static const String name = 'ElectronicGameRoute';
 
-  static const _i5.PageInfo<void> page = _i5.PageInfo<void>(name);
+  static _i5.PageInfo page = _i5.PageInfo(
+    name,
+    builder: (data) {
+      return const _i1.ElectronicGameScreen();
+    },
+  );
 }
 
 /// generated route for
@@ -90,8 +55,16 @@ class EndGameMonopolyX extends _i5.PageRouteInfo<EndGameMonopolyXArgs> {
 
   static const String name = 'EndGameMonopolyX';
 
-  static const _i5.PageInfo<EndGameMonopolyXArgs> page =
-      _i5.PageInfo<EndGameMonopolyXArgs>(name);
+  static _i5.PageInfo page = _i5.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<EndGameMonopolyXArgs>();
+      return _i2.EndGameMonopolyX(
+        key: args.key,
+        players: args.players,
+      );
+    },
+  );
 }
 
 class EndGameMonopolyXArgs {
@@ -128,8 +101,16 @@ class GameRoute extends _i5.PageRouteInfo<GameRouteArgs> {
 
   static const String name = 'GameRoute';
 
-  static const _i5.PageInfo<GameRouteArgs> page =
-      _i5.PageInfo<GameRouteArgs>(name);
+  static _i5.PageInfo page = _i5.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<GameRouteArgs>();
+      return _i3.GameScreen(
+        key: args.key,
+        version: args.version,
+      );
+    },
+  );
 }
 
 class GameRouteArgs {
@@ -159,5 +140,10 @@ class HomeRoute extends _i5.PageRouteInfo<void> {
 
   static const String name = 'HomeRoute';
 
-  static const _i5.PageInfo<void> page = _i5.PageInfo<void>(name);
+  static _i5.PageInfo page = _i5.PageInfo(
+    name,
+    builder: (data) {
+      return const _i4.HomeScreen();
+    },
+  );
 }

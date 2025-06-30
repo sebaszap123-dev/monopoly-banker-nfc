@@ -387,7 +387,7 @@ abstract class BankerAlerts {
 }
 
 class ReadCardNfc extends StatefulWidget {
-  const ReadCardNfc({Key? key, this.customText}) : super(key: key);
+  const ReadCardNfc({super.key, this.customText});
   final String? customText;
 
   @override

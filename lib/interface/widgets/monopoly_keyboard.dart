@@ -10,8 +10,8 @@ import 'package:monopoly_banker/interface/widgets/transaction_button.dart';
 /// A quick example "keyboard" widget for Numeric.
 class MonopolyTerminal extends StatefulWidget implements PreferredSizeWidget {
   const MonopolyTerminal({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<MonopolyTerminal> createState() => _MonopolyTerminalState();

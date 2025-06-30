@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 class MonopolyNumericButton extends BaseButton {
   final int number;
   MonopolyNumericButton({
-    Key? key,
-    required VoidCallback onTap,
+    super.key,
+    required super.onTap,
     required this.number,
-  }) : super(key: key, onTap: onTap, text: number.toString());
+  }) : super(text: number.toString());
 }
 
 class BaseButton extends StatelessWidget {
